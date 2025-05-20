@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import Speaking from "./pages/Speaking";
 import Pronunciation from "./pages/Pronunciation";
 import Story from "./pages/Story";
+import Conversation from "./pages/Conversation";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/speaking" element={<Speaking />} />
           <Route path="/pronunciation" element={<Pronunciation />} />
           <Route path="/story" element={<Story />} />
+          <Route path="/conversation" element={<Conversation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
