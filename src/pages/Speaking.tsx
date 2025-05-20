@@ -105,7 +105,7 @@ export default function Speaking() {
     mediaRecorderRef.current?.stop();
   };
 
-  // Analyze button - send transcript to Gemini API and get feedback
+  // Analyze button - enhanced Gemini API prompt and response structure
   const handleAnalyze = async () => {
     if (!transcript.trim()) {
       toast({ title: "No transcript available", description: "Please record some speech first." });
@@ -113,33 +113,66 @@ export default function Speaking() {
     }
     setLoading(true);
     try {
-      // Compose Gemini prompt
       const speechText = transcript;
+      // Enhanced Gemini Prompt per user request:
       const prompt = [
         {
           parts: [{
-            text: `Analyze the following English speech for language improvement:
+            text: `
+You are an expert English language coach. I am building a website to help users improve their English speaking skills using AI. I will provide you with a transcript of what the user has spoken. Based on that transcript, give a detailed, structured, and friendly feedback report with the following sections:
 
-Speech: '${speechText}'
+1. **Corrected Version**: Rewrite the user's speech with proper grammar, vocabulary, and sentence structure.
 
-I want you to:
-1. Highlight the grammar mistakes
-2. Provide corrected version
-3. Explain each grammar rule violated
-4. Score the speech on:
-   - Grammar
-   - Vocabulary
-   - Pronunciation (assume basic average)
-   - Fluency
-5. Give 3 communication improvement suggestions
-6. Use a friendly coaching tone.
-7. Output in clean JSON with keys:
-   - original_text
-   - corrected_text
-   - highlighted_errors
-   - grammar_explanations
-   - scores (0-100)
-   - suggestions
+2. **Highlight Mistakes**: List each mistake, the correction, and explain the grammar/vocabulary rule behind it in simple terms.
+
+3. **Grammar, Vocabulary, Pronunciation, and Fluency Scores**:
+   - Provide scores out of 100 for each category.
+   - Categorize the score: 0-60 = Needs Improvement, 61-80 = Average, 81-100 = Good.
+   - Explain why the score was given and what to improve.
+
+4. **Pronunciation Analysis**:
+   - Identify any difficult or mispronounced words.
+   - Give phonetic tips and mouth movement advice.
+   - Provide examples or similar words to practice.
+
+5. **Fluency Feedback**:
+   - Count filler words used ("um", "like", "uh").
+   - Identify unnatural pauses or abrupt stops.
+   - Suggest techniques for smoother speech.
+
+6. **Vocabulary Enhancement**:
+   - Identify basic or overused words in the transcript.
+   - Suggest 2-3 better alternatives with sample sentences.
+
+7. **Communication Tips**:
+   - Give 3 personalized tips to help the user improve.
+   - Make these encouraging and based on their performance.
+
+8. **Final Summary**:
+   - Provide an overall score and label (Beginner, Intermediate, Advanced).
+   - Suggest if the user should retry or move to the next level.
+
+Please make the feedback positive, constructive, and educational. Use clear formatting (like bullet points and bold titles) so it can be easily displayed in a dashboard.
+
+Transcript:
+"${speechText}"
+
+Respond as clean JSON ONLY, using keys:
+{
+  corrected_version,
+  mistakes: [{mistake, correction, explanation}],
+  scores: {
+    grammar: {score, label, explanation},
+    vocabulary: {score, label, explanation},
+    pronunciation: {score, label, explanation},
+    fluency: {score, label, explanation}
+  },
+  pronunciation_feedback: { difficult_words, tips, example_words },
+  fluency_feedback: { filler_words_count, unnatural_pauses, suggestions },
+  vocabulary_enhancement: { basic_words, alternatives: [{word, alternatives, samples}] },
+  communication_tips: [ ... ],
+  overall_summary: { score, level, recommendation }
+}
 `
           }]
         }
@@ -209,6 +242,35 @@ I want you to:
     }
     // fallback
     return <li key={i}>{JSON.stringify(exp)}</li>;
+  }
+
+  // Helper: Render structured score with categorization
+  function renderScoreSection(title: string, data?: any) {
+    if (!data) return null;
+    return (
+      <div className="mb-2">
+        <div className="font-semibold">{title}:</div>
+        <div className="flex gap-2 items-center">
+          <span className={
+            data.score >= 81
+              ? "text-green-600 font-bold"
+              : data.score >= 61
+              ? "text-yellow-700 font-bold"
+              : "text-red-600 font-bold"
+          }>
+            {data.score ?? "-"} / 100 (“{data.label ?? ""}”)
+          </span>
+        </div>
+        {data.explanation && (
+          <div className="text-sm text-muted-foreground mt-1">{data.explanation}</div>
+        )}
+      </div>
+    );
+  }
+
+  // Helper: Safe list mapping
+  function safeList(arr: undefined | null | any[], f: (x:any,i:number)=>React.ReactNode) {
+    return Array.isArray(arr) ? arr.map(f) : null;
   }
 
   return (
@@ -293,84 +355,160 @@ I want you to:
       )}
       {feedback && (
         <div className="space-y-6">
-          {/* Radar Chart */}
-          {feedback.scores && (
-            <Card className="shadow rounded-2xl">
+          {/* 1. Corrected Version */}
+          {feedback.corrected_version && (
+            <Card className="rounded-xl border-0 bg-green-50 shadow">
               <CardHeader>
-                <div className="flex items-center gap-2">
-                  <ChartBar className="text-primary" />
-                  <span className="font-semibold text-primary font-playfair">Your Skills</span>
-                </div>
+                <span className="font-bold text-green-700">Corrected Version</span>
               </CardHeader>
               <CardContent>
-                <ResponsiveContainer width="100%" height={220}>
-                  <RChart
-                    outerRadius={90}
-                    data={[
-                      { subject: "Grammar", A: feedback.scores.grammar, fullMark: 100 },
-                      { subject: "Vocabulary", A: feedback.scores.vocabulary, fullMark: 100 },
-                      { subject: "Pronunciation", A: feedback.scores.pronunciation, fullMark: 100 },
-                      { subject: "Fluency", A: feedback.scores.fluency, fullMark: 100 },
-                    ]}
-                  >
-                    <PolarGrid />
-                    <PolarAngleAxis dataKey="subject" />
-                    <PolarRadiusAxis angle={30} domain={[0, 100]} />
-                    <Radar name="You" dataKey="A" stroke="#9b87f5" fill="#9b87f5" fillOpacity={0.4} />
-                    <Tooltip />
-                  </RChart>
-                </ResponsiveContainer>
-                <div className="text-xs mt-2 text-muted-foreground">
-                  Scores are out of 100.
-                </div>
+                <div className="font-mono">{feedback.corrected_version}</div>
               </CardContent>
             </Card>
           )}
 
-          {/* Highlighted errors */}
-          {feedback.highlighted_errors && feedback.original_text && (
-            <Card className="shadow rounded-xl bg-amber-50 border border-amber-200">
+          {/* 2. Highlight Mistakes */}
+          {feedback.mistakes && feedback.mistakes.length > 0 && (
+            <Card className="rounded-xl bg-amber-50 border border-amber-200 shadow">
               <CardHeader>
-                <span className="font-semibold text-amber-900">Mistake Highlights</span>
+                <span className="font-semibold text-amber-900">Highlight Mistakes</span>
               </CardHeader>
               <CardContent>
-                <div
-                  className="text-base"
-                  dangerouslySetInnerHTML={{ __html: highlightErrors(feedback.original_text, feedback.highlighted_errors) }}
-                />
-                {feedback.grammar_explanations?.length ? (
-                  <ul className="mt-3 list-disc ml-6 text-sm text-gray-700">
-                    {feedback.grammar_explanations.map(renderGrammarExplanation)}
-                  </ul>
-                ) : null}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Suggestions */}
-          {feedback.suggestions && (
-            <Card className="rounded-xl bg-primary/10 border-0">
-              <CardHeader>
-                <span className="font-semibold text-primary">Gemini Suggests</span>
-              </CardHeader>
-              <CardContent>
-                <ul className="list-disc ml-6 text-gray-700">
-                  {feedback.suggestions.map((s: string, i: number) => (
-                    <li key={i}>{s}</li>
+                <ul className="list-disc ml-4 space-y-2 text-sm">
+                  {feedback.mistakes.map((m: any, idx: number) => (
+                    <li key={idx}>
+                      <b>Mistake:</b> <span className="text-red-600">{m.mistake}</span>
+                      <br />
+                      <b>Correction:</b> <span className="text-green-700">{m.correction}</span>
+                      <br />
+                      <b>Explanation:</b> <span>{m.explanation}</span>
+                    </li>
                   ))}
                 </ul>
               </CardContent>
             </Card>
           )}
 
-          {/* Corrected Text */}
-          {feedback.corrected_text && (
-            <Card className="rounded-xl border-0 bg-green-50">
+          {/* 3. Scores */}
+          {(feedback.scores?.grammar || feedback.scores?.vocabulary || feedback.scores?.pronunciation || feedback.scores?.fluency) && (
+            <Card className="shadow rounded-2xl">
               <CardHeader>
-                <span className="font-semibold text-green-700">Improved Version</span>
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-primary font-playfair">Score Breakdown</span>
+                </div>
               </CardHeader>
               <CardContent>
-                <div className="font-mono">{feedback.corrected_text}</div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {renderScoreSection("Grammar", feedback.scores.grammar)}
+                  {renderScoreSection("Vocabulary", feedback.scores.vocabulary)}
+                  {renderScoreSection("Pronunciation", feedback.scores.pronunciation)}
+                  {renderScoreSection("Fluency", feedback.scores.fluency)}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 4. Pronunciation Analysis */}
+          {feedback.pronunciation_feedback && (
+            <Card className="rounded-xl border-0 bg-blue-50">
+              <CardHeader>
+                <span className="font-bold text-blue-700">Pronunciation Analysis</span>
+              </CardHeader>
+              <CardContent>
+                <div className="mb-1">
+                  <b>Difficult or mispronounced words: </b>
+                  <span>{safeList(feedback.pronunciation_feedback.difficult_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>) || "None"}</span>
+                </div>
+                <div className="mb-1">
+                  <b>Phonetic tips & mouth advice:</b>{" "}
+                  <span>{feedback.pronunciation_feedback.tips}</span>
+                </div>
+                <div>
+                  <b>Try practicing: </b>
+                  <span>{safeList(feedback.pronunciation_feedback.example_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 5. Fluency Feedback */}
+          {feedback.fluency_feedback && (
+            <Card className="rounded-xl bg-purple-50 border-0">
+              <CardHeader>
+                <span className="font-bold text-purple-700">Fluency Feedback</span>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <b>Filler words used:</b> {feedback.fluency_feedback.filler_words_count ?? 0}
+                </div>
+                <div>
+                  <b>Unnatural pauses:</b> {feedback.fluency_feedback.unnatural_pauses ?? "None"}
+                </div>
+                <div>
+                  <b>Suggestions for smoother speech:</b> {feedback.fluency_feedback.suggestions}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 6. Vocabulary Enhancement */}
+          {feedback.vocabulary_enhancement && (
+            <Card className="rounded-xl bg-yellow-50 border-0">
+              <CardHeader>
+                <span className="font-bold text-yellow-700">Vocabulary Enhancement</span>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <b>Basic/overused words:</b> {safeList(feedback.vocabulary_enhancement.basic_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}
+                </div>
+                {Array.isArray(feedback.vocabulary_enhancement.alternatives) && feedback.vocabulary_enhancement.alternatives.length > 0 ? (
+                  <div className="mt-2">
+                    <b>Better alternatives & samples:</b>
+                    <ul className="list-disc ml-4">
+                      {feedback.vocabulary_enhancement.alternatives.map((alt: any, i: number) => (
+                        <li key={i}>
+                          <b>{alt.word}:</b> {alt.alternatives?.join(", ")}
+                          {Array.isArray(alt.samples) && (
+                            <>
+                              <br /><span className="text-xs text-muted-foreground">{alt.samples.join(" – ")}</span>
+                            </>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                ) : null}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 7. Communication Tips */}
+          {feedback.communication_tips && (
+            <Card className="rounded-xl bg-primary/10 border-0">
+              <CardHeader>
+                <span className="font-semibold text-primary">Communication Tips</span>
+              </CardHeader>
+              <CardContent>
+                <ul className="list-disc ml-6 text-gray-700">
+                  {safeList(feedback.communication_tips, (s:string,i:number) => <li key={i}>{s}</li>)}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* 8. Final Summary */}
+          {feedback.overall_summary && (
+            <Card className="rounded-xl bg-green-50 border-0">
+              <CardHeader>
+                <span className="font-bold text-green-700">Final Summary</span>
+              </CardHeader>
+              <CardContent>
+                <div>
+                  <b>Overall Score:</b> <span className="text-green-700 font-bold">{feedback.overall_summary.score} ({feedback.overall_summary.level})</span>
+                </div>
+                <div>
+                  <b>Recommendation:</b> {feedback.overall_summary.recommendation}
+                </div>
               </CardContent>
             </Card>
           )}
