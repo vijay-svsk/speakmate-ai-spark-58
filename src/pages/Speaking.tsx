@@ -1,4 +1,3 @@
-
 import React, { useRef, useState } from "react";
 import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -50,7 +49,7 @@ export default function Speaking() {
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = "en-US";
-      recognition.onresult = (event: SpeechRecognitionEvent) => {
+      recognition.onresult = (event: SpeechRecognitionResultEvent) => {
         let runningTranscript = "";
         for (let i = 0; i < event.results.length; ++i) {
           runningTranscript += event.results[i][0].transcript;
@@ -374,5 +373,3 @@ I want you to:
     </div>
   );
 }
-
-// ... file is getting too long, please ask to refactor after this change!
