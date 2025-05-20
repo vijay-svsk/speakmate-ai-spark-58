@@ -1,4 +1,3 @@
-
 // SpeakMate Dashboard v1
 
 import React from "react";
@@ -137,10 +136,7 @@ const Index = () => {
   return (
     <SidebarProvider>
       <div className="min-h-screen bg-gray-50 flex w-full">
-        {/* Sidebar */}
-        <div className="hidden md:block">
-          <AppSidebar />
-        </div>
+        <AppSidebar />
         {/* Main Content */}
         <div className="flex-1 flex flex-col items-center px-2 py-8 md:p-12">
           <WelcomeCard />
@@ -154,4 +150,3 @@ const Index = () => {
 };
 
 export default Index;
-
