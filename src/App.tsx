@@ -12,6 +12,8 @@ import Story from "./pages/Story";
 import Conversation from "./pages/Conversation";
 import Grammar from "./pages/Grammar";
 import Vocabulary from "./pages/Vocabulary";
+import Reflex from "./pages/Reflex";
+import Progress from "./pages/Progress";
 
 const queryClient = new QueryClient();
 
@@ -29,6 +31,8 @@ const App = () => (
           <Route path="/conversation" element={<Conversation />} />
           <Route path="/grammar" element={<Grammar />} />
           <Route path="/vocabulary" element={<Vocabulary />} />
+          <Route path="/reflex" element={<Reflex />} />
+          <Route path="/progress" element={<Progress />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>

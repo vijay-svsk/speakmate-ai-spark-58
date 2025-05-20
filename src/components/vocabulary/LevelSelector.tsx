@@ -5,14 +5,16 @@ import { Button } from "@/components/ui/button";
 interface LevelSelectorProps {
   currentLevel: "beginner" | "intermediate" | "advanced";
   onLevelChange: (level: "beginner" | "intermediate" | "advanced") => void;
+  className?: string;
 }
 
 export const LevelSelector: React.FC<LevelSelectorProps> = ({ 
   currentLevel, 
-  onLevelChange 
+  onLevelChange,
+  className = "" 
 }) => {
   return (
-    <div className="flex gap-1 items-center">
+    <div className={`flex gap-1 items-center ${className}`}>
       <Button
         size="sm"
         variant={currentLevel === "beginner" ? "default" : "outline"}
@@ -40,3 +42,5 @@ export const LevelSelector: React.FC<LevelSelectorProps> = ({
     </div>
   );
 };
+
+export default LevelSelector;
