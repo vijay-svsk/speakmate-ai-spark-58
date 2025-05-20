@@ -1,6 +1,5 @@
-
 import React, { useRef, useState } from "react";
-import { Mic, Stop, ChartRadar, LineChart } from "lucide-react";
+import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -187,7 +186,7 @@ I want you to:
               className="flex gap-2"
               aria-label="Stop Recording"
             >
-              <Stop className="w-5 h-5" />
+              <CircleStop className="w-5 h-5" />
               Stop
             </Button>
             <Button
@@ -233,7 +232,7 @@ I want you to:
             <Card className="shadow rounded-2xl">
               <CardHeader>
                 <div className="flex items-center gap-2">
-                  <ChartRadar className="text-primary" />
+                  <ChartBar className="text-primary" />
                   <span className="font-semibold text-primary font-playfair">Your Skills</span>
                 </div>
               </CardHeader>
