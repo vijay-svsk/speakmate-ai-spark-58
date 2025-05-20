@@ -9,7 +9,7 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Mic, MessageSquare, Award, Book, BarChart, Headphones, User } from "lucide-react";
+import { LayoutDashboard, Mic, MessageSquare, Award, Book, BarChart, Headphones } from "lucide-react";
 
 const navItems = [
   { title: "Dashboard", route: "/", icon: LayoutDashboard },
@@ -18,7 +18,6 @@ const navItems = [
   { title: "Reflex Challenge", route: "/reflex", icon: Award },
   { title: "Pronunciation Mirror", route: "/pronunciation", icon: Headphones },
   { title: "Story Builder", route: "/story", icon: Book },
-  { title: "Interview Prep", route: "/interview", icon: User },
   { title: "Vocabulary Trainer", route: "/vocabulary", icon: Book },
   { title: "Grammar Clinic", route: "/grammar", icon: Book },
   { title: "Progress Report", route: "/progress", icon: BarChart }
