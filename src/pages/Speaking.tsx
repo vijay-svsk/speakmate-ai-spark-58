@@ -193,6 +193,24 @@ I want you to:
     return highlighted;
   }
 
+  // Helper: Render grammar explanations safely
+  function renderGrammarExplanation(exp: any, i: number) {
+    if (typeof exp === "string") {
+      return <li key={i}>{exp}</li>;
+    }
+    if (typeof exp === "object" && exp !== null && ("rule" in exp || "explanation" in exp)) {
+      // Render rule and explanation if present
+      return (
+        <li key={i}>
+          {exp.rule && <span className="font-semibold">{exp.rule}: </span>}
+          {exp.explanation || JSON.stringify(exp)}
+        </li>
+      );
+    }
+    // fallback
+    return <li key={i}>{JSON.stringify(exp)}</li>;
+  }
+
   return (
     <div className="mx-auto max-w-2xl py-8 sm:py-12 w-full px-2">
       <Card className="mb-6 shadow-xl animate-fade-in rounded-2xl">
@@ -322,9 +340,7 @@ I want you to:
                 />
                 {feedback.grammar_explanations?.length ? (
                   <ul className="mt-3 list-disc ml-6 text-sm text-gray-700">
-                    {feedback.grammar_explanations.map((exp: string, i: number) => (
-                      <li key={i}>{exp}</li>
-                    ))}
+                    {feedback.grammar_explanations.map(renderGrammarExplanation)}
                   </ul>
                 ) : null}
               </CardContent>
