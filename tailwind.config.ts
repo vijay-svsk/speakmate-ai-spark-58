@@ -24,6 +24,20 @@ export default {
 				inter: ['Inter', "sans-serif"]
 			},
 			colors: {
+				// Add required semantic color keys for Tailwind utility classes like border-border
+				border: "hsl(var(--border))",
+				input: "hsl(var(--input))",
+				ring: "hsl(var(--ring))",
+				background: "hsl(var(--background))",
+				foreground: "hsl(var(--foreground))",
+				card: {
+					DEFAULT: "hsl(var(--card))",
+					foreground: "hsl(var(--card-foreground))"
+				},
+				popover: {
+					DEFAULT: "hsl(var(--popover))",
+					foreground: "hsl(var(--popover-foreground))"
+				},
 				primary: {
 					DEFAULT: '#9b87f5',
 					foreground: '#fff'
