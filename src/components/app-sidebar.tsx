@@ -24,6 +24,9 @@ const navItems = [
 ];
 
 export function AppSidebar() {
+  // Get current path to highlight active route
+  const currentPath = window.location.pathname;
+
   return (
     <Sidebar>
       <SidebarContent>
@@ -33,7 +36,7 @@ export function AppSidebar() {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton asChild isActive={currentPath === item.route}>
                     <a href={item.route} className="flex items-center gap-3 text-base py-2 px-3 rounded-lg hover:bg-primary/10 transition-colors">
                       <item.icon className="w-5 h-5" />
                       <span>{item.title}</span>

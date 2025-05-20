@@ -11,6 +11,7 @@ import Pronunciation from "./pages/Pronunciation";
 import Story from "./pages/Story";
 import Conversation from "./pages/Conversation";
 import Grammar from "./pages/Grammar";
+import Vocabulary from "./pages/Vocabulary";
 
 const queryClient = new QueryClient();
 
@@ -27,6 +28,7 @@ const App = () => (
           <Route path="/story" element={<Story />} />
           <Route path="/conversation" element={<Conversation />} />
           <Route path="/grammar" element={<Grammar />} />
+          <Route path="/vocabulary" element={<Vocabulary />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
