@@ -49,7 +49,7 @@ export default function Speaking() {
       recognition.continuous = true;
       recognition.interimResults = true;
       recognition.lang = "en-US";
-      recognition.onresult = (event: SpeechRecognitionResultEvent) => {
+      recognition.onresult = (event: any) => {
         let runningTranscript = "";
         for (let i = 0; i < event.results.length; ++i) {
           runningTranscript += event.results[i][0].transcript;
