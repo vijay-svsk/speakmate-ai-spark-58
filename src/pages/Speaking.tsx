@@ -1,3 +1,4 @@
+
 import React, { useRef, useState } from "react";
 import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -7,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { ResponsiveContainer, RadarChart as RChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
 
+// Sample topics for the speaking practice select dropdown
 const sampleTopics = [
   "Daily Life",
   "Travel",
@@ -17,6 +19,12 @@ const sampleTopics = [
   "Technology",
 ];
 
+// Set up SpeechRecognition cross-browser
+const SpeechRecognition =
+  typeof window !== "undefined"
+    ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    : undefined;
+
 export default function Speaking() {
   const [selectedTopic, setSelectedTopic] = useState("");
   const [recording, setRecording] = useState(false);
@@ -25,15 +33,46 @@ export default function Speaking() {
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<any | null>(null);
 
+  const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  // Start recording
+  // Start recording (audio + live transcript)
   const handleStart = async () => {
     setTranscript("");
     setFeedback(null);
     setAudioUrl(null);
     setRecording(true);
+
+    // Start SpeechRecognition if available
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+      recognition.onresult = (event: SpeechRecognitionEvent) => {
+        let runningTranscript = "";
+        for (let i = 0; i < event.results.length; ++i) {
+          runningTranscript += event.results[i][0].transcript;
+        }
+        setTranscript(runningTranscript.trim());
+      };
+      recognition.onerror = (event: any) => {
+        toast({
+          title: "Speech recognition error",
+          description: event.error || "Unknown recognition error.",
+        });
+      };
+      recognitionRef.current = recognition;
+      recognition.start();
+    } else {
+      toast({
+        title: "Speech recognition not supported",
+        description: "Live transcription isn't available in your browser.",
+      });
+    }
+
+    // Start audio recording
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new window.MediaRecorder(stream);
@@ -43,8 +82,6 @@ export default function Speaking() {
         const blob = new Blob(audioChunksRef.current, { type: "audio/webm" });
         const url = URL.createObjectURL(blob);
         setAudioUrl(url);
-        // Here you should add real transcription step. For demo, we'll just fake it.
-        setTranscript("I has went to the market yesterday and buy many thing. It was fun day.");
       };
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
@@ -57,20 +94,27 @@ export default function Speaking() {
     }
   };
 
-  // Stop recording
-  const handleStop = async () => {
+  // Stop recording (audio + live transcript)
+  const handleStop = () => {
     setRecording(false);
+    // Stop SpeechRecognition
+    if (recognitionRef.current) {
+      recognitionRef.current.stop();
+      recognitionRef.current = null;
+    }
+    // Stop audio recording
     mediaRecorderRef.current?.stop();
   };
 
-  // Submit to Gemini API
+  // Analyze button - send transcript to Gemini API and get feedback
   const handleAnalyze = async () => {
-    if (!transcript) {
+    if (!transcript.trim()) {
       toast({ title: "No transcript available", description: "Please record some speech first." });
       return;
     }
     setLoading(true);
     try {
+      // Compose Gemini prompt
       const speechText = transcript;
       const prompt = [
         {
@@ -112,15 +156,20 @@ I want you to:
       );
       const json = await apiRes.json();
 
-      // Attempt to parse Gemini output as JSON from the returned text.
+      // Try to extract strict JSON (Gemini sometimes returns markdown code).
       const text = (json?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
       let feedbackObj = null;
       try {
-        feedbackObj = JSON.parse(
-          text.match(/\{[\s\S]*\}/)?.[0] ?? text
-        );
+        // Remove markdown code fences if present
+        let cleanText = text;
+        if (cleanText.startsWith("```json")) {
+          cleanText = cleanText.replace(/^```json/, "").replace(/```$/, "").trim();
+        } else if (cleanText.startsWith("```")) {
+          cleanText = cleanText.replace(/^```/, "").replace(/```$/, "").trim();
+        }
+        feedbackObj = JSON.parse(cleanText.match(/\{[\s\S]*\}/)?.[0] ?? cleanText);
       } catch (e) {
-        feedbackObj = { raw: text }; // fallback, show as raw
+        feedbackObj = { raw: text }; // fallback: show as raw text
       }
       setFeedback(feedbackObj);
     } catch (e: any) {
@@ -129,13 +178,13 @@ I want you to:
     setLoading(false);
   };
 
-  // Highlight errors in transcript
+  // Highlight errors in transcript: error words displayed with a tooltip
   function highlightErrors(original: string, highlighted_errors?: any[]) {
     if (!highlighted_errors?.length) return original;
     let highlighted = original;
     highlighted_errors.forEach((err) => {
       if (err.error) {
-        // Naive replacement with <span> for error (ideally, better word boundary match)
+        // Naive replacement - ideally word-boundary match
         highlighted = highlighted.replace(
           new RegExp(err.error, "gi"),
           `<span class="text-red-600 font-semibold underline decoration-wavy decoration-red-500 cursor-pointer" title="${err.rule || ""}">${err.error}</span>`
@@ -325,3 +374,5 @@ I want you to:
     </div>
   );
 }
+
+// ... file is getting too long, please ask to refactor after this change!
