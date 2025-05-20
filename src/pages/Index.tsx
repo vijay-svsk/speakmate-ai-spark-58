@@ -3,6 +3,7 @@
 
 import React from "react";
 import AppSidebar from "@/components/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import { getRandomMotivationalTip } from "@/lib/motivation";
 import { BarChart, Mic, MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -134,20 +135,23 @@ function TipOfTheDayCard() {
 
 const Index = () => {
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <div className="hidden md:block">
-        <AppSidebar />
+    <SidebarProvider>
+      <div className="min-h-screen bg-gray-50 flex w-full">
+        {/* Sidebar */}
+        <div className="hidden md:block">
+          <AppSidebar />
+        </div>
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col items-center px-2 py-8 md:p-12">
+          <WelcomeCard />
+          <QuickStartPanel />
+          <ProgressSummary />
+          <TipOfTheDayCard />
+        </div>
       </div>
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col items-center px-2 py-8 md:p-12">
-        <WelcomeCard />
-        <QuickStartPanel />
-        <ProgressSummary />
-        <TipOfTheDayCard />
-      </div>
-    </div>
+    </SidebarProvider>
   );
 };
 
 export default Index;
+
