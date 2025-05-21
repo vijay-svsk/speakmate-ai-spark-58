@@ -19,9 +19,12 @@ import {
   Headphones, 
   Zap,
   Settings,
-  Play
+  Play,
+  ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useSound } from "@/lib/useSound";
+import { useEffect, useState } from "react";
 
 const navItems = [
   { title: "Dashboard", route: "/", icon: LayoutDashboard },
@@ -40,20 +43,37 @@ const navItems = [
 export function AppSidebar() {
   // Get current path to highlight active route
   const currentPath = window.location.pathname;
+  const { playSound } = useSound();
+  const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
     <Sidebar>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="font-playfair text-lg text-primary">SpeakMate</SidebarGroupLabel>
+          <SidebarGroupLabel className="font-playfair text-xl text-primary flex items-center gap-2">
+            <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-pulse">Echo.ai</span>
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild isActive={currentPath === item.route}>
-                    <Link to={item.route} className="flex items-center gap-3 text-base py-2 px-3 rounded-lg hover:bg-primary/10 transition-colors">
-                      <item.icon className="w-5 h-5" />
-                      <span>{item.title}</span>
+                  <SidebarMenuButton 
+                    asChild 
+                    isActive={currentPath === item.route}
+                    onMouseEnter={() => {
+                      setHoveredItem(item.title);
+                      playSound('keypress');
+                    }}
+                    onMouseLeave={() => setHoveredItem(null)}
+                  >
+                    <Link 
+                      to={item.route} 
+                      className={`flex items-center gap-3 text-base py-2 px-3 rounded-lg transition-all duration-300 hover:bg-primary/20 ${
+                        hoveredItem === item.title ? 'scale-105' : ''
+                      } ${currentPath === item.route ? 'bg-primary text-white shadow-lg' : 'hover:bg-primary/10'}`}
+                    >
+                      <item.icon className={`w-5 h-5 ${currentPath === item.route ? 'animate-pulse' : ''}`} />
+                      <span className="transition-all duration-300">{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

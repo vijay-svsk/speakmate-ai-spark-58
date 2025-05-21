@@ -40,13 +40,35 @@ export default {
 				},
 				primary: {
 					DEFAULT: '#9b87f5',
-					foreground: '#fff'
+					foreground: '#fff',
+					light: '#b3a4f7',
+					dark: '#7a68d4'
 				},
 				accent: {
 					DEFAULT: '#33C3F0',
+					foreground: '#fff',
+					light: '#5ed1f5',
+					dark: '#1e9bc5'
+				},
+				success: {
+					DEFAULT: '#10B981',
 					foreground: '#fff'
 				},
-				badge: '#E5DEFF'
+				warning: {
+					DEFAULT: '#F59E0B',
+					foreground: '#fff'
+				},
+				danger: {
+					DEFAULT: '#EF4444',
+					foreground: '#fff'
+				},
+				badge: '#E5DEFF',
+				neon: {
+					pink: '#FF00FF',
+					blue: '#00FFFF',
+					green: '#00FF00',
+					yellow: '#FFFF00'
+				}
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -57,6 +79,14 @@ export default {
 				'fade-in': {
 					'0%': { opacity: '0', transform: 'translateY(16px)' },
 					'100%': { opacity: '1', transform: 'translateY(0)' }
+				},
+				'fade-in-left': {
+					'0%': { opacity: '0', transform: 'translateX(-16px)' },
+					'100%': { opacity: '1', transform: 'translateX(0)' }
+				},
+				'fade-in-right': {
+					'0%': { opacity: '0', transform: 'translateX(16px)' },
+					'100%': { opacity: '1', transform: 'translateX(0)' }
 				},
 				'shake': {
 					'0%, 100%': { transform: 'translateX(0)' },
@@ -70,14 +100,40 @@ export default {
 				'flip-in': {
 					'0%': { transform: 'rotateX(90deg)', opacity: '0' },
 					'100%': { transform: 'rotateX(0)', opacity: '1' }
+				},
+				'bounce-light': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-5px)' },
+				},
+				'pulse-light': {
+					'0%, 100%': { opacity: '1' },
+					'50%': { opacity: '0.8' },
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0)' },
+					'50%': { transform: 'translateY(-10px)' },
+				},
+				'glow': {
+					'0%, 100%': { boxShadow: '0 0 5px rgba(155, 135, 245, 0.5)' },
+					'50%': { boxShadow: '0 0 20px rgba(155, 135, 245, 0.8)' },
 				}
 			},
 			animation: {
 				'fade-in': 'fade-in 0.5s cubic-bezier(.4,0,.2,1)',
+				'fade-in-left': 'fade-in-left 0.5s cubic-bezier(.4,0,.2,1)',
+				'fade-in-right': 'fade-in-right 0.5s cubic-bezier(.4,0,.2,1)',
 				'shake': 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both',
 				'confetti': 'confetti 3s ease-in-out forwards',
-				'flip-in': 'flip-in 0.5s ease-out forwards'
+				'flip-in': 'flip-in 0.5s ease-out forwards',
+				'bounce-light': 'bounce-light 2s ease-in-out infinite',
+				'pulse-light': 'pulse-light 3s ease-in-out infinite',
+				'float': 'float 3s ease-in-out infinite',
+				'glow': 'glow 2s ease-in-out infinite',
 			},
+			boxShadow: {
+				'glow-primary': '0 0 10px rgba(155, 135, 245, 0.7)',
+				'glow-accent': '0 0 10px rgba(51, 195, 240, 0.7)',
+			}
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+
+import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Volume2, VolumeX } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -6,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { useSound } from "@/lib/useSound";
 import WordGuessGame from "@/components/word-puzzle/WordGuessGame";
 import WordScrambleGame from "@/components/word-puzzle/WordScrambleGame";
+import VocabularyArcade from "@/components/word-puzzle/VocabularyArcade";
+import confetti from 'canvas-confetti';
 
 // Game options with their details
 const gameOptions = [
@@ -24,23 +27,41 @@ const gameOptions = [
     comingSoon: false,
   },
   {
-    id: "vocab-builder",
-    name: "Vocab Builder",
+    id: "vocabulary-arcade",
+    name: "Vocabulary Arcade",
     description: "Match words with their correct definitions",
     icon: "📚",
-    comingSoon: true,
+    comingSoon: false,
   },
 ];
 
 const WordPuzzle = () => {
   const { isMuted, toggleMute, playSound } = useSound();
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
+  const [hoveredGame, setHoveredGame] = useState<string | null>(null);
+
+  useEffect(() => {
+    // Play sound when component mounts
+    playSound('valid');
+  }, [playSound]);
 
   const selectGame = (gameId: string) => {
     if (gameOptions.find(game => game.id === gameId)?.comingSoon) {
       return; // Don't select games marked as coming soon
     }
     setSelectedGame(gameId);
+    playSound('keypress');
+    
+    // Trigger confetti when selecting a game
+    confetti({
+      particleCount: 50,
+      spread: 60,
+      origin: { y: 0.2 }
+    });
+  };
+
+  const handleBack = () => {
+    setSelectedGame(null);
     playSound('keypress');
   };
 
@@ -49,8 +70,8 @@ const WordPuzzle = () => {
       <div className="container px-4 py-8 mx-auto">
         <header className="mb-8 flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-primary">Word Puzzles</h1>
-            <p className="text-muted-foreground mt-1">
+            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Word Puzzles</h1>
+            <p className="text-muted-foreground mt-2">
               Fun and challenging word games to improve your English
             </p>
           </div>
@@ -59,11 +80,11 @@ const WordPuzzle = () => {
             size="icon"
             onClick={toggleMute}
             title={isMuted ? "Enable sound" : "Mute sound"}
-            className="h-10 w-10 rounded-full hover:bg-primary/10"
+            className="h-10 w-10 rounded-full hover:bg-primary/10 hover:scale-110 transition-all duration-300"
           >
             {isMuted ? 
-              <VolumeX className="h-5 w-5" /> : 
-              <Volume2 className="h-5 w-5" />
+              <VolumeX className="h-5 w-5 text-primary" /> : 
+              <Volume2 className="h-5 w-5 text-primary" />
             }
           </Button>
         </header>
@@ -74,14 +95,19 @@ const WordPuzzle = () => {
               <Card 
                 key={game.id}
                 onClick={() => selectGame(game.id)}
-                className={`cursor-pointer transform transition-all duration-200 hover:scale-105 hover:shadow-lg border-primary/10 ${
+                onMouseEnter={() => {
+                  setHoveredGame(game.id);
+                  playSound('keypress');
+                }}
+                onMouseLeave={() => setHoveredGame(null)}
+                className={`cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl border-primary/10 ${
                   game.comingSoon ? 'opacity-70' : 'hover:border-primary/30'
-                } animate-fade-in`}
+                } animate-fade-in ${hoveredGame === game.id ? 'shadow-lg border-primary' : ''}`}
               >
                 <CardHeader className="pb-2">
                   <CardTitle className="flex items-center gap-2">
-                    <span className="text-2xl">{game.icon}</span>
-                    <span>{game.name}</span>
+                    <span className={`text-2xl ${hoveredGame === game.id ? 'animate-pulse' : ''}`}>{game.icon}</span>
+                    <span className="bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">{game.name}</span>
                     {game.comingSoon && (
                       <span className="ml-auto text-xs bg-primary/20 text-primary px-2 py-1 rounded-full">
                         Coming Soon
@@ -96,15 +122,17 @@ const WordPuzzle = () => {
             ))}
           </div>
         ) : (
-          <div className="mt-4">
+          <div className="mt-4 animate-fade-in">
             {selectedGame === "word-guess" && <WordGuessGame />}
             {selectedGame === "word-scramble" && <WordScrambleGame />}
-            {/* Other game components would be rendered here when implemented */}
+            {selectedGame === "vocabulary-arcade" && <VocabularyArcade />}
+            
             <Button 
-              onClick={() => setSelectedGame(null)} 
+              onClick={handleBack} 
               variant="outline"
-              className="mt-4"
+              className="mt-6 hover:bg-primary/10 hover:scale-105 transition-all duration-300 flex items-center gap-2"
             >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
               Back to Game Selection
             </Button>
           </div>
