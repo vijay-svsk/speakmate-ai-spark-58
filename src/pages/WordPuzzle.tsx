@@ -3,6 +3,8 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { Volume2, VolumeX } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useSound } from "@/lib/useSound";
+import WordGuessGame from "@/components/word-puzzle/WordGuessGame";
 
 // Game options with their details
 const gameOptions = [
@@ -30,20 +32,15 @@ const gameOptions = [
 ];
 
 const WordPuzzle = () => {
-  const [soundEnabled, setSoundEnabled] = useState(true);
+  const { isMuted, toggleMute, playSound } = useSound();
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
-
-  const toggleSound = () => {
-    setSoundEnabled(!soundEnabled);
-    // Here we would implement actual sound toggling with a library like Howler.js
-  };
 
   const selectGame = (gameId: string) => {
     if (gameOptions.find(game => game.id === gameId)?.comingSoon) {
       return; // Don't select games marked as coming soon
     }
     setSelectedGame(gameId);
-    // Here we would play a selection sound if sound is enabled
+    playSound('keypress');
   };
 
   return (
@@ -59,13 +56,13 @@ const WordPuzzle = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleSound}
-            title={soundEnabled ? "Mute sound" : "Enable sound"}
+            onClick={toggleMute}
+            title={isMuted ? "Enable sound" : "Mute sound"}
             className="h-10 w-10 rounded-full hover:bg-primary/10"
           >
-            {soundEnabled ? 
-              <Volume2 className="h-5 w-5" /> : 
-              <VolumeX className="h-5 w-5" />
+            {isMuted ? 
+              <VolumeX className="h-5 w-5" /> : 
+              <Volume2 className="h-5 w-5" />
             }
           </Button>
         </header>
@@ -112,26 +109,6 @@ const WordPuzzle = () => {
         )}
       </div>
     </AppLayout>
-  );
-};
-
-// Placeholder for the Word Guess game component - to be expanded
-const WordGuessGame = () => {
-  return (
-    <div className="animate-fade-in">
-      <h2 className="text-2xl font-bold mb-4">Word Guess</h2>
-      <p className="mb-6 text-muted-foreground">
-        Try to guess the 5-letter word in 6 attempts. After each guess, the tiles will change color to show how close your guess was.
-      </p>
-      <div className="flex flex-col items-center justify-center">
-        <div className="mb-6">
-          <p className="text-center text-lg">Game coming soon!</p>
-          <p className="text-center text-muted-foreground">
-            We're working hard to bring you an amazing word puzzle experience.
-          </p>
-        </div>
-      </div>
-    </div>
   );
 };
 
