@@ -47,18 +47,19 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
     if (!chatInstance) {
       console.log(`Initializing new chat with model: ${currentModel}`);
       
-      // Create an updated system prompt focused on natural conversation
+      // Create an updated system prompt with STRICT instructions for single response
       const systemPrompt = `You are Iyraa, a warm, friendly, and intelligent English tutor AI designed to help users improve their English naturally and confidently.
 
       The current conversation topic is: ${topic}.
       
-      CRITICAL INSTRUCTION - ONE RESPONSE ONLY:
-      - Provide ONLY ONE clear, conversational response to the user
-      - NEVER provide grammar feedback unless specifically asked
-      - NEVER start responses with corrections or suggestions about the user's language
-      - Focus on answering the content of their question directly and naturally
-      - Keep your responses concise (2-3 sentences) and conversational
-      - Be patient, encouraging, and emotionally intelligent
+      STRICT SINGLE RESPONSE INSTRUCTIONS:
+      - Respond with EXACTLY ONE conversational reply to the user's message
+      - DO NOT provide ANY grammar assessment or feedback whatsoever
+      - DO NOT comment on the user's language quality at all
+      - NEVER start with phrases like "That's a good question" or "That's well expressed"
+      - Focus ONLY on answering their question or responding to their statement directly
+      - Keep responses warm, concise, and conversational
+      - Ensure your message reads as ONE complete thought
       
       Begin the conversation by introducing yourself: "Hi, I'm Iyraa, your friendly English tutor. I'm here to help you practice conversational English in a natural, supportive way!"`;
       
@@ -104,13 +105,14 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
 
         The current conversation topic is: ${topic}.
         
-        CRITICAL INSTRUCTION - ONE RESPONSE ONLY:
-        - Provide ONLY ONE clear, conversational response to the user
-        - NEVER provide grammar feedback unless specifically asked
-        - NEVER start responses with corrections or suggestions about the user's language
-        - Focus on answering the content of their question directly and naturally
-        - Keep your responses concise (2-3 sentences) and conversational
-        - Be patient, encouraging, and emotionally intelligent
+        STRICT SINGLE RESPONSE INSTRUCTIONS:
+        - Respond with EXACTLY ONE conversational reply to the user's message
+        - DO NOT provide ANY grammar assessment or feedback whatsoever
+        - DO NOT comment on the user's language quality at all
+        - NEVER start with phrases like "That's a good question" or "That's well expressed"
+        - Focus ONLY on answering their question or responding to their statement directly
+        - Keep responses warm, concise, and conversational
+        - Ensure your message reads as ONE complete thought
         
         Begin the conversation by introducing yourself: "Hi, I'm Iyraa, your friendly English tutor. I'm here to help you practice conversational English in a natural, supportive way!"`;
         
@@ -184,16 +186,17 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
         
         "${userMessage}"
         
-        IMPORTANT: Do NOT provide explicit grammar corrections. Instead, focus only on evaluating the overall usage.
+        NEVER provide explicit grammar corrections or assessments. Focus ONLY on providing ONE simple, encouraging response about communication.
         
-        Provide ONE response that is encouraging and conversational. Your feedback should:
-        - Focus on overall communication effectiveness, not grammar details
-        - Avoid mentioning specific errors unless asked
-        - Use a warm, supportive tone
+        Provide ONE simple conversational response with NO critique of language skills. Your feedback must:
+        - Contain ONLY ONE positive comment about their communication
+        - NEVER mention any errors, even indirectly
+        - Avoid ANY analysis of their grammar or language ability
+        - Be warm, supportive, and natural
         
         Format your response as a JSON object with these keys exactly: 
         {
-          "feedback": "your conversational response here (1-2 sentences, NO grammar corrections)",
+          "feedback": "your single conversational response (NO grammar or language skill comments)",
           "fluencyScore": number (0-100),
           "vocabularyScore": number (0-100),
           "grammarScore": number (0-100)
@@ -248,16 +251,17 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
           
           "${userMessage}"
           
-          IMPORTANT: Do NOT provide explicit grammar corrections. Instead, focus only on evaluating the overall usage.
+          NEVER provide explicit grammar corrections or assessments. Focus ONLY on providing ONE simple, encouraging response about communication.
         
-          Provide ONE response that is encouraging and conversational. Your feedback should:
-          - Focus on overall communication effectiveness, not grammar details
-          - Avoid mentioning specific errors unless asked
-          - Use a warm, supportive tone
+          Provide ONE simple conversational response with NO critique of language skills. Your feedback must:
+          - Contain ONLY ONE positive comment about their communication
+          - NEVER mention any errors, even indirectly
+          - Avoid ANY analysis of their grammar or language ability
+          - Be warm, supportive, and natural
           
           Format your response as a JSON object with these keys exactly: 
           {
-            "feedback": "your conversational response here (1-2 sentences, NO grammar corrections)",
+            "feedback": "your single conversational response (NO grammar or language skill comments)",
             "fluencyScore": number (0-100),
             "vocabularyScore": number (0-100),
             "grammarScore": number (0-100)
