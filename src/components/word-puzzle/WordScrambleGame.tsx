@@ -386,7 +386,7 @@ const WordScrambleGame = () => {
               key={`tile-${index}-${letter}`}
               letter={letter}
               isHinted={false}
-              isCorrect={null}
+              isCorrect={isCorrect}
               index={index}
             />
           ))}
