@@ -70,7 +70,9 @@ const WordScrambleGame = () => {
         onEnd: (evt) => {
           const letterTile = evt.item;
           const letter = letterTile.getAttribute('data-letter') || '';
-          const targetPot = evt.originalEvent?.target as HTMLElement;
+          
+          // Fix: Cast evt to any to access originalEvent safely
+          const targetPot = (evt as any).originalEvent?.target as HTMLElement;
           const potElement = targetPot?.closest('[data-pot-index]');
           
           if (potElement) {
@@ -453,7 +455,8 @@ const WordScrambleGame = () => {
         </div>
       </Card>
 
-      <style jsx global>{`
+      {/* Fix: Update style tag to use correct React syntax */}
+      <style>{`
         .dragging-tile {
           transform: scale(1.1);
           opacity: 0.8;
