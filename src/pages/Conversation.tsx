@@ -53,7 +53,7 @@ const ConversationAI = () => {
       const initConversation = async () => {
         try {
           resetChatHistory(activeTopic);
-          const initialGreeting = "Hello! I'm your AI conversation partner. Let's practice speaking English together. What would you like to talk about today?";
+          const initialGreeting = "Hi, I'm Iyraa, your friendly English tutor. I'm here to help you learn, practice, and fall in love with English — one conversation at a time! What would you like to talk about today?";
           setConversationHistory([{ speaker: 'ai', text: initialGreeting }]);
           setCurrentQuestion(initialGreeting);
         } catch (error) {
