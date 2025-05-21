@@ -19,10 +19,10 @@ const getGenAIInstance = (): GoogleGenerativeAI => {
 // Store chat instance for conversation continuity
 let chatInstance;
 
-// Model configuration with fallbacks - Updated model names for API v1
+// Model configuration with updated models that have better compatibility
 const MODELS = {
-  PRIMARY: "gemini-pro", // Updated from gemini-1.0-pro to gemini-pro
-  FALLBACK: "gemini-pro",    // Legacy model name as fallback
+  PRIMARY: "gemini-1.5-flash", // Updated as recommended for better compatibility
+  FALLBACK: "gemini-pro",      // Legacy model as fallback
 };
 
 // Reset the chat history for a new conversation
@@ -45,42 +45,45 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
     
     // Initialize chat if it doesn't exist
     if (!chatInstance) {
+      console.log(`Initializing new chat with model: ${currentModel}`);
+      
       // Create a system prompt based on topic
       const systemPrompt = `You are an AI English conversation partner helping someone practice their English skills. 
       The current conversation topic is: ${topic}. 
       Be supportive, conversational, and provide gentle feedback on grammar or vocabulary when appropriate. 
       Keep your responses concise (2-3 sentences) and engaging.`;
       
-      // Start a new chat
-      chatInstance = model.startChat({
-        history: [
-          {
-            role: "user",
-            parts: `System instruction (please follow these guidelines): ${systemPrompt}`
-          }
-        ],
-        generationConfig: {
-          temperature: 0.7,
-          topK: 40,
-          topP: 0.95,
-          maxOutputTokens: 1000,
-        },
-      });
+      try {
+        // Start a new chat with empty history first
+        chatInstance = model.startChat({ history: [] });
+        
+        // Send the system prompt as the first message
+        const systemResult = await chatInstance.sendMessage(
+          `System instruction (please follow these guidelines): ${systemPrompt}`
+        );
+        await systemResult.response;
+        console.log("System prompt sent successfully");
+      } catch (error) {
+        console.error("Error initializing chat:", error);
+        throw error;
+      }
     }
     
     try {
       // Send the message using the chat instance
+      console.log(`Sending message to ${currentModel}: "${userMessage}"`);
       const result = await chatInstance.sendMessage(userMessage);
       const response = await result.response;
       const responseText = response.text();
+      console.log(`Got response: "${responseText.substring(0, 50)}..."`);
       
       return responseText;
     } catch (error: any) {
       console.error(`Error with model ${currentModel}:`, error);
       
-      // If we get a 429 error (quota exceeded) and we're using the primary model, try the fallback
-      if (error.message && error.message.includes("429") && currentModel === MODELS.PRIMARY) {
-        console.log("Trying fallback model due to quota limits...");
+      // If we get a 429 error (quota exceeded) or other API error, try the fallback
+      if (error.message && (error.message.includes("429") || error.message.includes("400")) && currentModel === MODELS.PRIMARY) {
+        console.log("Trying fallback model due to API error...");
         
         // Reset chat instance to use the fallback model
         chatInstance = null;
@@ -93,20 +96,12 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
         Be supportive, conversational, and provide gentle feedback on grammar or vocabulary when appropriate. 
         Keep your responses concise (2-3 sentences) and engaging.`;
         
-        chatInstance = model.startChat({
-          history: [
-            {
-              role: "user",
-              parts: `System instruction (please follow these guidelines): ${systemPrompt}`
-            }
-          ],
-          generationConfig: {
-            temperature: 0.7,
-            topK: 40,
-            topP: 0.95,
-            maxOutputTokens: 1000,
-          },
-        });
+        chatInstance = model.startChat({ history: [] });
+        
+        // Send the system prompt
+        await (await chatInstance.sendMessage(
+          `System instruction (please follow these guidelines): ${systemPrompt}`
+        )).response;
         
         // Try again with the fallback model
         const fallbackResult = await chatInstance.sendMessage(userMessage);
@@ -152,6 +147,8 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
     let model = genAI.getGenerativeModel({ model: currentModel });
     
     try {
+      console.log(`Getting language feedback using model: ${currentModel}`);
+      
       // Create a new chat session for the feedback
       const feedbackChat = model.startChat({
         generationConfig: {
@@ -186,6 +183,7 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
       const result = await feedbackChat.sendMessage(prompt);
       const response = await result.response;
       const text = response.text().trim();
+      console.log(`Got feedback response (first 50 chars): "${text.substring(0, 50)}..."`);
       
       // Extract the JSON from the response
       // First try to parse the whole response as JSON
@@ -204,9 +202,9 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
     } catch (error: any) {
       console.error(`Error with model ${currentModel}:`, error);
       
-      // If we get a 429 error (quota exceeded) and we're using the primary model, try the fallback
-      if (error.message && error.message.includes("429") && currentModel === MODELS.PRIMARY) {
-        console.log("Trying fallback model for feedback due to quota limits...");
+      // If we get a 429 error (quota exceeded) or any API error and we're using the primary model, try the fallback
+      if (error.message && (error.message.includes("429") || error.message.includes("400")) && currentModel === MODELS.PRIMARY) {
+        console.log("Trying fallback model for feedback due to API error...");
         
         // Use the fallback model
         currentModel = MODELS.FALLBACK;

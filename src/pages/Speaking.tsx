@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -204,9 +203,9 @@ Respond as clean JSON ONLY, using keys:
         }
       ];
 
-      // Updated API endpoint to use correct model name (gemini-pro instead of gemini-2.0-flash)
+      // Updated API endpoint to use the gemini-1.5-flash model for better compatibility
       const apiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
