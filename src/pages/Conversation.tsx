@@ -41,9 +41,10 @@ const ConversationAI = () => {
             label: "Go to Settings",
             onClick: () => navigate('/settings')
           },
-          duration: 8000,
+          duration: 10000, // Increased duration for better visibility
         }
       );
+      setHasApiError(true);
     }
   }, [navigate]);
 

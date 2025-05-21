@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
 import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 const formSchema = z.object({
   apiKey: z.string().min(1, "API key is required"),
@@ -24,6 +25,7 @@ type FormValues = z.infer<typeof formSchema>;
 export function SettingsForm() {
   const { toast: toastUI } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showApiKey, setShowApiKey] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -89,10 +91,20 @@ export function SettingsForm() {
   const handlePaste = async (e: React.ClipboardEvent) => {
     try {
       const clipboardText = e.clipboardData.getData('text');
-      form.setValue('apiKey', clipboardText.trim());
+      const trimmedKey = clipboardText.trim();
+      form.setValue('apiKey', trimmedKey);
+      
+      // Automatically save to localStorage when pasting
+      localStorage.setItem("gemini-api-key", trimmedKey);
+      toast.success("API key pasted and saved temporarily. Click 'Save Settings' to confirm.");
     } catch (error) {
       toast.error("Failed to paste from clipboard");
     }
+  };
+
+  // Toggle API key visibility
+  const toggleApiKeyVisibility = () => {
+    setShowApiKey(!showApiKey);
   };
 
   return (
@@ -112,14 +124,26 @@ export function SettingsForm() {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Gemini API Key</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter your Gemini API key"
-                      type="password"
-                      {...field}
-                      onPaste={handlePaste}
-                    />
-                  </FormControl>
+                  <div className="relative">
+                    <FormControl>
+                      <Input
+                        placeholder="Enter your Gemini API key"
+                        type={showApiKey ? "text" : "password"}
+                        {...field}
+                        onPaste={handlePaste}
+                        className="pr-10"
+                      />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={toggleApiKeyVisibility}
+                      className="absolute right-0 top-0 h-full px-3 py-2"
+                    >
+                      {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </Button>
+                  </div>
                   <FormMessage />
                   <p className="text-xs text-muted-foreground">
                     Get your API key from{" "}
