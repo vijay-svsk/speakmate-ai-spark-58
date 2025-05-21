@@ -6,8 +6,9 @@ const DEFAULT_API_KEY = "AIzaSyBcZENeo3gkU6YVQYKCYf8EhOltT87q4es";
 
 // Initialize with a function to get the API key (from localStorage if available)
 const getApiKey = (): string => {
+  // Always get the freshest key from localStorage (no caching)
   const userProvidedKey = localStorage.getItem("gemini-api-key");
-  return userProvidedKey && userProvidedKey.length > 0 ? userProvidedKey : DEFAULT_API_KEY;
+  return userProvidedKey && userProvidedKey.trim().length > 0 ? userProvidedKey.trim() : DEFAULT_API_KEY;
 };
 
 // Create a function to get a fresh instance of the API with the current key

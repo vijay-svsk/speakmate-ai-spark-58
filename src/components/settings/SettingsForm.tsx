@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   apiKey: z.string().min(1, "API key is required"),
@@ -21,7 +22,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 export function SettingsForm() {
-  const { toast } = useToast();
+  const { toast: toastUI } = useToast();
   const [isLoading, setIsLoading] = useState(false);
 
   const form = useForm<FormValues>({
@@ -55,23 +56,42 @@ export function SettingsForm() {
 
     try {
       // Save to localStorage
-      localStorage.setItem("gemini-api-key", data.apiKey);
+      localStorage.setItem("gemini-api-key", data.apiKey.trim());
       localStorage.setItem("practice-duration", data.practiceDuration);
       localStorage.setItem("student-grade", data.grade);
       localStorage.setItem("skill-level", data.level);
 
-      toast({
+      // Show both toast types for better visibility
+      toastUI({
         title: "Settings saved",
         description: "Your settings have been saved successfully.",
       });
+      
+      toast.success("Settings saved successfully! Your API key is now active.");
+      
+      // Force a reload to ensure the new API key is used by all components
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
     } catch (error) {
-      toast({
+      toastUI({
         title: "Error",
         description: "There was an error saving your settings.",
         variant: "destructive",
       });
+      toast.error("Failed to save settings. Please try again.");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Handle paste from clipboard
+  const handlePaste = async (e: React.ClipboardEvent) => {
+    try {
+      const clipboardText = e.clipboardData.getData('text');
+      form.setValue('apiKey', clipboardText.trim());
+    } catch (error) {
+      toast.error("Failed to paste from clipboard");
     }
   };
 
@@ -97,6 +117,7 @@ export function SettingsForm() {
                       placeholder="Enter your Gemini API key"
                       type="password"
                       {...field}
+                      onPaste={handlePaste}
                     />
                   </FormControl>
                   <FormMessage />

@@ -5,6 +5,7 @@ import AppSidebar from "@/components/app-sidebar";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { sendMessageToGemini, resetChatHistory, getLanguageFeedback } from '@/lib/gemini-api';
 import ConversationContainer from '@/components/conversation/ConversationContainer';
+import { useNavigate } from 'react-router-dom';
 
 const ConversationAI = () => {
   const [activeTopic, setActiveTopic] = useState("daily_life");
@@ -19,6 +20,8 @@ const ConversationAI = () => {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [hasApiError, setHasApiError] = useState(false);
   
+  const navigate = useNavigate();
+  
   const { 
     transcript, 
     startListening, 
@@ -26,6 +29,23 @@ const ConversationAI = () => {
     resetTranscript, 
     supported 
   } = useSpeechRecognition();
+
+  // Check for API key on mount
+  useEffect(() => {
+    const apiKey = localStorage.getItem('gemini-api-key');
+    if (!apiKey || apiKey.trim() === '') {
+      toast.warning(
+        "No API key found. Please set your Gemini API key in Settings",
+        {
+          action: {
+            label: "Go to Settings",
+            onClick: () => navigate('/settings')
+          },
+          duration: 8000,
+        }
+      );
+    }
+  }, [navigate]);
 
   // Initialize conversation with a greeting
   useEffect(() => {
