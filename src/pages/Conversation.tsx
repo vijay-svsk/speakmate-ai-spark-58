@@ -1,9 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { ProgressBar } from "@/components/ui/progress";
+import { Progress } from "@/components/ui/progress";
 import { 
   Card, 
   CardContent, 
@@ -282,21 +281,21 @@ const ConversationAI = () => {
                       <Label>Fluency</Label>
                       <span className="text-sm text-muted-foreground">{fluencyScore}%</span>
                     </div>
-                    <ProgressBar value={fluencyScore} className="h-2" />
+                    <Progress value={fluencyScore} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between mb-1">
                       <Label>Vocabulary</Label>
                       <span className="text-sm text-muted-foreground">{vocabularyScore}%</span>
                     </div>
-                    <ProgressBar value={vocabularyScore} className="h-2" />
+                    <Progress value={vocabularyScore} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between mb-1">
                       <Label>Grammar</Label>
                       <span className="text-sm text-muted-foreground">{grammarScore}%</span>
                     </div>
-                    <ProgressBar value={grammarScore} className="h-2" />
+                    <Progress value={grammarScore} className="h-2" />
                   </div>
                 </div>
               </CardContent>
