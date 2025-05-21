@@ -57,14 +57,14 @@ const ConversationDisplay = ({
     <Card>
       <CardHeader>
         <CardTitle>Chat with Iyraa</CardTitle>
-        <CardDescription>Practice your English with Iyraa, your friendly AI language tutor</CardDescription>
+        <CardDescription>Have a natural conversation with Iyraa, your friendly AI language tutor</CardDescription>
       </CardHeader>
       <CardContent>
         {hasApiError && (
           <Alert variant="destructive" className="mb-4">
             <AlertOctagon className="h-4 w-4" />
             <AlertDescription>
-              There was an error connecting to the AI. Please try again or choose a different topic.
+              There was an error connecting to the AI. Please try again or check your API key in Settings.
             </AlertDescription>
           </Alert>
         )}
@@ -85,8 +85,9 @@ const ConversationDisplay = ({
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="h-6 w-6 absolute -top-3 -right-3 rounded-full bg-white shadow-sm hover:bg-gray-100"
+                      className="h-6 w-6 absolute top-1 right-1 rounded-full hover:bg-gray-200"
                       onClick={() => entry.text && onSpeakMessage(entry.text)}
+                      title="Listen to this message"
                     >
                       <Volume className="h-3 w-3" />
                     </Button>
@@ -155,29 +156,31 @@ const RecordingControls = ({
     <>
       <div className="flex items-center justify-between w-full mb-4">
         <div className="text-lg font-medium flex items-center gap-2">
-          {isListening ? 'Listening...' : currentQuestion}
+          {isListening ? 'Listening...' : 
+           currentQuestion ? currentQuestion : "Press the microphone to start speaking"}
           {isSpeaking && (
             <Button 
               onClick={onStopSpeaking} 
               variant="outline"
               size="sm"
-              className="ml-2"
+              className="ml-2 flex items-center gap-1"
             >
-              <VolumeX className="h-4 w-4 mr-1" /> Stop Audio
+              <VolumeX className="h-4 w-4" /> Stop
             </Button>
           )}
         </div>
         <Button
           onClick={isListening ? onStopRecording : onStartRecording}
           variant={isListening ? "destructive" : "default"}
-          className="rounded-full h-12 w-12 p-0"
+          className="rounded-full h-12 w-12 p-0 flex items-center justify-center"
           disabled={isProcessing}
+          title={isListening ? "Stop recording" : "Start recording"}
         >
           {isListening ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
         </Button>
       </div>
       {isListening && (
-        <div className="w-full text-center font-medium">
+        <div className="w-full text-center font-medium bg-muted/30 p-2 rounded-md animate-pulse">
           {transcript ? transcript : 'Waiting for you to speak...'}
         </div>
       )}
