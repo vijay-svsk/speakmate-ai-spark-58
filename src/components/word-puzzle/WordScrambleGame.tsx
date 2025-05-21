@@ -284,7 +284,7 @@ const WordScrambleGame = () => {
   }
 
   // If game is completed, show game over screen
-  if (isCorrect === true) {
+  if (isCorrect) {
     return (
       <GameOverScreen 
         hasWon={true}
@@ -386,7 +386,7 @@ const WordScrambleGame = () => {
               key={`tile-${index}-${letter}`}
               letter={letter}
               isHinted={false}
-              isCorrect={isCorrect}
+              isCorrect={!!isCorrect}
               index={index}
             />
           ))}
