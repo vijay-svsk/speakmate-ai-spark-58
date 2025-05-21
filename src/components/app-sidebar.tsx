@@ -9,7 +9,17 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
-import { LayoutDashboard, Mic, MessageSquare, Award, Book, BarChart, Headphones, Zap } from "lucide-react";
+import { 
+  LayoutDashboard, 
+  Mic, 
+  MessageSquare, 
+  Award, 
+  Book, 
+  BarChart, 
+  Headphones, 
+  Zap,
+  Settings 
+} from "lucide-react";
 import { Link } from "react-router-dom";
 
 const navItems = [
@@ -21,7 +31,8 @@ const navItems = [
   { title: "Story Builder", route: "/story", icon: Book },
   { title: "Vocabulary Trainer", route: "/vocabulary", icon: Book },
   { title: "Grammar Clinic", route: "/grammar", icon: Book },
-  { title: "Progress Report", route: "/progress", icon: BarChart }
+  { title: "Progress Report", route: "/progress", icon: BarChart },
+  { title: "Settings", route: "/settings", icon: Settings }
 ];
 
 export function AppSidebar() {

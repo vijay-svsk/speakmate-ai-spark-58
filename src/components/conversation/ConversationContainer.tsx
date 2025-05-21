@@ -3,6 +3,9 @@ import React from 'react';
 import ConversationDisplay from './ConversationDisplay';
 import PerformanceMetrics from './PerformanceMetrics';
 import TopicSelector from './TopicSelector';
+import { Link } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { Settings } from 'lucide-react';
 
 interface ConversationContainerProps {
   activeTopic: string;
@@ -46,14 +49,33 @@ const ConversationContainer = ({
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold text-primary">Conversation AI</h1>
-          <TopicSelector 
-            activeTopic={activeTopic}
-            onTopicChange={onTopicChange}
-            disabled={isProcessing || isListening}
-          />
+          <div className="flex items-center gap-2">
+            <TopicSelector 
+              activeTopic={activeTopic}
+              onTopicChange={onTopicChange}
+              disabled={isProcessing || isListening}
+            />
+            <Button variant="outline" size="sm" asChild>
+              <Link to="/settings" className="flex items-center gap-1">
+                <Settings className="w-4 h-4" />
+                <span>Settings</span>
+              </Link>
+            </Button>
+          </div>
         </div>
 
-        {/* Only wrap the button in tooltip, not the entire conversation display */}
+        {hasApiError && (
+          <div className="bg-amber-50 border border-amber-200 rounded-md p-4 mb-4">
+            <p className="text-amber-700">
+              There seems to be an issue with the Gemini API. Please check your API key in{" "}
+              <Link to="/settings" className="text-primary underline font-medium">
+                Settings
+              </Link>
+              .
+            </p>
+          </div>
+        )}
+
         <ConversationDisplay 
           conversationHistory={conversationHistory}
           currentQuestion={currentQuestion}

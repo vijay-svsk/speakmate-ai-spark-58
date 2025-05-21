@@ -1,9 +1,19 @@
 
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-// Initialize the Gemini API with your API key
-const API_KEY = "AIzaSyBcZENeo3gkU6YVQYKCYf8EhOltT87q4es";
-const genAI = new GoogleGenerativeAI(API_KEY);
+// Default API key (will be overridden by user-provided key if available)
+const DEFAULT_API_KEY = "AIzaSyBcZENeo3gkU6YVQYKCYf8EhOltT87q4es";
+
+// Initialize with a function to get the API key (from localStorage if available)
+const getApiKey = (): string => {
+  const userProvidedKey = localStorage.getItem("gemini-api-key");
+  return userProvidedKey && userProvidedKey.length > 0 ? userProvidedKey : DEFAULT_API_KEY;
+};
+
+// Create a function to get a fresh instance of the API with the current key
+const getGenAIInstance = (): GoogleGenerativeAI => {
+  return new GoogleGenerativeAI(getApiKey());
+};
 
 // Store chat instance for conversation continuity
 let chatInstance;
@@ -25,6 +35,9 @@ export const resetChatHistory = (topic: string): void => {
 // Send message to Gemini and get response
 export const sendMessageToGemini = async (userMessage: string, topic: string): Promise<string> => {
   try {
+    // Get fresh instance with current API key
+    const genAI = getGenAIInstance();
+    
     // Try with primary model first
     let currentModel = MODELS.PRIMARY;
     let model = genAI.getGenerativeModel({ model: currentModel });
@@ -107,7 +120,18 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
     }
   } catch (error: any) {
     console.error("Error with Gemini API:", error);
-    return `Sorry, I encountered an error. You may have reached API rate limits. Please try again in a few minutes.`;
+    
+    // Custom message for API key errors
+    if (error.message && error.message.includes("API key")) {
+      return `There seems to be an issue with your API key. Please check your settings and make sure you've entered a valid Google Gemini API key.`;
+    }
+    
+    // Custom message for rate limit errors
+    if (error.message && error.message.includes("429")) {
+      return `You've reached the API rate limit. Please try again in a few minutes or use a different API key in the Settings page.`;
+    }
+    
+    return `Sorry, I encountered an error. Please check the Settings page to ensure your API key is correctly set up.`;
   }
 };
 
@@ -119,6 +143,9 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
   grammarScore: number
 }> => {
   try {
+    // Get fresh instance with current API key
+    const genAI = getGenAIInstance();
+    
     // Try with primary model first
     let currentModel = MODELS.PRIMARY;
     let model = genAI.getGenerativeModel({ model: currentModel });
@@ -236,8 +263,19 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
     }
   } catch (error: any) {
     console.error("Error getting language feedback:", error);
+    
+    // Custom error message based on error type
+    if (error.message && error.message.includes("API key")) {
+      return {
+        feedback: "Please check your API key in Settings.",
+        fluencyScore: 50,
+        vocabularyScore: 50,
+        grammarScore: 50
+      };
+    }
+    
     return {
-      feedback: "Could not analyze your response at this time. You may have reached API rate limits.",
+      feedback: "Could not analyze your response. Check your API key in Settings.",
       fluencyScore: 50,
       vocabularyScore: 50,
       grammarScore: 50
