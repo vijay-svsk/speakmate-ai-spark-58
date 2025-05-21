@@ -8,8 +8,9 @@ import {
   CardContent,
   CardFooter
 } from "@/components/ui/card";
-import { MessageSquare, User, Mic, MicOff } from 'lucide-react';
+import { MessageSquare, User, Mic, MicOff, AlertOctagon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 type ConversationEntry = {
   speaker: 'ai' | 'user';
@@ -44,6 +45,11 @@ const ConversationDisplay = ({
     }
   }, [conversationHistory]);
 
+  // Check if there's an error in the conversation
+  const hasError = conversationHistory.some(entry => 
+    entry.speaker === 'ai' && entry.text.includes('Sorry, I encountered an error')
+  );
+
   return (
     <Card>
       <CardHeader>
@@ -51,6 +57,14 @@ const ConversationDisplay = ({
         <CardDescription>Practice your English speaking with an AI conversation partner</CardDescription>
       </CardHeader>
       <CardContent>
+        {hasError && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertOctagon className="h-4 w-4" />
+            <AlertDescription>
+              There was an error connecting to the AI. Please try again or choose a different topic.
+            </AlertDescription>
+          </Alert>
+        )}
         <div className="h-96 overflow-y-auto border rounded-lg p-4">
           {conversationHistory.map((entry, index) => (
             <div key={index} className={`flex mb-4 ${entry.speaker === 'ai' ? 'justify-start' : 'justify-end'}`}>
