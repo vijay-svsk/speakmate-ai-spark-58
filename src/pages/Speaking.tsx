@@ -1,3 +1,4 @@
+
 import React, { useRef, useState, useEffect } from "react";
 import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -203,15 +204,21 @@ Respond as clean JSON ONLY, using keys:
         }
       ];
 
+      // Updated API endpoint to use correct model name (gemini-pro instead of gemini-2.0-flash)
       const apiRes = await fetch(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ contents: prompt }),
         }
       );
+      
+      // Log the API call for debugging
+      console.log("API response status:", apiRes.status);
+      
       const json = await apiRes.json();
+      console.log("API response:", json);
 
       // Try to extract strict JSON (Gemini sometimes returns markdown code).
       const text = (json?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
@@ -226,10 +233,12 @@ Respond as clean JSON ONLY, using keys:
         }
         feedbackObj = JSON.parse(cleanText.match(/\{[\s\S]*\}/)?.[0] ?? cleanText);
       } catch (e) {
+        console.error("Error parsing JSON:", e);
         feedbackObj = { raw: text }; // fallback: show as raw text
       }
       setFeedback(feedbackObj);
     } catch (e: any) {
+      console.error("Analysis error:", e);
       toast.error("Analysis failed. Could not reach Gemini API.");
     }
     setLoading(false);

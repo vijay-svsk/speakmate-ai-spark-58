@@ -19,9 +19,9 @@ const getGenAIInstance = (): GoogleGenerativeAI => {
 // Store chat instance for conversation continuity
 let chatInstance;
 
-// Model configuration with fallbacks
+// Model configuration with fallbacks - Updated model names for API v1
 const MODELS = {
-  PRIMARY: "gemini-1.0-pro", // Use 1.0 as primary since it has higher quota limits
+  PRIMARY: "gemini-pro", // Updated from gemini-1.0-pro to gemini-pro
   FALLBACK: "gemini-pro",    // Legacy model name as fallback
 };
 

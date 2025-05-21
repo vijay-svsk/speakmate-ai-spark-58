@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { toast } from "sonner";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -45,21 +46,26 @@ const ConversationAI = () => {
         }
       );
       setHasApiError(true);
-    }
-  }, [navigate]);
-
-  // Initialize conversation with a greeting
-  useEffect(() => {
-    const initConversation = async () => {
-      resetChatHistory(activeTopic);
-      const initialGreeting = "Hello! I'm your AI conversation partner. Let's practice speaking English together. What would you like to talk about today?";
-      setConversationHistory([{ speaker: 'ai', text: initialGreeting }]);
-      setCurrentQuestion(initialGreeting);
+    } else {
+      console.log("API key found, initializing conversation");
       setHasApiError(false);
-    };
-    
-    initConversation();
-  }, []);
+      // Initialize conversation with a greeting only if API key is present
+      const initConversation = async () => {
+        try {
+          resetChatHistory(activeTopic);
+          const initialGreeting = "Hello! I'm your AI conversation partner. Let's practice speaking English together. What would you like to talk about today?";
+          setConversationHistory([{ speaker: 'ai', text: initialGreeting }]);
+          setCurrentQuestion(initialGreeting);
+        } catch (error) {
+          console.error("Error initializing conversation:", error);
+          setHasApiError(true);
+          toast.error("Error initializing conversation. Please check your API key.");
+        }
+      };
+      
+      initConversation();
+    }
+  }, [navigate, activeTopic]);
 
   // Handle topic change
   const handleTopicChange = async (value: string) => {
