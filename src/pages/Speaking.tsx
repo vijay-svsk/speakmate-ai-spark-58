@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
@@ -80,18 +79,12 @@ export default function Speaking() {
         setTranscript(runningTranscript.trim());
       };
       recognition.onerror = (event: any) => {
-        toast({
-          title: "Speech recognition error",
-          description: event.error || "Unknown recognition error.",
-        });
+        toast.error("Speech recognition error: " + (event.error || "Unknown recognition error."));
       };
       recognitionRef.current = recognition;
       recognition.start();
     } else {
-      toast({
-        title: "Speech recognition not supported",
-        description: "Live transcription isn't available in your browser.",
-      });
+      toast.error("Speech recognition not supported. Live transcription isn't available in your browser.");
     }
 
     // Start audio recording
@@ -108,10 +101,7 @@ export default function Speaking() {
       mediaRecorderRef.current = mediaRecorder;
       mediaRecorder.start();
     } catch (err) {
-      toast({
-        title: "Could not access microphone",
-        description: "Please allow microphone permission.",
-      });
+      toast.error("Could not access microphone. Please allow microphone permission.");
       setRecording(false);
     }
   };
@@ -131,7 +121,7 @@ export default function Speaking() {
   // Analyze button - enhanced Gemini API prompt and response structure
   const handleAnalyze = async () => {
     if (!transcript.trim()) {
-      toast({ title: "No transcript available", description: "Please record some speech first." });
+      toast.error("No transcript available. Please record some speech first.");
       return;
     }
     
@@ -240,7 +230,7 @@ Respond as clean JSON ONLY, using keys:
       }
       setFeedback(feedbackObj);
     } catch (e: any) {
-      toast({ title: "Analysis failed", description: "Could not reach Gemini API." });
+      toast.error("Analysis failed. Could not reach Gemini API.");
     }
     setLoading(false);
   };
