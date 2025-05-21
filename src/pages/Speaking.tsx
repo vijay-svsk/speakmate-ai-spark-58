@@ -1,10 +1,12 @@
-import React, { useRef, useState } from "react";
+
+import React, { useRef, useState, useEffect } from "react";
 import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "sonner";
+import { useNavigate } from "react-router-dom";
 import { ResponsiveContainer, RadarChart as RChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
 
 // Sample topics for the speaking practice select dropdown
@@ -31,10 +33,31 @@ export default function Speaking() {
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [feedback, setFeedback] = useState<any | null>(null);
+  const [apiKey, setApiKey] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+
+  // Load the API key from localStorage on component mount
+  useEffect(() => {
+    const savedApiKey = localStorage.getItem('gemini-api-key');
+    if (!savedApiKey || savedApiKey.trim() === '') {
+      toast.warning(
+        "No API key found. Please set your Gemini API key in Settings",
+        {
+          action: {
+            label: "Go to Settings",
+            onClick: () => navigate('/settings')
+          },
+          duration: 10000,
+        }
+      );
+    } else {
+      setApiKey(savedApiKey);
+    }
+  }, [navigate]);
 
   // Start recording (audio + live transcript)
   const handleStart = async () => {
@@ -111,6 +134,18 @@ export default function Speaking() {
       toast({ title: "No transcript available", description: "Please record some speech first." });
       return;
     }
+    
+    // Check if we have an API key
+    if (!apiKey) {
+      toast.error("No Gemini API key found. Please add one in settings.", {
+        action: {
+          label: "Settings",
+          onClick: () => navigate('/settings')
+        }
+      });
+      return;
+    }
+    
     setLoading(true);
     try {
       const speechText = transcript;
@@ -179,7 +214,7 @@ Respond as clean JSON ONLY, using keys:
       ];
 
       const apiRes = await fetch(
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=AIzaSyCryO_r4qNiDoBIq2yqIb_EbjmqoOMmYBQ",
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -258,7 +293,7 @@ Respond as clean JSON ONLY, using keys:
               ? "text-yellow-700 font-bold"
               : "text-red-600 font-bold"
           }>
-            {data.score ?? "-"} / 100 (“{data.label ?? ""}”)
+            {data.score ?? "-"} / 100 ("{data.label ?? ""}")
           </span>
         </div>
         {data.explanation && (
@@ -319,7 +354,7 @@ Respond as clean JSON ONLY, using keys:
             </Button>
             <Button
               onClick={handleAnalyze}
-              disabled={!transcript || loading}
+              disabled={!transcript || loading || !apiKey}
               variant="outline"
               className="flex gap-2"
               aria-label="Analyze"
