@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
+import { ProgressBar } from "@/components/ui/progress";
 import { 
   Card, 
   CardContent, 
@@ -24,6 +24,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/app-sidebar";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { sendMessageToGemini, resetChatHistory, getLanguageFeedback } from '@/lib/gemini-api';
 
 // Topic options for conversation
 const CONVERSATION_TOPICS = [
@@ -35,73 +36,12 @@ const CONVERSATION_TOPICS = [
   { value: "technology", label: "Technology" }
 ];
 
-// Mock AI responses based on topics
-const AI_RESPONSES = {
-  daily_life: [
-    "Tell me about your daily routine.",
-    "What did you do yesterday?",
-    "Do you enjoy weekdays or weekends more? Why?",
-    "What's the best part of your day usually?",
-    "How do you usually spend your evenings?",
-    "Do you prefer morning or evening? Why?"
-  ],
-  travel: [
-    "Where was your favorite vacation?",
-    "What country would you like to visit next?",
-    "Do you prefer beaches or mountains?",
-    "What's your preferred method of transportation when traveling?",
-    "Tell me about a memorable travel experience you've had.",
-    "What's one place you'd like to visit but haven't yet?"
-  ],
-  work: [
-    "What do you do for work?",
-    "What's your dream job?",
-    "What skills are important in your profession?",
-    "How has your industry changed recently?",
-    "What do you enjoy most about your job?",
-    "What challenges do you face in your work?"
-  ],
-  hobbies: [
-    "What do you enjoy doing in your free time?",
-    "Tell me about your favorite hobby.",
-    "How long have you been interested in this hobby?",
-    "Have you picked up any new hobbies recently?",
-    "What skills have you developed through your hobbies?",
-    "What hobby would you like to try in the future?"
-  ],
-  food: [
-    "What's your favorite cuisine?",
-    "Do you enjoy cooking? What's your specialty?",
-    "What's a traditional dish from your country?",
-    "Have you tried any interesting new foods lately?",
-    "What's your favorite restaurant?",
-    "Do you prefer home-cooked meals or eating out?"
-  ],
-  technology: [
-    "What tech gadget do you use the most?",
-    "How has technology changed your daily life?",
-    "What's your opinion on artificial intelligence?",
-    "What technological advances are you excited about?",
-    "Do you think we rely too much on technology?",
-    "What's one piece of technology you couldn't live without?"
-  ]
-};
-
-// Mock feedback based on speech recognition results
-const FEEDBACK_TEMPLATES = [
-  "Great job! Your pronunciation was clear.",
-  "I noticed you said '{word}'. Consider using '{alternative}' for more natural speech.",
-  "Your fluency is improving! Keep practicing.",
-  "Try to speak a bit more slowly for better clarity.",
-  "You used excellent vocabulary in your response.",
-  "Consider using more complex sentences to challenge yourself."
-];
-
 const ConversationAI = () => {
   const [activeTopic, setActiveTopic] = useState("daily_life");
   const [conversationHistory, setConversationHistory] = useState<{ speaker: 'ai' | 'user', text: string }[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [isListening, setIsListening] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [fluencyScore, setFluencyScore] = useState(60);
   const [vocabularyScore, setVocabularyScore] = useState(70);
@@ -118,24 +58,37 @@ const ConversationAI = () => {
 
   // Initialize conversation with a greeting
   useEffect(() => {
-    const initialGreeting = "Hello! I'm your AI conversation partner. Let's practice speaking English together. What would you like to talk about today?";
-    setConversationHistory([{ speaker: 'ai', text: initialGreeting }]);
-    setCurrentQuestion(initialGreeting);
+    const initConversation = async () => {
+      resetChatHistory(activeTopic);
+      const initialGreeting = "Hello! I'm your AI conversation partner. Let's practice speaking English together. What would you like to talk about today?";
+      setConversationHistory([{ speaker: 'ai', text: initialGreeting }]);
+      setCurrentQuestion(initialGreeting);
+    };
+    
+    initConversation();
   }, []);
 
   // Handle topic change
-  const handleTopicChange = (value: string) => {
+  const handleTopicChange = async (value: string) => {
     setActiveTopic(value);
-    const topicGreeting = `Great! Let's talk about ${value.replace('_', ' ')}. `;
-    const firstQuestion = AI_RESPONSES[value as keyof typeof AI_RESPONSES][0];
-    const fullMessage = topicGreeting + firstQuestion;
+    setIsProcessing(true);
     
-    setConversationHistory(prev => [
-      ...prev, 
-      { speaker: 'ai', text: fullMessage }
-    ]);
-    setCurrentQuestion(fullMessage);
-    toast.success(`Topic changed to ${value.replace('_', ' ')}`);
+    try {
+      resetChatHistory(value);
+      const topicGreeting = await sendMessageToGemini(`Let's talk about ${value.replace('_', ' ')}. Ask me a question about this topic.`, value);
+      
+      setConversationHistory(prev => [
+        ...prev, 
+        { speaker: 'ai', text: topicGreeting }
+      ]);
+      setCurrentQuestion(topicGreeting);
+      toast.success(`Topic changed to ${value.replace('_', ' ')}`);
+    } catch (error) {
+      toast.error("Failed to change topic. Please try again.");
+      console.error("Topic change error:", error);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Start recording user's speech
@@ -165,9 +118,7 @@ const ConversationAI = () => {
         ]);
         
         // Generate AI feedback and next question
-        setTimeout(() => {
-          processUserResponse(transcript);
-        }, 1000);
+        processUserResponse(transcript);
       } else {
         toast.error("I didn't hear anything. Please try again.");
       }
@@ -175,42 +126,45 @@ const ConversationAI = () => {
   };
 
   // Process user's response and generate AI feedback
-  const processUserResponse = (userResponse: string) => {
-    // Generate simple feedback
-    const words = userResponse.split(' ').filter(word => word.length > 3);
-    const randomWord = words[Math.floor(Math.random() * words.length)] || 'good';
-    const alternatives = ['excellent', 'great', 'wonderful', 'fantastic'];
-    const randomAlternative = alternatives[Math.floor(Math.random() * alternatives.length)];
+  const processUserResponse = async (userResponse: string) => {
+    setIsProcessing(true);
     
-    const feedbackTemplate = FEEDBACK_TEMPLATES[Math.floor(Math.random() * FEEDBACK_TEMPLATES.length)];
-    const generatedFeedback = feedbackTemplate
-      .replace('{word}', randomWord)
-      .replace('{alternative}', randomAlternative);
-    
-    setFeedback(generatedFeedback);
-    
-    // Update scores randomly to simulate analysis
-    setFluencyScore(Math.min(100, fluencyScore + Math.floor(Math.random() * 10) - 3));
-    setVocabularyScore(Math.min(100, vocabularyScore + Math.floor(Math.random() * 10) - 3));
-    setGrammarScore(Math.min(100, grammarScore + Math.floor(Math.random() * 10) - 3));
-    
-    // Add feedback to conversation
-    setConversationHistory(prev => [
-      ...prev, 
-      { speaker: 'ai', text: generatedFeedback }
-    ]);
-    
-    // Generate next question
-    const questions = AI_RESPONSES[activeTopic as keyof typeof AI_RESPONSES];
-    const nextQuestion = questions[Math.floor(Math.random() * questions.length)];
-    
-    setTimeout(() => {
+    try {
+      // Get language feedback
+      const languageFeedback = await getLanguageFeedback(userResponse);
+      
+      // Update scores
+      setFluencyScore(languageFeedback.fluencyScore);
+      setVocabularyScore(languageFeedback.vocabularyScore);
+      setGrammarScore(languageFeedback.grammarScore);
+      setFeedback(languageFeedback.feedback);
+      
+      // Add feedback to conversation
+      setConversationHistory(prev => [
+        ...prev, 
+        { speaker: 'ai', text: languageFeedback.feedback }
+      ]);
+      
+      // Generate next question
+      const nextQuestion = await sendMessageToGemini(userResponse, activeTopic);
+      
       setConversationHistory(prev => [
         ...prev, 
         { speaker: 'ai', text: nextQuestion }
       ]);
       setCurrentQuestion(nextQuestion);
-    }, 1500);
+    } catch (error) {
+      console.error("Error processing response:", error);
+      toast.error("There was an error processing your response.");
+      
+      // Fallback response
+      setConversationHistory(prev => [
+        ...prev, 
+        { speaker: 'ai', text: "I'm having trouble understanding. Could you try saying that again?" }
+      ]);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   // Auto-scroll to the bottom of the conversation
@@ -230,7 +184,7 @@ const ConversationAI = () => {
               <h1 className="text-3xl font-bold text-primary">Conversation AI</h1>
               <div className="flex items-center gap-2">
                 <Label htmlFor="topic" className="whitespace-nowrap">Topic:</Label>
-                <Select value={activeTopic} onValueChange={handleTopicChange}>
+                <Select value={activeTopic} onValueChange={handleTopicChange} disabled={isProcessing || isListening}>
                   <SelectTrigger id="topic" className="w-40">
                     <SelectValue placeholder="Select topic" />
                   </SelectTrigger>
@@ -267,6 +221,23 @@ const ConversationAI = () => {
                       </div>
                     </div>
                   ))}
+                  {isProcessing && (
+                    <div className="flex mb-4 justify-start">
+                      <div className="flex max-w-[80%] flex-row">
+                        <div className="flex items-center justify-center h-8 w-8 rounded-full mr-2 bg-primary text-primary-foreground">
+                          <MessageSquare className="h-4 w-4" />
+                        </div>
+                        <div className="p-3 rounded-lg bg-muted">
+                          <div className="flex items-center gap-2">
+                            <div className="animate-pulse">Thinking</div>
+                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.3s]"></div>
+                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce [animation-delay:-0.15s]"></div>
+                            <div className="w-2 h-2 bg-muted-foreground rounded-full animate-bounce"></div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div ref={historyEndRef} />
                 </div>
               </CardContent>
@@ -281,6 +252,7 @@ const ConversationAI = () => {
                         onClick={isListening ? handleStopRecording : handleStartRecording}
                         variant={isListening ? "destructive" : "default"}
                         className="rounded-full h-12 w-12 p-0"
+                        disabled={isProcessing}
                       >
                         {isListening ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
                       </Button>
@@ -310,21 +282,21 @@ const ConversationAI = () => {
                       <Label>Fluency</Label>
                       <span className="text-sm text-muted-foreground">{fluencyScore}%</span>
                     </div>
-                    <Progress value={fluencyScore} className="h-2" />
+                    <ProgressBar value={fluencyScore} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between mb-1">
                       <Label>Vocabulary</Label>
                       <span className="text-sm text-muted-foreground">{vocabularyScore}%</span>
                     </div>
-                    <Progress value={vocabularyScore} className="h-2" />
+                    <ProgressBar value={vocabularyScore} className="h-2" />
                   </div>
                   <div>
                     <div className="flex justify-between mb-1">
                       <Label>Grammar</Label>
                       <span className="text-sm text-muted-foreground">{grammarScore}%</span>
                     </div>
-                    <Progress value={grammarScore} className="h-2" />
+                    <ProgressBar value={grammarScore} className="h-2" />
                   </div>
                 </div>
               </CardContent>
