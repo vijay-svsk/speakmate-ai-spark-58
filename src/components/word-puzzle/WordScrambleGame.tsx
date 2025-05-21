@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -106,7 +105,7 @@ const WordScrambleGame = () => {
               setPotArrangement(newPotArrangement);
               
               // Check if the pot already had a letter (remove from the old pot)
-              if (potArrangement[index]) {
+              if (potArrangement[index] !== null) {
                 // Return the old letter to the tiles
                 const newArrangement = [...currentArrangement];
                 newArrangement.push(potArrangement[index]!);
@@ -262,7 +261,7 @@ const WordScrambleGame = () => {
   };
 
   const resetFromPot = (index: number) => {
-    if (potArrangement[index]) {
+    if (potArrangement[index] !== null) {
       // Return the letter to the tiles
       const newArrangement = [...currentArrangement];
       newArrangement.push(potArrangement[index]!);

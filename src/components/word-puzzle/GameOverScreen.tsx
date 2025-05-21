@@ -12,7 +12,7 @@ interface GameOverScreenProps {
   puzzlesSolved?: number;
   attempts?: number;
   onPlayAgain: () => void;
-  onChangeDifficulty: () => void;
+  onChangeDifficulty?: () => void;
 }
 
 export const GameOverScreen: React.FC<GameOverScreenProps> = ({
@@ -99,9 +99,11 @@ export const GameOverScreen: React.FC<GameOverScreenProps> = ({
             <Button onClick={onPlayAgain} size="lg" className="px-8">
               Play Again
             </Button>
-            <Button onClick={onChangeDifficulty} variant="outline" className="flex items-center gap-2">
-              <ArrowLeft className="h-4 w-4" /> Change Difficulty
-            </Button>
+            {onChangeDifficulty && (
+              <Button onClick={onChangeDifficulty} variant="outline" className="flex items-center gap-2">
+                <ArrowLeft className="h-4 w-4" /> Change Difficulty
+              </Button>
+            )}
           </div>
         </CardContent>
       </Card>

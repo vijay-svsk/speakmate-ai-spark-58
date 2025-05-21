@@ -182,7 +182,7 @@ export const WordGuessGame = () => {
             hasWon={hasWon} 
             targetWord={targetWord} 
             attempts={guesses.length} 
-            onNewGame={startNewGame}
+            onPlayAgain={startNewGame}
           />
         ) : (
           <div className="flex flex-col items-center">
