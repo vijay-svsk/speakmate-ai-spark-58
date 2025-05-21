@@ -69,6 +69,16 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
   try {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
+    // Create a new chat session for the feedback
+    const feedbackChat = model.startChat({
+      generationConfig: {
+        temperature: 0.2, // Lower temperature for more consistent evaluation
+        topK: 40,
+        topP: 0.95,
+        maxOutputTokens: 1000,
+      },
+    });
+    
     const prompt = `
       Analyze the following English sentence or paragraph for language learning feedback:
       
@@ -89,13 +99,25 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
       }
     `;
     
-    const result = await model.generateContent(prompt);
+    // Send the message using the chat instance
+    const result = await feedbackChat.sendMessage(prompt);
     const response = await result.response;
     const text = response.text().trim();
     
     // Extract the JSON from the response
-    const jsonStr = text.replace(/```json|```/g, '').trim();
-    return JSON.parse(jsonStr);
+    // First try to parse the whole response as JSON
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      // If that fails, try to extract JSON from the text
+      const jsonMatch = text.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        return JSON.parse(jsonMatch[0]);
+      }
+      
+      // If still no valid JSON, return default values
+      throw new Error("Could not parse feedback response as JSON");
+    }
   } catch (error: any) {
     console.error("Error getting language feedback:", error);
     return {

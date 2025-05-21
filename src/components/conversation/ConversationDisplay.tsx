@@ -28,6 +28,7 @@ interface ConversationDisplayProps {
   onSpeakMessage?: (text: string) => void;
   isSpeaking?: boolean;
   onStopSpeaking?: () => void;
+  hasApiError?: boolean;
 }
 
 const ConversationDisplay = ({
@@ -40,7 +41,8 @@ const ConversationDisplay = ({
   onStopRecording,
   onSpeakMessage,
   isSpeaking,
-  onStopSpeaking
+  onStopSpeaking,
+  hasApiError
 }: ConversationDisplayProps) => {
   const historyEndRef = useRef<HTMLDivElement>(null);
 
@@ -51,11 +53,6 @@ const ConversationDisplay = ({
     }
   }, [conversationHistory]);
 
-  // Check if there's an error in the conversation
-  const hasError = conversationHistory.some(entry => 
-    entry.speaker === 'ai' && entry.text.includes('Sorry, I encountered an error')
-  );
-
   return (
     <Card>
       <CardHeader>
@@ -63,7 +60,7 @@ const ConversationDisplay = ({
         <CardDescription>Practice your English speaking with an AI conversation partner</CardDescription>
       </CardHeader>
       <CardContent>
-        {hasError && (
+        {hasApiError && (
           <Alert variant="destructive" className="mb-4">
             <AlertOctagon className="h-4 w-4" />
             <AlertDescription>

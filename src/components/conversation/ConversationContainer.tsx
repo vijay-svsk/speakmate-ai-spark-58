@@ -21,6 +21,7 @@ interface ConversationContainerProps {
   onSpeakMessage?: (text: string) => void;
   isSpeaking?: boolean;
   onStopSpeaking?: () => void;
+  hasApiError?: boolean;
 }
 
 const ConversationContainer = ({
@@ -38,7 +39,8 @@ const ConversationContainer = ({
   onStopRecording,
   onSpeakMessage,
   isSpeaking,
-  onStopSpeaking
+  onStopSpeaking,
+  hasApiError
 }: ConversationContainerProps) => {
   return (
     <div className="flex-1 p-6">
@@ -65,6 +67,7 @@ const ConversationContainer = ({
               onSpeakMessage={onSpeakMessage}
               isSpeaking={isSpeaking}
               onStopSpeaking={onStopSpeaking}
+              hasApiError={hasApiError}
             />
           </TooltipTrigger>
           <TooltipContent>

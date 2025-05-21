@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from "sonner";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -18,6 +17,7 @@ const ConversationAI = () => {
   const [vocabularyScore, setVocabularyScore] = useState(70);
   const [grammarScore, setGrammarScore] = useState(65);
   const [isSpeaking, setIsSpeaking] = useState(false);
+  const [hasApiError, setHasApiError] = useState(false);
   
   const { 
     transcript, 
@@ -34,6 +34,7 @@ const ConversationAI = () => {
       const initialGreeting = "Hello! I'm your AI conversation partner. Let's practice speaking English together. What would you like to talk about today?";
       setConversationHistory([{ speaker: 'ai', text: initialGreeting }]);
       setCurrentQuestion(initialGreeting);
+      setHasApiError(false);
     };
     
     initConversation();
@@ -43,10 +44,16 @@ const ConversationAI = () => {
   const handleTopicChange = async (value: string) => {
     setActiveTopic(value);
     setIsProcessing(true);
+    setHasApiError(false);
     
     try {
       resetChatHistory(value);
       const topicGreeting = await sendMessageToGemini(`Let's talk about ${value.replace('_', ' ')}. Ask me a question about this topic.`, value);
+      
+      if (topicGreeting.includes("Sorry, I encountered an error")) {
+        setHasApiError(true);
+        toast.error("Error connecting to the conversation AI");
+      }
       
       setConversationHistory(prev => [
         ...prev, 
@@ -58,6 +65,7 @@ const ConversationAI = () => {
       // Speak the new topic greeting
       speakText(topicGreeting);
     } catch (error) {
+      setHasApiError(true);
       toast.error("Failed to change topic. Please try again.");
       console.error("Topic change error:", error);
     } finally {
@@ -102,6 +110,7 @@ const ConversationAI = () => {
   // Process user's response and generate AI feedback
   const processUserResponse = async (userResponse: string) => {
     setIsProcessing(true);
+    setHasApiError(false);
     
     try {
       // Get language feedback
@@ -125,6 +134,11 @@ const ConversationAI = () => {
       // Generate next question
       const nextQuestion = await sendMessageToGemini(userResponse, activeTopic);
       
+      if (nextQuestion.includes("Sorry, I encountered an error")) {
+        setHasApiError(true);
+        toast.error("Error connecting to the conversation AI");
+      }
+      
       setConversationHistory(prev => [
         ...prev, 
         { speaker: 'ai', text: nextQuestion }
@@ -137,6 +151,7 @@ const ConversationAI = () => {
       }, 1000);
     } catch (error) {
       console.error("Error processing response:", error);
+      setHasApiError(true);
       toast.error("There was an error processing your response.");
       
       // Fallback response
@@ -211,6 +226,7 @@ const ConversationAI = () => {
           onSpeakMessage={speakText}
           isSpeaking={isSpeaking}
           onStopSpeaking={stopSpeaking}
+          hasApiError={hasApiError}
         />
       </div>
     </SidebarProvider>
