@@ -1,4 +1,3 @@
-
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
 // Default API key (will be overridden by user-provided key if available)
@@ -8,12 +7,21 @@ const DEFAULT_API_KEY = "AIzaSyBcZENeo3gkU6YVQYKCYf8EhOltT87q4es";
 const getApiKey = (): string => {
   // Always get the freshest key from localStorage (no caching)
   const userProvidedKey = localStorage.getItem("gemini-api-key");
-  return userProvidedKey && userProvidedKey.trim().length > 0 ? userProvidedKey.trim() : DEFAULT_API_KEY;
+  
+  // Check if the key exists and is not empty
+  if (userProvidedKey && userProvidedKey.trim().length > 0) {
+    return userProvidedKey.trim();
+  }
+  
+  // Return null if no key is found
+  return "";
 };
 
 // Create a function to get a fresh instance of the API with the current key
-const getGenAIInstance = (): GoogleGenerativeAI => {
-  return new GoogleGenerativeAI(getApiKey());
+const getGenAIInstance = (): GoogleGenerativeAI | null => {
+  const apiKey = getApiKey();
+  if (!apiKey) return null;
+  return new GoogleGenerativeAI(apiKey);
 };
 
 // Store chat instance for conversation continuity
@@ -38,6 +46,9 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
   try {
     // Get fresh instance with current API key
     const genAI = getGenAIInstance();
+    if (!genAI) {
+      return "Please add your Gemini API key in the Settings page to use this feature.";
+    }
     
     // Try with primary model first
     let currentModel = MODELS.PRIMARY;
@@ -159,6 +170,14 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
   try {
     // Get fresh instance with current API key
     const genAI = getGenAIInstance();
+    if (!genAI) {
+      return {
+        feedback: "Please add your Gemini API key in the Settings page to use this feature.",
+        fluencyScore: 0,
+        vocabularyScore: 0,
+        grammarScore: 0
+      };
+    }
     
     // Try with primary model first
     let currentModel = MODELS.PRIMARY;

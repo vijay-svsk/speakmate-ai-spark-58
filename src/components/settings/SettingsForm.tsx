@@ -1,277 +1,209 @@
 
 import React, { useState, useEffect } from "react";
-import { z } from "zod";
 import { useForm } from "react-hook-form";
+import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/use-toast";
-import { toast } from "sonner";
-import { Eye, EyeOff } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { toast } from "@/components/ui/use-toast";
+import { Card, CardContent } from "@/components/ui/card";
+import { useSound } from "@/lib/useSound";
 
-const formSchema = z.object({
-  apiKey: z.string().min(1, "API key is required"),
-  practiceDuration: z.string().min(1, "Practice duration is required"),
-  grade: z.string().min(1, "Grade is required"),
-  level: z.string().min(1, "Level is required"),
+// Form schema with validation
+const settingsFormSchema = z.object({
+  geminiApiKey: z.string().min(1, {
+    message: "API key is required.",
+  }),
+  muteSounds: z.boolean().default(false),
+  darkMode: z.boolean().default(false),
+  notificationsEnabled: z.boolean().default(true),
 });
 
-type FormValues = z.infer<typeof formSchema>;
+type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
 export function SettingsForm() {
-  const { toast: toastUI } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
-  const [showApiKey, setShowApiKey] = useState(false);
+  const { playSound, toggleMute, isMuted } = useSound();
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  
+  // Get default values from localStorage
+  const loadSettings = (): SettingsFormValues => {
+    // Try to get settings from localStorage or use defaults
+    const savedApiKey = localStorage.getItem("gemini-api-key") || "";
+    const savedMuteSounds = localStorage.getItem("mute-sounds") === "true";
+    const savedDarkMode = localStorage.getItem("dark-mode") === "true";
+    const savedNotifications = localStorage.getItem("notifications-enabled") !== "false";
+    
+    return {
+      geminiApiKey: savedApiKey,
+      muteSounds: savedMuteSounds,
+      darkMode: savedDarkMode,
+      notificationsEnabled: savedNotifications,
+    };
+  };
 
-  const form = useForm<FormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      apiKey: "",
-      practiceDuration: "30",
-      grade: "5",
-      level: "intermediate",
-    },
+  const form = useForm<SettingsFormValues>({
+    resolver: zodResolver(settingsFormSchema),
+    defaultValues: loadSettings(),
   });
 
-  // Load saved settings on component mount
-  useEffect(() => {
-    const savedApiKey = localStorage.getItem("gemini-api-key") || "";
-    const savedPracticeDuration = localStorage.getItem("practice-duration") || "30";
-    const savedGrade = localStorage.getItem("student-grade") || "5";
-    const savedLevel = localStorage.getItem("skill-level") || "intermediate";
+  // Handle form submission
+  const onSubmit = (data: SettingsFormValues) => {
+    // Save API key to localStorage
+    localStorage.setItem("gemini-api-key", data.geminiApiKey);
     
-    form.reset({
-      apiKey: savedApiKey,
-      practiceDuration: savedPracticeDuration,
-      grade: savedGrade,
-      level: savedLevel,
+    // Save other settings
+    localStorage.setItem("mute-sounds", data.muteSounds.toString());
+    localStorage.setItem("dark-mode", data.darkMode.toString());
+    localStorage.setItem("notifications-enabled", data.notificationsEnabled.toString());
+    
+    // Apply settings immediately
+    if (data.muteSounds !== isMuted) toggleMute();
+    
+    // Show success toast
+    playSound("valid");
+    toast({
+      title: "Settings saved",
+      description: "Your preferences have been updated.",
     });
-  }, [form]);
+  };
 
-  // Save settings
-  const onSubmit = (data: FormValues) => {
-    setIsLoading(true);
-
-    try {
-      // Save to localStorage
-      localStorage.setItem("gemini-api-key", data.apiKey.trim());
-      localStorage.setItem("practice-duration", data.practiceDuration);
-      localStorage.setItem("student-grade", data.grade);
-      localStorage.setItem("skill-level", data.level);
-
-      // Show both toast types for better visibility
-      toastUI({
-        title: "Settings saved",
-        description: "Your settings have been saved successfully.",
-      });
-      
-      toast.success("Settings saved successfully! Your API key is now active.");
-      
-      // Force a reload to ensure the new API key is used by all components
-      setTimeout(() => {
-        window.location.reload();
-      }, 1500);
-    } catch (error) {
-      toastUI({
-        title: "Error",
-        description: "There was an error saving your settings.",
-        variant: "destructive",
-      });
-      toast.error("Failed to save settings. Please try again.");
-    } finally {
-      setIsLoading(false);
+  // Handle dark mode toggle
+  useEffect(() => {
+    // Apply dark mode changes
+    if (isDarkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
     }
-  };
-
-  // Handle paste from clipboard
-  const handlePaste = async (e: React.ClipboardEvent) => {
-    try {
-      const clipboardText = e.clipboardData.getData('text');
-      const trimmedKey = clipboardText.trim();
-      form.setValue('apiKey', trimmedKey);
-      
-      // Automatically save to localStorage when pasting
-      localStorage.setItem("gemini-api-key", trimmedKey);
-      toast.success("API key pasted and saved temporarily. Click 'Save Settings' to confirm.");
-    } catch (error) {
-      toast.error("Failed to paste from clipboard");
-    }
-  };
-
-  // Toggle API key visibility
-  const toggleApiKeyVisibility = () => {
-    setShowApiKey(!showApiKey);
-  };
+  }, [isDarkMode]);
+  
+  // Apply saved mute setting on component mount
+  useEffect(() => {
+    const muteSetting = localStorage.getItem("mute-sounds") === "true";
+    if (muteSetting !== isMuted) toggleMute();
+    
+    // Apply saved dark mode setting
+    const darkModeSetting = localStorage.getItem("dark-mode") === "true";
+    setIsDarkMode(darkModeSetting);
+  }, []);
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>API Configuration</CardTitle>
-            <CardDescription>
-              Configure your Google Gemini API key for the conversation features.
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <FormField
-              control={form.control}
-              name="apiKey"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Gemini API Key</FormLabel>
-                  <div className="relative">
-                    <FormControl>
-                      <Input
-                        placeholder="Enter your Gemini API key"
-                        type={showApiKey ? "text" : "password"}
-                        {...field}
-                        onPaste={handlePaste}
-                        className="pr-10"
-                      />
-                    </FormControl>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      onClick={toggleApiKeyVisibility}
-                      className="absolute right-0 top-0 h-full px-3 py-2"
-                    >
-                      {showApiKey ? <EyeOff size={18} /> : <Eye size={18} />}
-                    </Button>
-                  </div>
-                  <FormMessage />
-                  <p className="text-xs text-muted-foreground">
-                    Get your API key from{" "}
-                    <a
-                      href="https://aistudio.google.com/app/apikey"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="text-primary underline"
-                    >
-                      Google AI Studio
-                    </a>
-                  </p>
-                </FormItem>
-              )}
-            />
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <Card className="animate-fade-in">
+          <CardContent className="pt-6">
+            <div className="space-y-6">
+              {/* API Key Section */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  API Keys
+                </h2>
+                
+                <FormField
+                  control={form.control}
+                  name="geminiApiKey"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Google Gemini API Key</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="Enter your Gemini API key"
+                          {...field}
+                          type="password"
+                          className="font-mono"
+                        />
+                      </FormControl>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Get your API key from the <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-primary underline">Google AI Studio</a>
+                      </p>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              {/* General Settings */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  General Settings
+                </h2>
+                
+                <FormField
+                  control={form.control}
+                  name="muteSounds"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Mute Sound Effects</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Turn off all sound effects in the application.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            // Don't toggle here, wait for form submission
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="darkMode"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Dark Mode</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Switch between light and dark theme.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={(checked) => {
+                            field.onChange(checked);
+                            setIsDarkMode(checked);
+                          }}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="notificationsEnabled"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
+                      <div className="space-y-0.5">
+                        <FormLabel className="text-base">Enable Notifications</FormLabel>
+                        <p className="text-sm text-muted-foreground">
+                          Receive notifications about progress and achievements.
+                        </p>
+                      </div>
+                      <FormControl>
+                        <Switch
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                        />
+                      </FormControl>
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
           </CardContent>
         </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Learning Preferences</CardTitle>
-            <CardDescription>
-              Configure your learning preferences for a personalized experience.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <FormField
-              control={form.control}
-              name="practiceDuration"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Daily Practice Duration (minutes)</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select duration" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="15">15 minutes</SelectItem>
-                        <SelectItem value="30">30 minutes</SelectItem>
-                        <SelectItem value="45">45 minutes</SelectItem>
-                        <SelectItem value="60">60 minutes</SelectItem>
-                        <SelectItem value="90">90 minutes</SelectItem>
-                        <SelectItem value="120">120 minutes</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Separator className="my-2" />
-
-            <FormField
-              control={form.control}
-              name="grade"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Student Grade</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select grade" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="1">Grade 1</SelectItem>
-                        <SelectItem value="2">Grade 2</SelectItem>
-                        <SelectItem value="3">Grade 3</SelectItem>
-                        <SelectItem value="4">Grade 4</SelectItem>
-                        <SelectItem value="5">Grade 5</SelectItem>
-                        <SelectItem value="6">Grade 6</SelectItem>
-                        <SelectItem value="7">Grade 7</SelectItem>
-                        <SelectItem value="8">Grade 8</SelectItem>
-                        <SelectItem value="9">Grade 9</SelectItem>
-                        <SelectItem value="10">Grade 10</SelectItem>
-                        <SelectItem value="11">Grade 11</SelectItem>
-                        <SelectItem value="12">Grade 12</SelectItem>
-                        <SelectItem value="college">College</SelectItem>
-                        <SelectItem value="adult">Adult</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="level"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Proficiency Level</FormLabel>
-                  <FormControl>
-                    <Select
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select level" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="beginner">Beginner</SelectItem>
-                        <SelectItem value="intermediate">Intermediate</SelectItem>
-                        <SelectItem value="advanced">Advanced</SelectItem>
-                        <SelectItem value="fluent">Fluent</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-
-        <div className="flex justify-end">
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Saving..." : "Save Settings"}
-          </Button>
-        </div>
+        
+        <Button type="submit" className="w-full">Save Settings</Button>
       </form>
     </Form>
   );

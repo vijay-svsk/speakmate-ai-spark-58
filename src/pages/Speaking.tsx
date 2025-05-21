@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Mic, CircleStop, ChartBar, LineChart } from "lucide-react";
+import { Mic, CircleStop, ChartBar, LineChart, ArrowLeft, Settings } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ResponsiveContainer, RadarChart as RChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
+import { AppLayout } from "@/components/layout/AppLayout";
 
 // Sample topics for the speaking practice select dropdown
 const sampleTopics = [
@@ -139,6 +140,7 @@ export default function Speaking() {
     setLoading(true);
     try {
       const speechText = transcript;
+      
       // Enhanced Gemini Prompt per user request:
       const prompt = [
         {
@@ -216,6 +218,24 @@ Respond as clean JSON ONLY, using keys:
       // Log the API call for debugging
       console.log("API response status:", apiRes.status);
       
+      if (!apiRes.ok) {
+        const errorText = await apiRes.text();
+        console.error("API error:", errorText);
+        
+        if (apiRes.status === 400 && errorText.includes("API key not valid")) {
+          toast.error("Your API key is invalid. Please check your API key in Settings.", {
+            action: {
+              label: "Settings",
+              onClick: () => navigate('/settings')
+            }
+          });
+          setLoading(false);
+          return;
+        } else {
+          throw new Error(`API error: ${apiRes.status}`);
+        }
+      }
+      
       const json = await apiRes.json();
       console.log("API response:", json);
 
@@ -238,7 +258,7 @@ Respond as clean JSON ONLY, using keys:
       setFeedback(feedbackObj);
     } catch (e: any) {
       console.error("Analysis error:", e);
-      toast.error("Analysis failed. Could not reach Gemini API.");
+      toast.error("Analysis failed: " + (e.message || "Could not reach Gemini API"));
     }
     setLoading(false);
   };
@@ -307,256 +327,286 @@ Respond as clean JSON ONLY, using keys:
   }
 
   return (
-    <div className="mx-auto max-w-2xl py-8 sm:py-12 w-full px-2">
-      <Card className="mb-6 shadow-xl animate-fade-in rounded-2xl">
-        <CardHeader>
-          <h2 className="text-xl font-bold font-playfair text-primary">Speaking Practice</h2>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-4">
-          {/* Topic Select */}
-          <div>
-            <label className="font-semibold">Choose a topic</label>
-            <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-              <SelectTrigger className="mt-1">
-                <SelectValue placeholder="Select topic..." />
-              </SelectTrigger>
-              <SelectContent>
-                {sampleTopics.map((t) => (
-                  <SelectItem key={t} value={t}>{t}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          {/* Recorder */}
-          <div className="flex items-center gap-3">
-            <Button
-              onClick={handleStart}
-              disabled={recording}
-              variant="default"
-              className="flex gap-2"
-              aria-label="Start Speaking"
-            >
-              <Mic className="w-5 h-5" />
-              Speak
-            </Button>
-            <Button
-              onClick={handleStop}
-              disabled={!recording}
-              variant="secondary"
-              className="flex gap-2"
-              aria-label="Stop Recording"
-            >
-              <CircleStop className="w-5 h-5" />
-              Stop
-            </Button>
-            <Button
-              onClick={handleAnalyze}
-              disabled={!transcript || loading || !apiKey}
-              variant="outline"
-              className="flex gap-2"
-              aria-label="Analyze"
-            >
-              Analyze
-            </Button>
-          </div>
-
-          {/* Transcript Display */}
-          <Textarea
-            className="text-base"
-            rows={3}
-            value={transcript}
-            onChange={e => setTranscript(e.target.value)}
-            placeholder="Transcript will appear here..."
-          />
-
-          {/* Audio playback */}
-          {audioUrl && (
-            <audio controls className="mt-2 w-full">
-              <source src={audioUrl} />
-              Your browser does not support audio.
-            </audio>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Results */}
-      {loading && (
-        <div className="mt-4 flex justify-center">
-          <div className="animate-pulse text-primary">🙌 Analyzing your speech...</div>
-        </div>
-      )}
-      {feedback && (
-        <div className="space-y-6">
-          {/* 1. Corrected Version */}
-          {feedback.corrected_version && (
-            <Card className="rounded-xl border-0 bg-green-50 shadow">
-              <CardHeader>
-                <span className="font-bold text-green-700">Corrected Version</span>
-              </CardHeader>
-              <CardContent>
-                <div className="font-mono">{feedback.corrected_version}</div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* 2. Highlight Mistakes */}
-          {feedback.mistakes && feedback.mistakes.length > 0 && (
-            <Card className="rounded-xl bg-amber-50 border border-amber-200 shadow">
-              <CardHeader>
-                <span className="font-semibold text-amber-900">Highlight Mistakes</span>
-              </CardHeader>
-              <CardContent>
-                <ul className="list-disc ml-4 space-y-2 text-sm">
-                  {feedback.mistakes.map((m: any, idx: number) => (
-                    <li key={idx}>
-                      <b>Mistake:</b> <span className="text-red-600">{m.mistake}</span>
-                      <br />
-                      <b>Correction:</b> <span className="text-green-700">{m.correction}</span>
-                      <br />
-                      <b>Explanation:</b> <span>{m.explanation}</span>
-                    </li>
+    <AppLayout>
+      <div className="mx-auto max-w-2xl py-8 sm:py-12 w-full px-2">
+        <Card className="mb-6 shadow-xl animate-fade-in rounded-2xl">
+          <CardHeader>
+            <h2 className="text-xl font-bold font-playfair text-primary">Speaking Practice</h2>
+          </CardHeader>
+          <CardContent className="flex flex-col gap-4">
+            {/* Topic Select */}
+            <div>
+              <label className="font-semibold">Choose a topic</label>
+              <Select value={selectedTopic} onValueChange={setSelectedTopic}>
+                <SelectTrigger className="mt-1">
+                  <SelectValue placeholder="Select topic..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {sampleTopics.map((t) => (
+                    <SelectItem key={t} value={t}>{t}</SelectItem>
                   ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+                </SelectContent>
+              </Select>
+            </div>
 
-          {/* 3. Scores */}
-          {(feedback.scores?.grammar || feedback.scores?.vocabulary || feedback.scores?.pronunciation || feedback.scores?.fluency) && (
-            <Card className="shadow rounded-2xl">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-primary font-playfair">Score Breakdown</span>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {renderScoreSection("Grammar", feedback.scores.grammar)}
-                  {renderScoreSection("Vocabulary", feedback.scores.vocabulary)}
-                  {renderScoreSection("Pronunciation", feedback.scores.pronunciation)}
-                  {renderScoreSection("Fluency", feedback.scores.fluency)}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+            {/* Recorder */}
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleStart}
+                disabled={recording}
+                variant="default"
+                className="flex gap-2"
+                aria-label="Start Speaking"
+              >
+                <Mic className="w-5 h-5" />
+                Speak
+              </Button>
+              <Button
+                onClick={handleStop}
+                disabled={!recording}
+                variant="secondary"
+                className="flex gap-2"
+                aria-label="Stop Recording"
+              >
+                <CircleStop className="w-5 h-5" />
+                Stop
+              </Button>
+              <Button
+                onClick={handleAnalyze}
+                disabled={!transcript || loading || !apiKey}
+                variant="outline"
+                className="flex gap-2"
+                aria-label="Analyze"
+              >
+                {loading ? "Analyzing..." : "Analyze"}
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => navigate('/settings')}
+                className="ml-auto"
+                title="Settings"
+              >
+                <Settings className="h-5 w-5 text-muted-foreground" />
+              </Button>
+            </div>
 
-          {/* 4. Pronunciation Analysis */}
-          {feedback.pronunciation_feedback && (
-            <Card className="rounded-xl border-0 bg-blue-50">
-              <CardHeader>
-                <span className="font-bold text-blue-700">Pronunciation Analysis</span>
-              </CardHeader>
-              <CardContent>
-                <div className="mb-1">
-                  <b>Difficult or mispronounced words: </b>
-                  <span>{safeList(feedback.pronunciation_feedback.difficult_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>) || "None"}</span>
-                </div>
-                <div className="mb-1">
-                  <b>Phonetic tips & mouth advice:</b>{" "}
-                  <span>{feedback.pronunciation_feedback.tips}</span>
-                </div>
-                <div>
-                  <b>Try practicing: </b>
-                  <span>{safeList(feedback.pronunciation_feedback.example_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}</span>
-                </div>
-              </CardContent>
-            </Card>
-          )}
+            {/* Transcript Display */}
+            <Textarea
+              className="text-base"
+              rows={3}
+              value={transcript}
+              onChange={e => setTranscript(e.target.value)}
+              placeholder="Transcript will appear here..."
+            />
 
-          {/* 5. Fluency Feedback */}
-          {feedback.fluency_feedback && (
-            <Card className="rounded-xl bg-purple-50 border-0">
-              <CardHeader>
-                <span className="font-bold text-purple-700">Fluency Feedback</span>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <b>Filler words used:</b> {feedback.fluency_feedback.filler_words_count ?? 0}
-                </div>
-                <div>
-                  <b>Unnatural pauses:</b> {feedback.fluency_feedback.unnatural_pauses ?? "None"}
-                </div>
-                <div>
-                  <b>Suggestions for smoother speech:</b> {feedback.fluency_feedback.suggestions}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+            {/* Audio playback */}
+            {audioUrl && (
+              <audio controls className="mt-2 w-full">
+                <source src={audioUrl} />
+                Your browser does not support audio.
+              </audio>
+            )}
+          </CardContent>
+        </Card>
 
-          {/* 6. Vocabulary Enhancement */}
-          {feedback.vocabulary_enhancement && (
-            <Card className="rounded-xl bg-yellow-50 border-0">
-              <CardHeader>
-                <span className="font-bold text-yellow-700">Vocabulary Enhancement</span>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <b>Basic/overused words:</b> {safeList(feedback.vocabulary_enhancement.basic_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}
-                </div>
-                {Array.isArray(feedback.vocabulary_enhancement.alternatives) && feedback.vocabulary_enhancement.alternatives.length > 0 ? (
-                  <div className="mt-2">
-                    <b>Better alternatives & samples:</b>
-                    <ul className="list-disc ml-4">
-                      {feedback.vocabulary_enhancement.alternatives.map((alt: any, i: number) => (
-                        <li key={i}>
-                          <b>{alt.word}:</b> {alt.alternatives?.join(", ")}
-                          {Array.isArray(alt.samples) && (
-                            <>
-                              <br /><span className="text-xs text-muted-foreground">{alt.samples.join(" – ")}</span>
-                            </>
-                          )}
-                        </li>
-                      ))}
-                    </ul>
+        {/* Results */}
+        {loading && (
+          <div className="mt-4 flex justify-center">
+            <div className="animate-pulse text-primary">🙌 Analyzing your speech...</div>
+          </div>
+        )}
+        {feedback && (
+          <div className="space-y-6">
+            {/* 1. Corrected Version */}
+            {feedback.corrected_version && (
+              <Card className="rounded-xl border-0 bg-green-50 shadow">
+                <CardHeader>
+                  <span className="font-bold text-green-700">Corrected Version</span>
+                </CardHeader>
+                <CardContent>
+                  <div className="font-mono">{feedback.corrected_version}</div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 2. Highlight Mistakes */}
+            {feedback.mistakes && feedback.mistakes.length > 0 && (
+              <Card className="rounded-xl bg-amber-50 border border-amber-200 shadow">
+                <CardHeader>
+                  <span className="font-semibold text-amber-900">Highlight Mistakes</span>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-disc ml-4 space-y-2 text-sm">
+                    {feedback.mistakes.map((m: any, idx: number) => (
+                      <li key={idx}>
+                        <b>Mistake:</b> <span className="text-red-600">{m.mistake}</span>
+                        <br />
+                        <b>Correction:</b> <span className="text-green-700">{m.correction}</span>
+                        <br />
+                        <b>Explanation:</b> <span>{m.explanation}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 3. Scores */}
+            {(feedback.scores?.grammar || feedback.scores?.vocabulary || feedback.scores?.pronunciation || feedback.scores?.fluency) && (
+              <Card className="shadow rounded-2xl">
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <span className="font-semibold text-primary font-playfair">Score Breakdown</span>
                   </div>
-                ) : null}
-              </CardContent>
-            </Card>
-          )}
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {renderScoreSection("Grammar", feedback.scores.grammar)}
+                    {renderScoreSection("Vocabulary", feedback.scores.vocabulary)}
+                    {renderScoreSection("Pronunciation", feedback.scores.pronunciation)}
+                    {renderScoreSection("Fluency", feedback.scores.fluency)}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* 7. Communication Tips */}
-          {feedback.communication_tips && (
-            <Card className="rounded-xl bg-primary/10 border-0">
-              <CardHeader>
-                <span className="font-semibold text-primary">Communication Tips</span>
-              </CardHeader>
-              <CardContent>
-                <ul className="list-disc ml-6 text-gray-700">
-                  {safeList(feedback.communication_tips, (s:string,i:number) => <li key={i}>{s}</li>)}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+            {/* 4. Pronunciation Analysis */}
+            {feedback.pronunciation_feedback && (
+              <Card className="rounded-xl border-0 bg-blue-50">
+                <CardHeader>
+                  <span className="font-bold text-blue-700">Pronunciation Analysis</span>
+                </CardHeader>
+                <CardContent>
+                  <div className="mb-1">
+                    <b>Difficult or mispronounced words: </b>
+                    <span>{safeList(feedback.pronunciation_feedback.difficult_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>) || "None"}</span>
+                  </div>
+                  <div className="mb-1">
+                    <b>Phonetic tips & mouth advice:</b>{" "}
+                    <span>{feedback.pronunciation_feedback.tips}</span>
+                  </div>
+                  <div>
+                    <b>Try practicing: </b>
+                    <span>{safeList(feedback.pronunciation_feedback.example_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* 8. Final Summary */}
-          {feedback.overall_summary && (
-            <Card className="rounded-xl bg-green-50 border-0">
-              <CardHeader>
-                <span className="font-bold text-green-700">Final Summary</span>
-              </CardHeader>
-              <CardContent>
-                <div>
-                  <b>Overall Score:</b> <span className="text-green-700 font-bold">{feedback.overall_summary.score} ({feedback.overall_summary.level})</span>
-                </div>
-                <div>
-                  <b>Recommendation:</b> {feedback.overall_summary.recommendation}
-                </div>
-              </CardContent>
-            </Card>
-          )}
+            {/* 5. Fluency Feedback */}
+            {feedback.fluency_feedback && (
+              <Card className="rounded-xl bg-purple-50 border-0">
+                <CardHeader>
+                  <span className="font-bold text-purple-700">Fluency Feedback</span>
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    <b>Filler words used:</b> {feedback.fluency_feedback.filler_words_count ?? 0}
+                  </div>
+                  <div>
+                    <b>Unnatural pauses:</b> {feedback.fluency_feedback.unnatural_pauses ?? "None"}
+                  </div>
+                  <div>
+                    <b>Suggestions for smoother speech:</b> {feedback.fluency_feedback.suggestions}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
-          {/* Fallback Raw response (in case JSON failed) */}
-          {feedback.raw && (
-            <Card className="rounded-xl">
-              <CardHeader>Gemini Response</CardHeader>
-              <CardContent>
-                <pre className="text-xs whitespace-pre-wrap">{feedback.raw}</pre>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+            {/* 6. Vocabulary Enhancement */}
+            {feedback.vocabulary_enhancement && (
+              <Card className="rounded-xl bg-yellow-50 border-0">
+                <CardHeader>
+                  <span className="font-bold text-yellow-700">Vocabulary Enhancement</span>
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    <b>Basic/overused words:</b> {safeList(feedback.vocabulary_enhancement.basic_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}
+                  </div>
+                  {Array.isArray(feedback.vocabulary_enhancement.alternatives) && feedback.vocabulary_enhancement.alternatives.length > 0 ? (
+                    <div className="mt-2">
+                      <b>Better alternatives & samples:</b>
+                      <ul className="list-disc ml-4">
+                        {feedback.vocabulary_enhancement.alternatives.map((alt: any, i: number) => (
+                          <li key={i}>
+                            <b>{alt.word}:</b> {alt.alternatives?.join(", ")}
+                            {Array.isArray(alt.samples) && (
+                              <>
+                                <br /><span className="text-xs text-muted-foreground">{alt.samples.join(" – ")}</span>
+                              </>
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 7. Communication Tips */}
+            {feedback.communication_tips && (
+              <Card className="rounded-xl bg-primary/10 border-0">
+                <CardHeader>
+                  <span className="font-semibold text-primary">Communication Tips</span>
+                </CardHeader>
+                <CardContent>
+                  <ul className="list-disc ml-6 text-gray-700">
+                    {safeList(feedback.communication_tips, (s:string,i:number) => <li key={i}>{s}</li>)}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 8. Final Summary */}
+            {feedback.overall_summary && (
+              <Card className="rounded-xl bg-green-50 border-0">
+                <CardHeader>
+                  <span className="font-bold text-green-700">Final Summary</span>
+                </CardHeader>
+                <CardContent>
+                  <div>
+                    <b>Overall Score:</b> <span className="text-green-700 font-bold">{feedback.overall_summary.score} ({feedback.overall_summary.level})</span>
+                  </div>
+                  <div>
+                    <b>Recommendation:</b> {feedback.overall_summary.recommendation}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Fallback Raw response (in case JSON failed) */}
+            {feedback.raw && (
+              <Card className="rounded-xl">
+                <CardHeader>Gemini Response</CardHeader>
+                <CardContent>
+                  <pre className="text-xs whitespace-pre-wrap">{feedback.raw}</pre>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* No API key warning */}
+      {!apiKey && (
+        <Card className="mt-4 border-yellow-300 bg-yellow-50">
+          <CardContent className="p-4 text-center">
+            <p className="text-yellow-800">
+              Please add your Gemini API key in the Settings page to use the analysis feature.
+            </p>
+            <Button 
+              variant="outline"
+              onClick={() => navigate('/settings')} 
+              className="mt-2 border-yellow-500 text-yellow-700 hover:bg-yellow-100"
+            >
+              Go to Settings
+            </Button>
+          </CardContent>
+        </Card>
       )}
-    </div>
+    </AppLayout>
   );
 }
