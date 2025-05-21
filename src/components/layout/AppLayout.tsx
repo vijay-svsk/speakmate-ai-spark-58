@@ -12,9 +12,16 @@ interface AppLayoutProps {
   showBackButton?: boolean;
 }
 
+// Updated the star object interface to include className
+interface Star {
+  id: number;
+  style: React.CSSProperties;
+  className: string;
+}
+
 // Create starry background effect
 const StarsBackground = () => {
-  const [stars, setStars] = useState<Array<{ id: number; style: React.CSSProperties }>>([]);
+  const [stars, setStars] = useState<Star[]>([]);
   
   useEffect(() => {
     // Create random stars
