@@ -57,7 +57,7 @@ const ConversationDisplay = ({
     <Card>
       <CardHeader>
         <CardTitle>Chat with Iyraa</CardTitle>
-        <CardDescription>Have a natural conversation with Iyraa, your friendly AI language tutor</CardDescription>
+        <CardDescription>Practice your English in a natural conversation with Iyraa, your friendly AI tutor</CardDescription>
       </CardHeader>
       <CardContent>
         {hasApiError && (

@@ -52,14 +52,13 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
 
       The current conversation topic is: ${topic}.
       
-      STRICT SINGLE RESPONSE INSTRUCTIONS:
-      - Respond with EXACTLY ONE conversational reply to the user's message
-      - DO NOT provide ANY grammar assessment or feedback whatsoever
-      - DO NOT comment on the user's language quality at all
-      - NEVER start with phrases like "That's a good question" or "That's well expressed"
-      - Focus ONLY on answering their question or responding to their statement directly
+      ***CRITICAL INSTRUCTIONS***:
+      - Respond with EXACTLY ONE conversational reply directly answering the user's message
+      - NEVER provide ANY grammar assessment, feedback, or comments on their language quality
+      - NEVER start with phrases like "That's a good question" or "That's well expressed" or any similar commentary
+      - DO NOT split your response into multiple messages or thoughts
+      - Simply respond naturally as you would in a human conversation
       - Keep responses warm, concise, and conversational
-      - Ensure your message reads as ONE complete thought
       
       Begin the conversation by introducing yourself: "Hi, I'm Iyraa, your friendly English tutor. I'm here to help you practice conversational English in a natural, supportive way!"`;
       
@@ -105,14 +104,13 @@ export const sendMessageToGemini = async (userMessage: string, topic: string): P
 
         The current conversation topic is: ${topic}.
         
-        STRICT SINGLE RESPONSE INSTRUCTIONS:
-        - Respond with EXACTLY ONE conversational reply to the user's message
-        - DO NOT provide ANY grammar assessment or feedback whatsoever
-        - DO NOT comment on the user's language quality at all
-        - NEVER start with phrases like "That's a good question" or "That's well expressed"
-        - Focus ONLY on answering their question or responding to their statement directly
+        ***CRITICAL INSTRUCTIONS***:
+        - Respond with EXACTLY ONE conversational reply directly answering the user's message
+        - NEVER provide ANY grammar assessment, feedback, or comments on their language quality
+        - NEVER start with phrases like "That's a good question" or "That's well expressed" or any similar commentary
+        - DO NOT split your response into multiple messages or thoughts
+        - Simply respond naturally as you would in a human conversation
         - Keep responses warm, concise, and conversational
-        - Ensure your message reads as ONE complete thought
         
         Begin the conversation by introducing yourself: "Hi, I'm Iyraa, your friendly English tutor. I'm here to help you practice conversational English in a natural, supportive way!"`;
         
@@ -186,17 +184,17 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
         
         "${userMessage}"
         
-        NEVER provide explicit grammar corrections or assessments. Focus ONLY on providing ONE simple, encouraging response about communication.
+        DO NOT provide grammar corrections or assessments. Focus ONLY on providing ONE simple, encouraging response without ANY language analysis.
         
-        Provide ONE simple conversational response with NO critique of language skills. Your feedback must:
-        - Contain ONLY ONE positive comment about their communication
-        - NEVER mention any errors, even indirectly
-        - Avoid ANY analysis of their grammar or language ability
-        - Be warm, supportive, and natural
+        Your feedback must:
+        - Be ONE simple conversational response with NO critique
+        - NEVER mention any errors or language quality
+        - NEVER include phrases like "That's well expressed" or "Good job with..."
+        - Just respond naturally to what they said as if you're having a regular conversation
         
         Format your response as a JSON object with these keys exactly: 
         {
-          "feedback": "your single conversational response (NO grammar or language skill comments)",
+          "feedback": "your single conversational response (NO grammar comments)",
           "fluencyScore": number (0-100),
           "vocabularyScore": number (0-100),
           "grammarScore": number (0-100)
@@ -251,17 +249,17 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
           
           "${userMessage}"
           
-          NEVER provide explicit grammar corrections or assessments. Focus ONLY on providing ONE simple, encouraging response about communication.
+          DO NOT provide grammar corrections or assessments. Focus ONLY on providing ONE simple, encouraging response without ANY language analysis.
         
-          Provide ONE simple conversational response with NO critique of language skills. Your feedback must:
-          - Contain ONLY ONE positive comment about their communication
-          - NEVER mention any errors, even indirectly
-          - Avoid ANY analysis of their grammar or language ability
-          - Be warm, supportive, and natural
+          Your feedback must:
+          - Be ONE simple conversational response with NO critique
+          - NEVER mention any errors or language quality
+          - NEVER include phrases like "That's well expressed" or "Good job with..."
+          - Just respond naturally to what they said as if you're having a regular conversation
           
           Format your response as a JSON object with these keys exactly: 
           {
-            "feedback": "your single conversational response (NO grammar or language skill comments)",
+            "feedback": "your single conversational response (NO grammar comments)",
             "fluencyScore": number (0-100),
             "vocabularyScore": number (0-100),
             "grammarScore": number (0-100)
