@@ -18,7 +18,8 @@ import {
   BarChart, 
   Headphones, 
   Zap,
-  Settings 
+  Settings,
+  Play
 } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -26,6 +27,7 @@ const navItems = [
   { title: "Dashboard", route: "/", icon: LayoutDashboard },
   { title: "Speaking Practice", route: "/speaking", icon: Mic },
   { title: "Conversation AI", route: "/conversation", icon: MessageSquare },
+  { title: "Word Puzzles", route: "/word-puzzle", icon: Play },
   { title: "Reflex Challenge", route: "/reflex", icon: Zap },
   { title: "Pronunciation Mirror", route: "/pronunciation", icon: Headphones },
   { title: "Story Builder", route: "/story", icon: Book },

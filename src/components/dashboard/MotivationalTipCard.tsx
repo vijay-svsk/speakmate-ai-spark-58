@@ -24,7 +24,7 @@ export const MotivationalTipCard: React.FC = () => {
   }, []);
 
   return (
-    <Card className="animate-fade-in border-primary/20 bg-primary/5">
+    <Card className="animate-fade-in border-primary/20 bg-gradient-to-br from-primary/5 to-accent/10">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-primary">
           <Award className="h-5 w-5" />
