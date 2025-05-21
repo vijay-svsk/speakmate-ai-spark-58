@@ -54,26 +54,20 @@ const ConversationContainer = ({
           />
         </div>
 
-        <Tooltip>
-          <TooltipTrigger>
-            <ConversationDisplay 
-              conversationHistory={conversationHistory}
-              currentQuestion={currentQuestion}
-              isProcessing={isProcessing}
-              isListening={isListening}
-              transcript={transcript}
-              onStartRecording={onStartRecording}
-              onStopRecording={onStopRecording}
-              onSpeakMessage={onSpeakMessage}
-              isSpeaking={isSpeaking}
-              onStopSpeaking={onStopSpeaking}
-              hasApiError={hasApiError}
-            />
-          </TooltipTrigger>
-          <TooltipContent>
-            {isListening ? 'Stop Recording' : 'Start Recording'}
-          </TooltipContent>
-        </Tooltip>
+        {/* Only wrap the button in tooltip, not the entire conversation display */}
+        <ConversationDisplay 
+          conversationHistory={conversationHistory}
+          currentQuestion={currentQuestion}
+          isProcessing={isProcessing}
+          isListening={isListening}
+          transcript={transcript}
+          onStartRecording={onStartRecording}
+          onStopRecording={onStopRecording}
+          onSpeakMessage={onSpeakMessage}
+          isSpeaking={isSpeaking}
+          onStopSpeaking={onStopSpeaking}
+          hasApiError={hasApiError}
+        />
 
         <PerformanceMetrics
           fluencyScore={fluencyScore}

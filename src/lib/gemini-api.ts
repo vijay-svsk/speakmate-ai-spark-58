@@ -19,8 +19,8 @@ export const resetChatHistory = (topic: string): void => {
 // Send message to Gemini and get response
 export const sendMessageToGemini = async (userMessage: string, topic: string): Promise<string> => {
   try {
-    // Get the model - using gemini-pro (standard supported model name)
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    // Get the model - updated to use the correct model name (gemini-1.5-pro or gemini-1.0-pro)
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
     
     // Initialize chat if it doesn't exist
     if (!chatInstance) {
@@ -67,7 +67,7 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
   grammarScore: number
 }> => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
     
     // Create a new chat session for the feedback
     const feedbackChat = model.startChat({
