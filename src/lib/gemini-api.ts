@@ -19,8 +19,8 @@ export const resetChatHistory = (topic: string): void => {
 // Send message to Gemini and get response
 export const sendMessageToGemini = async (userMessage: string, topic: string): Promise<string> => {
   try {
-    // Get the model - using gemini-1.0-pro instead of gemini-pro
-    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+    // Get the model - using gemini-pro (standard supported model name)
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     // Initialize chat if it doesn't exist
     if (!chatInstance) {
@@ -67,7 +67,7 @@ export const getLanguageFeedback = async (userMessage: string): Promise<{
   grammarScore: number
 }> => {
   try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.0-pro" });
+    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     const prompt = `
       Analyze the following English sentence or paragraph for language learning feedback:
