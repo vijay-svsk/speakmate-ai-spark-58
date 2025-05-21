@@ -277,7 +277,7 @@ const WordScrambleGame = () => {
   };
 
   // If no difficulty is selected, show difficulty selector
-  if (!difficulty) {
+  if (difficulty === null) {
     return (
       <DifficultySelector onSelectDifficulty={setDifficulty} />
     );
