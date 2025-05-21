@@ -16,6 +16,8 @@ import Reflex from "./pages/Reflex";
 import Progress from "./pages/Progress";
 import Settings from "./pages/Settings";
 import WordPuzzle from "./pages/WordPuzzle";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 
 const queryClient = new QueryClient();
 
@@ -37,6 +39,8 @@ const App = () => (
           <Route path="/progress" element={<Progress />} />
           <Route path="/settings" element={<Settings />} />
           <Route path="/word-puzzle" element={<WordPuzzle />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
