@@ -18,6 +18,9 @@ interface ConversationContainerProps {
   onTopicChange: (value: string) => void;
   onStartRecording: () => void;
   onStopRecording: () => void;
+  onSpeakMessage?: (text: string) => void;
+  isSpeaking?: boolean;
+  onStopSpeaking?: () => void;
 }
 
 const ConversationContainer = ({
@@ -32,7 +35,10 @@ const ConversationContainer = ({
   grammarScore,
   onTopicChange,
   onStartRecording,
-  onStopRecording
+  onStopRecording,
+  onSpeakMessage,
+  isSpeaking,
+  onStopSpeaking
 }: ConversationContainerProps) => {
   return (
     <div className="flex-1 p-6">
@@ -56,6 +62,9 @@ const ConversationContainer = ({
               transcript={transcript}
               onStartRecording={onStartRecording}
               onStopRecording={onStopRecording}
+              onSpeakMessage={onSpeakMessage}
+              isSpeaking={isSpeaking}
+              onStopSpeaking={onStopSpeaking}
             />
           </TooltipTrigger>
           <TooltipContent>

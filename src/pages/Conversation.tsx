@@ -17,6 +17,7 @@ const ConversationAI = () => {
   const [fluencyScore, setFluencyScore] = useState(60);
   const [vocabularyScore, setVocabularyScore] = useState(70);
   const [grammarScore, setGrammarScore] = useState(65);
+  const [isSpeaking, setIsSpeaking] = useState(false);
   
   const { 
     transcript, 
@@ -53,6 +54,9 @@ const ConversationAI = () => {
       ]);
       setCurrentQuestion(topicGreeting);
       toast.success(`Topic changed to ${value.replace('_', ' ')}`);
+      
+      // Speak the new topic greeting
+      speakText(topicGreeting);
     } catch (error) {
       toast.error("Failed to change topic. Please try again.");
       console.error("Topic change error:", error);
@@ -115,6 +119,9 @@ const ConversationAI = () => {
         { speaker: 'ai', text: languageFeedback.feedback }
       ]);
       
+      // Speak the feedback
+      speakText(languageFeedback.feedback);
+      
       // Generate next question
       const nextQuestion = await sendMessageToGemini(userResponse, activeTopic);
       
@@ -123,6 +130,11 @@ const ConversationAI = () => {
         { speaker: 'ai', text: nextQuestion }
       ]);
       setCurrentQuestion(nextQuestion);
+      
+      // After a short delay, speak the next question
+      setTimeout(() => {
+        speakText(nextQuestion);
+      }, 1000);
     } catch (error) {
       console.error("Error processing response:", error);
       toast.error("There was an error processing your response.");
@@ -134,6 +146,48 @@ const ConversationAI = () => {
       ]);
     } finally {
       setIsProcessing(false);
+    }
+  };
+  
+  // Handle text-to-speech
+  const speakText = (text: string) => {
+    if (!('speechSynthesis' in window)) {
+      toast.error("Text-to-speech is not supported in your browser.");
+      return;
+    }
+    
+    // Stop any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Set voice to a female English voice if available
+    const voices = window.speechSynthesis.getVoices();
+    const englishVoice = voices.find(voice => voice.lang.includes('en') && voice.name.includes('Female'));
+    
+    if (englishVoice) {
+      utterance.voice = englishVoice;
+    }
+    
+    utterance.lang = 'en-US';
+    utterance.pitch = 1;
+    utterance.rate = 0.9; // Slightly slower for language learning
+    
+    utterance.onstart = () => setIsSpeaking(true);
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+      toast.error("Error speaking text");
+    };
+    
+    window.speechSynthesis.speak(utterance);
+  };
+  
+  // Stop speaking
+  const stopSpeaking = () => {
+    if ('speechSynthesis' in window) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
     }
   };
 
@@ -154,6 +208,9 @@ const ConversationAI = () => {
           onTopicChange={handleTopicChange}
           onStartRecording={handleStartRecording}
           onStopRecording={handleStopRecording}
+          onSpeakMessage={speakText}
+          isSpeaking={isSpeaking}
+          onStopSpeaking={stopSpeaking}
         />
       </div>
     </SidebarProvider>

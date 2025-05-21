@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import {
   Card,
@@ -7,7 +8,7 @@ import {
   CardContent,
   CardFooter
 } from "@/components/ui/card";
-import { MessageSquare, User, Mic, MicOff, AlertOctagon } from 'lucide-react';
+import { MessageSquare, User, Mic, MicOff, AlertOctagon, Volume, VolumeX } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 
@@ -24,6 +25,9 @@ interface ConversationDisplayProps {
   transcript: string;
   onStartRecording: () => void;
   onStopRecording: () => void;
+  onSpeakMessage?: (text: string) => void;
+  isSpeaking?: boolean;
+  onStopSpeaking?: () => void;
 }
 
 const ConversationDisplay = ({
@@ -33,7 +37,10 @@ const ConversationDisplay = ({
   isListening,
   transcript,
   onStartRecording,
-  onStopRecording
+  onStopRecording,
+  onSpeakMessage,
+  isSpeaking,
+  onStopSpeaking
 }: ConversationDisplayProps) => {
   const historyEndRef = useRef<HTMLDivElement>(null);
 
@@ -73,10 +80,20 @@ const ConversationDisplay = ({
                 }`}>
                   {entry.speaker === 'ai' ? <MessageSquare className="h-4 w-4" /> : <User className="h-4 w-4" />}
                 </div>
-                <div className={`p-3 rounded-lg ${
+                <div className={`p-3 rounded-lg relative ${
                   entry.speaker === 'ai' ? 'bg-muted' : 'bg-primary text-primary-foreground'
                 }`}>
                   {entry.text}
+                  {entry.speaker === 'ai' && onSpeakMessage && (
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-6 w-6 absolute -top-3 -right-3 rounded-full bg-white shadow-sm hover:bg-gray-100"
+                      onClick={() => entry.text && onSpeakMessage(entry.text)}
+                    >
+                      <Volume className="h-3 w-3" />
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>
@@ -109,6 +126,8 @@ const ConversationDisplay = ({
           transcript={transcript}
           onStartRecording={onStartRecording}
           onStopRecording={onStopRecording}
+          isSpeaking={isSpeaking}
+          onStopSpeaking={onStopSpeaking}
         />
       </CardFooter>
     </Card>
@@ -122,7 +141,9 @@ const RecordingControls = ({
   currentQuestion,
   transcript,
   onStartRecording,
-  onStopRecording
+  onStopRecording,
+  isSpeaking,
+  onStopSpeaking
 }: {
   isListening: boolean;
   isProcessing: boolean;
@@ -130,12 +151,24 @@ const RecordingControls = ({
   transcript: string;
   onStartRecording: () => void;
   onStopRecording: () => void;
+  isSpeaking?: boolean;
+  onStopSpeaking?: () => void;
 }) => {
   return (
     <>
       <div className="flex items-center justify-between w-full mb-4">
-        <div className="text-lg font-medium">
+        <div className="text-lg font-medium flex items-center gap-2">
           {isListening ? 'Listening...' : currentQuestion}
+          {isSpeaking && (
+            <Button 
+              onClick={onStopSpeaking} 
+              variant="outline"
+              size="sm"
+              className="ml-2"
+            >
+              <VolumeX className="h-4 w-4 mr-1" /> Stop Audio
+            </Button>
+          )}
         </div>
         <Button
           onClick={isListening ? onStopRecording : onStartRecording}
