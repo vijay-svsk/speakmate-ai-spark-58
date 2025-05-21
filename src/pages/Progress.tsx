@@ -4,7 +4,7 @@ import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/app-sidebar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
+import { Progress as ProgressBar } from "@/components/ui/progress";
 import { BarChart, RadarChart, PolarGrid, PolarAngleAxis, Radar, PolarRadiusAxis, ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, Legend, Bar, Cell } from "recharts";
 import { Award, Calendar, BarChart2 } from "lucide-react";
 
@@ -141,12 +141,12 @@ const Progress = () => {
                           <span className="font-medium">{item.name}</span>
                           <span className="text-sm text-gray-500">{item.completion}%</span>
                         </div>
-                        <Progress value={item.completion} className="h-2" style={{ backgroundColor: `${item.color}40` }}>
+                        <ProgressBar value={item.completion} className="h-2" style={{ backgroundColor: `${item.color}40` }}>
                           <div 
                             className="h-full rounded-full transition-all"
                             style={{ width: `${item.completion}%`, backgroundColor: item.color }}
                           />
-                        </Progress>
+                        </ProgressBar>
                       </div>
                     ))}
                   </div>
