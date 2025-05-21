@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useSound } from "@/lib/useSound";
 import WordGuessGame from "@/components/word-puzzle/WordGuessGame";
+import WordScrambleGame from "@/components/word-puzzle/WordScrambleGame";
 
 // Game options with their details
 const gameOptions = [
@@ -20,7 +21,7 @@ const gameOptions = [
     name: "Word Scramble",
     description: "Unscramble letters to form a valid English word",
     icon: "🔤",
-    comingSoon: true,
+    comingSoon: false,
   },
   {
     id: "vocab-builder",
@@ -97,6 +98,7 @@ const WordPuzzle = () => {
         ) : (
           <div className="mt-4">
             {selectedGame === "word-guess" && <WordGuessGame />}
+            {selectedGame === "word-scramble" && <WordScrambleGame />}
             {/* Other game components would be rendered here when implemented */}
             <Button 
               onClick={() => setSelectedGame(null)} 

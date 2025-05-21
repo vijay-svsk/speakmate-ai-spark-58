@@ -1,4 +1,3 @@
-
 import { commonFiveLetterWords } from './word-lists/common-words';
 import { validFiveLetterWords } from './word-lists/valid-words';
 
@@ -84,4 +83,48 @@ export const generateKeyboardStatus = (
   }
   
   return keyboardStatus;
+};
+
+// List of common mid-length (6-9 letter) words for scramble game
+export const midLengthWords = [
+  "balance", "channel", "complex", "dynamic", "element", "factory", "gateway",
+  "harmony", "intense", "journey", "kitchen", "liberty", "machine", "network",
+  "observe", "pattern", "quality", "reality", "station", "theater", "upgrade",
+  "variety", "welcome", "xylophone", "younger", "zealous", "absolute", "beneath",
+  "capture", "decline", "emotion", "furnish", "genuine", "horizon", "imagine",
+  "justice", "kingdom", "lasting", "mixture", "notable", "obvious", "proceed",
+  "quantum", "respond", "supreme", "triumph", "unusual", "venture", "whisper",
+  "amazing", "because", "creative", "delicate", "eventual", "frequent", "gratitude",
+  "heritage", "internal", "junction", "keyboard", "language", "magazine", "numerous",
+  "opposite", "pleasant", "question", "reliable", "sequence", "together", "ultimate",
+  "valuable", "wildlife", "yearning", "abstract", "boundary", "category", "decisive",
+  "economic", "familiar", "graceful", "humanity", "identity", "judgment", "knowledge",
+  "learning", "movement", "navigate", "organize", "possible", "quantity", "resource",
+  "sensible", "transfer", "universe", "validate", "workshop", "alliance", "building",
+  "capacity", "division", "emphasis", "feelings", "generate", "hospital", "industry",
+  "junction", "knowing", "location", "maintain", "neighbor", "optimize", "priority",
+  "question", "reaction", "scenario", "training", "universe", "vicinity", "warranty",
+  "yielding", "approach", "business", "council", "distance", "exchange", "festival",
+  "graphics", "historic", "isolated", "judgment", "kilogram", "literacy", "material",
+  "normally", "overhead", "progress", "quotient", "recovery", "specific", "thousand",
+  "universe", "vertical", "workshop"
+];
+
+// Get a random mid-length word for the word scramble game
+export const getRandomMidLengthWord = (): string => {
+  const index = Math.floor(Math.random() * midLengthWords.length);
+  return midLengthWords[index];
+};
+
+// Scramble a word using Fisher-Yates shuffle
+export const scrambleWord = (word: string): string => {
+  const letters = word.split('');
+  
+  // Fisher-Yates shuffle algorithm
+  for (let i = letters.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [letters[i], letters[j]] = [letters[j], letters[i]]; // Swap elements
+  }
+  
+  return letters.join('');
 };
