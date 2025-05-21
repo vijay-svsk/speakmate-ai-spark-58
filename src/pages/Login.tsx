@@ -6,7 +6,7 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
 import { useSound } from "@/lib/useSound";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import confetti from 'canvas-confetti';
 
 const Login = () => {
