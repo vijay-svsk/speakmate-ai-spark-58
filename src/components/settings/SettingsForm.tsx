@@ -10,6 +10,7 @@ import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
 import { useSound } from "@/lib/useSound";
+import { Moon, Sun, Volume2, VolumeX, Bell } from "lucide-react";
 
 // Form schema with validation
 const settingsFormSchema = z.object({
@@ -60,6 +61,14 @@ export function SettingsForm() {
     
     // Apply settings immediately
     if (data.muteSounds !== isMuted) toggleMute();
+    setIsDarkMode(data.darkMode);
+    
+    // Apply dark mode changes
+    if (data.darkMode) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
     
     // Show success toast
     playSound("valid");
@@ -68,31 +77,27 @@ export function SettingsForm() {
       description: "Your preferences have been updated.",
     });
   };
-
-  // Handle dark mode toggle
+  
+  // Apply saved dark mode setting on component mount
   useEffect(() => {
-    // Apply dark mode changes
-    if (isDarkMode) {
+    const darkModeSetting = localStorage.getItem("dark-mode") === "true";
+    setIsDarkMode(darkModeSetting);
+    
+    if (darkModeSetting) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
-  }, [isDarkMode]);
-  
-  // Apply saved mute setting on component mount
-  useEffect(() => {
+    
+    // Apply saved mute setting on component mount
     const muteSetting = localStorage.getItem("mute-sounds") === "true";
     if (muteSetting !== isMuted) toggleMute();
-    
-    // Apply saved dark mode setting
-    const darkModeSetting = localStorage.getItem("dark-mode") === "true";
-    setIsDarkMode(darkModeSetting);
   }, []);
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Card className="animate-fade-in">
+        <Card className="animate-fade-in dark-card">
           <CardContent className="pt-6">
             <div className="space-y-6">
               {/* API Key Section */}
@@ -112,7 +117,7 @@ export function SettingsForm() {
                           placeholder="Enter your Gemini API key"
                           {...field}
                           type="password"
-                          className="font-mono"
+                          className="font-mono dark:bg-gray-800 dark:border-gray-700"
                         />
                       </FormControl>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -134,12 +139,19 @@ export function SettingsForm() {
                   control={form.control}
                   name="muteSounds"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Mute Sound Effects</FormLabel>
-                        <p className="text-sm text-muted-foreground">
-                          Turn off all sound effects in the application.
-                        </p>
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border">
+                      <div className="space-y-0.5 flex items-center gap-3">
+                        {field.value ? (
+                          <VolumeX className="h-5 w-5 text-muted-foreground" />
+                        ) : (
+                          <Volume2 className="h-5 w-5 text-primary" />
+                        )}
+                        <div>
+                          <FormLabel className="text-base">Mute Sound Effects</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Turn off all sound effects in the application.
+                          </p>
+                        </div>
                       </div>
                       <FormControl>
                         <Switch
@@ -158,12 +170,19 @@ export function SettingsForm() {
                   control={form.control}
                   name="darkMode"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Dark Mode</FormLabel>
-                        <p className="text-sm text-muted-foreground">
-                          Switch between light and dark theme.
-                        </p>
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border">
+                      <div className="space-y-0.5 flex items-center gap-3">
+                        {field.value ? (
+                          <Moon className="h-5 w-5 text-primary" />
+                        ) : (
+                          <Sun className="h-5 w-5 text-accent" />
+                        )}
+                        <div>
+                          <FormLabel className="text-base">Dark Mode</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Switch between light and dark theme.
+                          </p>
+                        </div>
                       </div>
                       <FormControl>
                         <Switch
@@ -171,6 +190,12 @@ export function SettingsForm() {
                           onCheckedChange={(checked) => {
                             field.onChange(checked);
                             setIsDarkMode(checked);
+                            
+                            if (checked) {
+                              document.documentElement.classList.add("dark");
+                            } else {
+                              document.documentElement.classList.remove("dark");
+                            }
                           }}
                         />
                       </FormControl>
@@ -182,12 +207,15 @@ export function SettingsForm() {
                   control={form.control}
                   name="notificationsEnabled"
                   render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4">
-                      <div className="space-y-0.5">
-                        <FormLabel className="text-base">Enable Notifications</FormLabel>
-                        <p className="text-sm text-muted-foreground">
-                          Receive notifications about progress and achievements.
-                        </p>
+                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border">
+                      <div className="space-y-0.5 flex items-center gap-3">
+                        <Bell className={`h-5 w-5 ${field.value ? 'text-primary' : 'text-muted-foreground'}`} />
+                        <div>
+                          <FormLabel className="text-base">Enable Notifications</FormLabel>
+                          <p className="text-sm text-muted-foreground">
+                            Receive notifications about progress and achievements.
+                          </p>
+                        </div>
                       </div>
                       <FormControl>
                         <Switch
@@ -203,7 +231,7 @@ export function SettingsForm() {
           </CardContent>
         </Card>
         
-        <Button type="submit" className="w-full">Save Settings</Button>
+        <Button type="submit" className="w-full dark-button">Save Settings</Button>
       </form>
     </Form>
   );

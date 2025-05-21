@@ -116,6 +116,14 @@ export default {
 				'glow': {
 					'0%, 100%': { boxShadow: '0 0 5px rgba(155, 135, 245, 0.5)' },
 					'50%': { boxShadow: '0 0 20px rgba(155, 135, 245, 0.8)' },
+				},
+				'twinkle': {
+					'0%, 100%': { opacity: '0.2' },
+					'50%': { opacity: '0.8' },
+				},
+				'star-float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-2px)' },
 				}
 			},
 			animation: {
@@ -129,6 +137,8 @@ export default {
 				'pulse-light': 'pulse-light 3s ease-in-out infinite',
 				'float': 'float 3s ease-in-out infinite',
 				'glow': 'glow 2s ease-in-out infinite',
+				'twinkle': 'twinkle 3s ease-in-out infinite',
+				'star-float': 'star-float 5s ease-in-out infinite',
 			},
 			boxShadow: {
 				'glow-primary': '0 0 10px rgba(155, 135, 245, 0.7)',

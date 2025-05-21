@@ -53,41 +53,43 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    /* Improved dark mode colors with sky blue and violet tones */
+    --background: 222.2 47.4% 6.9%; /* darker background */
+    --foreground: 210 40% 98%; /* lighter text for contrast */
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 222.2 47.4% 8.9%; /* darker card background */
+    --card-foreground: 210 40% 98%; /* lighter card text */
 
-    --popover: 222.2 84% 4.9%;
+    --popover: 222.2 47.4% 8.9%;
     --popover-foreground: 210 40% 98%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 252 86% 70%; /* violet primary color */
+    --primary-foreground: 222.2 47.4% 5.2%;
 
-    --secondary: 217.2 32.6% 17.5%;
+    --secondary: 240 32.6% 15.5%; /* darker secondary */
     --secondary-foreground: 210 40% 98%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 240 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 75.1%; /* lighter muted text */
 
-    --accent: 217.2 32.6% 17.5%;
+    --accent: 196 80% 36%; /* sky blue accent */
     --accent-foreground: 210 40% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
+    --border: 240 32.6% 20.5%; /* slightly visible borders */
+    --input: 240 32.6% 20.5%;
+    --ring: 252 86% 70%; /* violet ring */
+    
+    --sidebar-background: 240 30% 10%; /* dark sidebar */
+    --sidebar-foreground: 240 15% 90%; /* light sidebar text */
+    --sidebar-primary: 252 70% 60%; /* violet sidebar primary */
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --sidebar-accent: 240 20% 15.9%; /* dark sidebar accent */
+    --sidebar-accent-foreground: 240 15% 90%; 
+    --sidebar-border: 240 20% 20%; /* slightly visible sidebar borders */
+    --sidebar-ring: 252 86% 70%; /* violet sidebar ring */
   }
 }
 
@@ -100,6 +102,73 @@
     @apply bg-background text-foreground;
     transition: background-color 0.3s ease;
   }
+  
+  /* Starry background for dark mode */
+  .dark body {
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  .dark body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: radial-gradient(circle, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+    background-size: 50px 50px;
+    pointer-events: none;
+    z-index: 0;
+  }
+}
+
+/* Twinkling stars effect - only visible in dark mode */
+.stars-container {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .stars-container {
+  display: block;
+}
+
+.star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+}
+
+.star.small {
+  width: 1px;
+  height: 1px;
+}
+
+.star.medium {
+  width: 2px;
+  height: 2px;
+}
+
+.star.large {
+  width: 3px;
+  height: 3px;
+}
+
+.star.twinkle {
+  animation: twinkle 3s infinite ease-in-out;
+}
+
+.star.float {
+  animation: star-float 5s infinite ease-in-out;
 }
 
 @layer components {
@@ -126,11 +195,30 @@
   .wobble {
     animation: wobble 2s ease-in-out infinite;
   }
+  
+  /* New dark mode specific styles */
+  .dark-card {
+    @apply dark:bg-gradient-to-br dark:from-gray-800 dark:to-blue-900 dark:border-primary/30 dark:shadow-lg dark:shadow-primary/10;
+  }
+  
+  .dark-button {
+    @apply dark:border dark:border-primary/40 dark:hover:border-primary/80 dark:shadow-md dark:shadow-primary/10 dark:hover:shadow-primary/30 dark:transition-all dark:duration-300;
+  }
+  
+  .interactive-border {
+    @apply dark:border dark:border-accent/30 dark:hover:border-accent/70 dark:transition-all dark:duration-300;
+  }
 }
 
 @layer utilities {
   .bg-gradient-animation {
     background: linear-gradient(-45deg, #EE7752, #E73C7E, #23A6D5, #23D5AB);
+    background-size: 400% 400%;
+    animation: gradient 15s ease infinite;
+  }
+  
+  .dark .bg-gradient-animation {
+    background: linear-gradient(-45deg, #2E1065, #4C1D95, #1E40AF, #1E3A8A);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
   }
