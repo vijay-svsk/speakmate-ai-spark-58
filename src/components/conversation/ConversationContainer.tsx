@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import ConversationDisplay from './ConversationDisplay';
 import PerformanceMetrics from './PerformanceMetrics';
 import TopicSelector from './TopicSelector';
