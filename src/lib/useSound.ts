@@ -1,6 +1,11 @@
 
 import { useCallback, useEffect, useState } from 'react';
 
+// Define a type for AudioContext to handle webkit prefix
+interface AudioContextType {
+  new (): AudioContext;
+}
+
 // A simplified sound hook until we add Howler.js
 export function useSound() {
   const [isMuted, setIsMuted] = useState(() => {
@@ -43,8 +48,11 @@ export function useSound() {
       // Try to play the audio file
       audioFiles[type].play().catch(() => {
         // If audio file loading fails, generate a simple beep sound
-        if (window.AudioContext || window.webkitAudioContext) {
-          const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        // Get the appropriate AudioContext constructor based on browser support
+        const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+        
+        if (AudioContextClass) {
+          const audioContext = new AudioContextClass();
           const oscillator = audioContext.createOscillator();
           oscillator.type = 'sine';
           oscillator.frequency.setValueAtTime(audioFrequencies[type], audioContext.currentTime);
