@@ -1,10 +1,11 @@
+
 import React, { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getDifficultyWordList, getRandomWordByDifficulty, scrambleWord } from "@/lib/word-utils";
 import { useSound } from "@/lib/useSound";
-import { HelpCircle, RotateCcw, Check, Star, Trophy, Volume2, VolumeX } from "lucide-react";
+import { HelpCircle, RotateCcw, Check, Star, Trophy, Volume2, VolumeX, MoveHorizontal } from "lucide-react";
 import { LetterTile } from "./LetterTile";
 import Sortable from 'sortablejs';
 import { LetterPot } from "./LetterPot";
@@ -34,6 +35,7 @@ const WordScrambleGame = () => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [puzzlesSolved, setPuzzlesSolved] = useState<number>(0);
   const [potArrangement, setPotArrangement] = useState<(string | null)[]>([]);
+  const [showHelpAnimation, setShowHelpAnimation] = useState<boolean>(true);
   
   const tilesContainerRef = useRef<HTMLDivElement>(null);
   const potsContainerRef = useRef<HTMLDivElement>(null);
@@ -54,73 +56,41 @@ const WordScrambleGame = () => {
         tilesSortableRef.current.destroy();
       }
       
-      // Create new sortable instance for tiles
+      // Create new sortable instance for tiles with simpler configuration
       tilesSortableRef.current = Sortable.create(tilesContainerRef.current, {
-        animation: 150,
+        animation: 250,
         ghostClass: "bg-primary/20",
-        group: {
-          name: "letters",
-          pull: "clone",
-          put: false
-        },
-        sort: false,
+        dragClass: "dragging-tile",
+        delay: 50, // Small delay helps on mobile
+        delayOnTouchOnly: true,
         onStart: () => {
           playSound('keypress');
+          setShowHelpAnimation(false); // Hide help animation once user starts dragging
         },
         onEnd: (evt) => {
-          // Handle drag from tiles to pots
-          if (evt.to !== evt.from) {
+          const letterTile = evt.item;
+          const letter = letterTile.getAttribute('data-letter') || '';
+          const targetPot = evt.originalEvent?.target as HTMLElement;
+          const potElement = targetPot?.closest('[data-pot-index]');
+          
+          if (potElement) {
+            const potIndex = parseInt(potElement.getAttribute('data-pot-index') || '0', 10);
+            
+            // Add the letter to the pot
+            addLetterToPot(letter, potIndex);
+            
+            // Remove the letter from the tiles
+            const letterIndex = currentArrangement.indexOf(letter);
+            if (letterIndex !== -1) {
+              const newArrangement = [...currentArrangement];
+              newArrangement.splice(letterIndex, 1);
+              setCurrentArrangement(newArrangement);
+            }
+            
             playSound('valid');
-            const letter = evt.item.getAttribute('data-letter') || '';
-            const potIndex = Array.from(evt.to.children).indexOf(evt.item);
-            
-            // Update the pot arrangement
-            const newPotArrangement = [...potArrangement];
-            newPotArrangement[potIndex] = letter;
-            setPotArrangement(newPotArrangement);
-            
-            // Remove the item from the pot and back to the tiles (we'll show it in the pot separately)
-            evt.item.remove();
           }
         }
       });
-      
-      // Initialize sortable for the pots container
-      if (potsContainerRef.current && originalWord) {
-        // Make each pot a dropzone
-        Array.from(potsContainerRef.current.children).forEach((pot, index) => {
-          Sortable.create(pot as HTMLElement, {
-            group: {
-              name: "pots",
-              put: ["letters"]
-            },
-            animation: 150,
-            onAdd: (evt) => {
-              // Get the letter from the dragged tile
-              const letter = evt.item.getAttribute('data-letter') || '';
-              
-              // Update the pot arrangement
-              const newPotArrangement = [...potArrangement];
-              newPotArrangement[index] = letter;
-              setPotArrangement(newPotArrangement);
-              
-              // Check if the pot already had a letter (remove from the old pot)
-              if (potArrangement[index] !== null) {
-                // Return the old letter to the tiles
-                const newArrangement = [...currentArrangement];
-                newArrangement.push(potArrangement[index]!);
-                setCurrentArrangement(newArrangement);
-              }
-              
-              // Remove the item from the DOM (we'll show it in the pot with our own component)
-              evt.item.remove();
-              
-              // Play drop sound
-              playSound('valid');
-            }
-          });
-        });
-      }
     }
     
     return () => {
@@ -129,7 +99,49 @@ const WordScrambleGame = () => {
         tilesSortableRef.current = null;
       }
     };
-  }, [currentArrangement, tilesContainerRef.current, potsContainerRef.current, originalWord]);
+  }, [currentArrangement, tilesContainerRef.current]);
+  
+  // Simple function to handle direct clicking on tiles
+  const handleTileClick = (letter: string, index: number) => {
+    // Find the first empty pot
+    const emptyPotIndex = potArrangement.findIndex(pot => pot === null);
+    
+    if (emptyPotIndex !== -1) {
+      // Add letter to the first empty pot
+      addLetterToPot(letter, emptyPotIndex);
+      
+      // Remove letter from tiles
+      const newArrangement = [...currentArrangement];
+      newArrangement.splice(index, 1);
+      setCurrentArrangement(newArrangement);
+      
+      playSound('valid');
+    } else {
+      // No empty pots
+      toast({
+        title: "No empty pots",
+        description: "Remove a letter from a pot first.",
+        variant: "destructive",
+      });
+      playSound('invalid');
+    }
+  };
+
+  // Helper function to add a letter to a pot
+  const addLetterToPot = (letter: string, potIndex: number) => {
+    // Check if the pot already has a letter
+    if (potArrangement[potIndex] !== null) {
+      // Return the old letter to the tiles
+      const newArrangement = [...currentArrangement];
+      newArrangement.push(potArrangement[potIndex]!);
+      setCurrentArrangement(newArrangement);
+    }
+    
+    // Update the pot arrangement
+    const newPotArrangement = [...potArrangement];
+    newPotArrangement[potIndex] = letter;
+    setPotArrangement(newPotArrangement);
+  };
 
   const startNewGame = () => {
     if (!difficulty) return;
@@ -153,6 +165,7 @@ const WordScrambleGame = () => {
     setHintedIndexes([]);
     setIsCorrect(null);
     setShowInvalidAnimation(false);
+    setShowHelpAnimation(true);
     
     console.log("New word:", newWord); // For debugging only
     setIsLoading(false);
@@ -354,8 +367,13 @@ const WordScrambleGame = () => {
 
       <Card className="p-4 md:p-6 bg-white mb-4">
         <div className="mb-4 text-center">
-          <p className="text-muted-foreground">
-            Drag the letters into the pots to form a valid English word.
+          <p className="text-muted-foreground flex items-center justify-center gap-2">
+            {showHelpAnimation && (
+              <span className="animate-pulse bg-primary/20 px-2 py-1 rounded-full flex items-center gap-1 text-sm">
+                <MoveHorizontal className="h-4 w-4" /> Drag or tap tiles to fill the pots
+              </span>
+            )}
+            {!showHelpAnimation && "Drag or tap the letters into the pots to form a word."}
           </p>
         </div>
           
@@ -378,17 +396,21 @@ const WordScrambleGame = () => {
 
         {/* Letter Tiles (Source) */}
         <div 
-          className="flex justify-center flex-wrap my-6"
+          className="flex justify-center flex-wrap my-6 relative"
           ref={tilesContainerRef}
         >
           {currentArrangement.map((letter, index) => (
-            <LetterTile 
+            <div 
               key={`tile-${index}-${letter}`}
-              letter={letter}
-              isHinted={false}
-              isCorrect={!!isCorrect}
-              index={index}
-            />
+              onClick={() => handleTileClick(letter, index)}
+            >
+              <LetterTile 
+                letter={letter}
+                isHinted={false}
+                isCorrect={!!isCorrect}
+                index={index}
+              />
+            </div>
           ))}
         </div>
 
@@ -406,7 +428,7 @@ const WordScrambleGame = () => {
             <Button
               onClick={useHint}
               variant="outline"
-              className="px-8 py-2 flex items-center gap-2"
+              className="px-8 py-2 flex items-center gap-1"
               disabled={hintsUsed >= MAX_HINTS[difficulty] || isCorrect === true}
             >
               <HelpCircle className="h-5 w-5" />
@@ -430,6 +452,28 @@ const WordScrambleGame = () => {
           </div>
         </div>
       </Card>
+
+      <style jsx global>{`
+        .dragging-tile {
+          transform: scale(1.1);
+          opacity: 0.8;
+          z-index: 100;
+          cursor: grabbing !important;
+        }
+        
+        @keyframes pulse-border {
+          0%, 100% { border-color: rgba(139, 92, 246, 0.3); }
+          50% { border-color: rgba(139, 92, 246, 0.8); }
+        }
+        
+        [data-pot-index] {
+          transition: all 0.2s ease-out;
+        }
+        
+        [data-pot-index]:empty {
+          animation: pulse-border 2s infinite;
+        }
+      `}</style>
     </div>
   );
 };

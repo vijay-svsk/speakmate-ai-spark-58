@@ -45,13 +45,14 @@ export const LetterTile: React.FC<LetterTileProps> = ({
     <div
       data-letter={letter}
       className={`
-        select-none cursor-grab active:cursor-grabbing
+        select-none cursor-pointer active:cursor-grabbing
         flex items-center justify-center
         w-12 h-16 md:w-16 md:h-20
         text-2xl md:text-3xl font-bold uppercase
         border-2 rounded-lg m-1 
-        transition-all duration-300 hover:scale-105
+        transition-all duration-200 hover:scale-105 active:scale-95
         ${tileClass} ${tileColorClass}
+        animate-[bounce_0.5s_ease-out]
       `}
       style={{
         animationDelay,

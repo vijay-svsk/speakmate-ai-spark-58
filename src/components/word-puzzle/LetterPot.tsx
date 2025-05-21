@@ -24,14 +24,11 @@ export const LetterPot: React.FC<LetterPotProps> = ({
         ? 'bg-green-500 border-green-500 text-white animate-[flip-in_0.5s_ease-out_forwards]'
         : isCorrect === false
           ? 'bg-red-100 border-red-200'
-          : 'bg-primary/10 border-primary' 
-    : 'bg-primary/5 border-primary/30 hover:bg-primary/10';
+          : 'bg-primary/10 border-primary shadow-sm' 
+    : 'bg-primary/5 border-primary/30 border-dashed hover:bg-primary/10';
         
   // Use animation delay based on index for sequential animations
   const animationDelay = `${index * 100}ms`;
-  
-  // Pot styling
-  const potShape = "rounded-full";
        
   return (
     <div className="m-1 relative">
@@ -41,10 +38,10 @@ export const LetterPot: React.FC<LetterPotProps> = ({
           flex items-center justify-center
           w-16 h-16 md:w-20 md:h-20
           text-2xl md:text-3xl font-bold uppercase
-          border-2 ${potShape}
-          transition-colors duration-300
+          border-2 rounded-lg
+          transition-all duration-300
           ${potClass}
-          overflow-hidden
+          ${!letter ? 'animate-[pulse_3s_ease-in-out_infinite]' : ''}
         `}
         style={{
           animationDelay,
@@ -54,7 +51,8 @@ export const LetterPot: React.FC<LetterPotProps> = ({
       >
         {letter && (
           <div 
-            className="w-full h-full flex items-center justify-center cursor-pointer"
+            className="w-full h-full flex items-center justify-center cursor-pointer 
+                      transition-transform hover:scale-105 active:scale-95"
             onClick={onLetterRemove}
           >
             {letter}
@@ -63,14 +61,21 @@ export const LetterPot: React.FC<LetterPotProps> = ({
         
         {!letter && (
           <div className="w-8 h-8 md:w-10 md:h-10 opacity-30">
-            {/* This is the empty pot shape */}
+            {/* Empty pot indicator */}
             <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 8L6 2H18L21 8H3Z" stroke="currentColor" strokeWidth="2" />
-              <path d="M3 8V20C3 21.1046 3.89543 22 5 22H19C20.1046 22 21 21.1046 21 20V8" stroke="currentColor" strokeWidth="2" />
+              <rect x="4" y="6" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2" strokeDasharray="4 2" />
+              <path d="M12 2 L12 10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
             </svg>
           </div>
         )}
       </div>
+      
+      {/* Add visual indicator for drag target */}
+      {!letter && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-6 h-6 border-2 border-dashed border-primary/30 rounded-full animate-[pulse_3s_ease-in-out_infinite]"></div>
+        </div>
+      )}
     </div>
   );
 };
