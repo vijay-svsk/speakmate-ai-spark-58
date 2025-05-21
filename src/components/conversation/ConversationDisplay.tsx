@@ -1,6 +1,5 @@
 
 import React, { useRef, useEffect } from 'react';
-import { MessageSquare, User } from 'lucide-react';
 import {
   Card,
   CardHeader,
@@ -9,6 +8,8 @@ import {
   CardContent,
   CardFooter
 } from "@/components/ui/card";
+import { MessageSquare, User, Mic, MicOff } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 
 type ConversationEntry = {
   speaker: 'ai' | 'user';
@@ -142,6 +143,3 @@ const RecordingControls = ({
 };
 
 export default ConversationDisplay;
-
-import { Button } from "@/components/ui/button";
-import { Mic, MicOff } from "lucide-react";
