@@ -1,5 +1,25 @@
+
 import { commonFiveLetterWords } from './word-lists/common-words';
 import { validFiveLetterWords } from './word-lists/valid-words';
+import { Difficulty } from '@/components/word-puzzle/WordScrambleGame';
+
+// List of easy words (4-5 letters)
+const easyWords = [
+  "book", "tree", "star", "lamp", "cake", "bird", "fish", "door", "shoe", "ball",
+  "cat", "dog", "hat", "sun", "moon", "rain", "snow", "food", "milk", "jump",
+  "toy", "bear", "duck", "frog", "ship", "boat", "kite", "hand", "foot", "nose",
+  "ear", "eye", "leaf", "seed", "rock", "sand", "fire", "wind", "home", "road",
+  "car", "bike", "game", "song", "bell", "gift", "bed", "desk", "pen", "bag"
+];
+
+// List of medium-difficulty words (6-7 letters)
+const mediumWords = [
+  "monkey", "rocket", "garden", "dinner", "summer", "winter", "autumn", "pencil", "laptop", "castle",
+  "island", "sunset", "palace", "basket", "circus", "candle", "farmer", "jacket", "bottle", "button",
+  "flower", "banana", "orange", "camera", "puzzle", "bundle", "carpet", "planet", "soccer", "cookie",
+  "guitar", "secret", "jungle", "mirror", "window", "ladder", "pillow", "ticket", "wallet", "doctor",
+  "rabbit", "bamboo", "walker", "turkey", "sunset", "magnet", "mirror", "spider", "hammer", "silver"
+];
 
 // Get a random word from the list of common words
 export const getRandomWord = (): string => {
@@ -11,6 +31,27 @@ export const getRandomWord = (): string => {
 export const isValidWord = (word: string): boolean => {
   return validFiveLetterWords.includes(word.toLowerCase());
 };
+
+// Get a word list based on difficulty
+export const getDifficultyWordList = (difficulty: Difficulty): string[] => {
+  switch (difficulty) {
+    case 'easy':
+      return easyWords;
+    case 'medium':
+      return mediumWords;
+    case 'hard':
+      return midLengthWords.filter(word => word.length >= 8);
+    default:
+      return mediumWords;
+  }
+}
+
+// Get a random word based on difficulty level
+export const getRandomWordByDifficulty = (difficulty: Difficulty): string => {
+  const wordList = getDifficultyWordList(difficulty);
+  const index = Math.floor(Math.random() * wordList.length);
+  return wordList[index];
+}
 
 // Check letter status in a word
 type LetterStatus = 'correct' | 'present' | 'absent';
@@ -116,14 +157,19 @@ export const getRandomMidLengthWord = (): string => {
   return midLengthWords[index];
 };
 
-// Scramble a word using Fisher-Yates shuffle
-export const scrambleWord = (word: string): string => {
+// Scramble a word using Fisher-Yates shuffle with difficulty factor
+export const scrambleWord = (word: string, difficulty: Difficulty = 'medium'): string => {
   const letters = word.split('');
   
-  // Fisher-Yates shuffle algorithm
-  for (let i = letters.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [letters[i], letters[j]] = [letters[j], letters[i]]; // Swap elements
+  // Apply more aggressive shuffle for harder difficulties
+  const shuffleIterations = difficulty === 'hard' ? 3 : 1;
+  
+  for (let iter = 0; iter < shuffleIterations; iter++) {
+    // Fisher-Yates shuffle algorithm
+    for (let i = letters.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [letters[i], letters[j]] = [letters[j], letters[i]]; // Swap elements
+    }
   }
   
   return letters.join('');

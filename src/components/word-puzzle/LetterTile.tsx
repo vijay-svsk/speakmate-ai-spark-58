@@ -25,6 +25,21 @@ export const LetterTile: React.FC<LetterTileProps> = ({
         
   // Use animation delay based on index for sequential animations
   const animationDelay = `${index * 100}ms`;
+  
+  // Generate a vibrant, kid-friendly background color for each tile
+  const colors = [
+    'bg-[#FEC6A1] border-[#F97316]', // Soft Orange
+    'bg-[#E5DEFF] border-[#8B5CF6]', // Soft Purple
+    'bg-[#FFDEE2] border-[#F43F5E]', // Soft Pink
+    'bg-[#FDE1D3] border-[#F97316]', // Soft Peach
+    'bg-[#D3E4FD] border-[#0EA5E9]', // Soft Blue
+    'bg-[#F2FCE2] border-[#22C55E]', // Soft Green
+    'bg-[#FEF7CD] border-[#EAB308]', // Soft Yellow
+  ];
+  
+  // Use a consistent color based on the letter to make it look more playful
+  const colorIndex = letter.charCodeAt(0) % colors.length;
+  const tileColorClass = isHinted || isCorrect !== null ? '' : colors[colorIndex];
         
   return (
     <div
@@ -34,9 +49,9 @@ export const LetterTile: React.FC<LetterTileProps> = ({
         flex items-center justify-center
         w-12 h-16 md:w-16 md:h-20
         text-2xl md:text-3xl font-bold uppercase
-        border-2 rounded m-1 
-        transition-colors duration-300
-        ${tileClass}
+        border-2 rounded-lg m-1 
+        transition-all duration-300 hover:scale-105
+        ${tileClass} ${tileColorClass}
       `}
       style={{
         animationDelay,
