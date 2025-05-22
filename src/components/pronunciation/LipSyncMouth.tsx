@@ -10,85 +10,114 @@ interface LipSyncMouthProps {
   phoneme?: string;
 }
 
-// Mapping of phonemes to mouth and tongue shapes
+// Mapping of phonemes to mouth and tongue shapes - enhanced for natural appearance
 const PHONEME_SHAPES = {
-  "A": { openness: 0.7, roundness: 0.3, tonguePosition: 0.3 },  // as in "cat"
-  "E": { openness: 0.5, roundness: 0.1, tonguePosition: 0.5 },  // as in "bed"
-  "I": { openness: 0.3, roundness: 0.2, tonguePosition: 0.7 },  // as in "fit"
-  "O": { openness: 0.6, roundness: 0.9, tonguePosition: 0.2 },  // as in "hot"
-  "U": { openness: 0.4, roundness: 0.8, tonguePosition: 0.1 },  // as in "put"
-  "F": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5 },  // as in "fish"
-  "V": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5 },  // as in "van"
-  "P": { openness: 0.0, roundness: 0.3, tonguePosition: 0.3 },  // as in "map"
-  "B": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3 },  // as in "bat"
-  "M": { openness: 0.0, roundness: 0.5, tonguePosition: 0.3 },  // as in "map"
-  "TH": { openness: 0.3, roundness: 0.2, tonguePosition: 0.8 }, // as in "think"
-  "L": { openness: 0.4, roundness: 0.1, tonguePosition: 0.9 },  // as in "lip"
-  "default": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3 }
+  "A": { openness: 0.7, roundness: 0.3, tonguePosition: 0.3, lipThickness: 0.25 },  // as in "cat"
+  "E": { openness: 0.5, roundness: 0.2, tonguePosition: 0.5, lipThickness: 0.28 },  // as in "bed"
+  "I": { openness: 0.3, roundness: 0.2, tonguePosition: 0.7, lipThickness: 0.3 },  // as in "fit"
+  "O": { openness: 0.6, roundness: 0.8, tonguePosition: 0.2, lipThickness: 0.32 },  // as in "hot"
+  "U": { openness: 0.4, roundness: 0.7, tonguePosition: 0.1, lipThickness: 0.35 },  // as in "put"
+  "F": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, lipThickness: 0.25 },  // as in "fish"
+  "V": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, lipThickness: 0.25 },  // as in "van"
+  "P": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, lipThickness: 0.32 },  // as in "map"
+  "B": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, lipThickness: 0.32 },  // as in "bat"
+  "M": { openness: 0.1, roundness: 0.5, tonguePosition: 0.3, lipThickness: 0.35 },  // as in "map"
+  "TH": { openness: 0.3, roundness: 0.2, tonguePosition: 0.8, lipThickness: 0.25 }, // as in "think"
+  "L": { openness: 0.4, roundness: 0.1, tonguePosition: 0.9, lipThickness: 0.28 },  // as in "lip"
+  "default": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, lipThickness: 0.3 }
 };
 
-// Mouth Component
-const MouthModel: React.FC<{ openness: number; roundness: number; tonguePosition: number }> = ({ 
+// Natural Mouth Component
+const NaturalMouthModel: React.FC<{ 
+  openness: number; 
+  roundness: number; 
+  tonguePosition: number;
+  lipThickness: number;
+}> = ({ 
   openness, 
   roundness, 
-  tonguePosition 
+  tonguePosition,
+  lipThickness
 }) => {
-  // Calculate mouth dimensions based on phoneme parameters
-  const mouthWidth = 1.2 + (roundness * 0.4);
-  const mouthHeight = 0.2 + (openness * 0.8);
-  const lipThickness = 0.3;
-  
-  // Reference to animate the tongue
+  // References for animation
+  const upperLipRef = useRef<THREE.Mesh>(null);
+  const lowerLipRef = useRef<THREE.Mesh>(null);
   const tongueRef = useRef<THREE.Mesh>(null);
-
-  // Position tongue based on the phoneme
+  const teethUpperRef = useRef<THREE.Mesh>(null);
+  const teethLowerRef = useRef<THREE.Mesh>(null);
+  
+  // Calculate mouth dimensions based on phoneme parameters
+  const mouthWidth = 1.0 + (roundness * 0.5);
+  const mouthHeight = 0.1 + (openness * 0.7);
+  const lipCurve = 0.2 + (roundness * 0.2);
+  
+  // Update mouth shape based on parameters
   useEffect(() => {
-    if (tongueRef.current) {
-      tongueRef.current.position.y = -0.1 - (tonguePosition * 0.15);
-      tongueRef.current.position.z = 0.1 + (tonguePosition * 0.2);
-    }
-  }, [tonguePosition]);
+    if (!upperLipRef.current || !lowerLipRef.current || !tongueRef.current || 
+        !teethUpperRef.current || !teethLowerRef.current) return;
+    
+    // Upper lip position and shape
+    upperLipRef.current.position.y = mouthHeight/2 + lipThickness/4;
+    upperLipRef.current.scale.x = mouthWidth;
+    upperLipRef.current.scale.z = 0.5 + lipCurve;
+    
+    // Lower lip position and shape
+    lowerLipRef.current.position.y = -mouthHeight/2 - lipThickness/4;
+    lowerLipRef.current.scale.x = mouthWidth;
+    lowerLipRef.current.scale.z = 0.5 + lipCurve;
+    
+    // Tongue position
+    tongueRef.current.position.y = -0.1 - (tonguePosition * 0.15);
+    tongueRef.current.position.z = -0.1 + (tonguePosition * 0.3);
+    tongueRef.current.rotation.x = -Math.PI/6 + (tonguePosition * Math.PI/4);
+    
+    // Teeth positions
+    teethUpperRef.current.position.y = mouthHeight/2 - 0.05;
+    teethLowerRef.current.position.y = -mouthHeight/2 + 0.05;
+  }, [mouthWidth, mouthHeight, openness, roundness, tonguePosition, lipCurve, lipThickness]);
 
   return (
-    <group>
-      {/* Upper lip */}
-      <mesh position={[0, mouthHeight/2 + lipThickness/4, 0]}>
-        <boxGeometry args={[mouthWidth, lipThickness/2, 0.5]} />
-        <meshStandardMaterial color="#cc6666" />
-      </mesh>
-      
-      {/* Lower lip */}
-      <mesh position={[0, -mouthHeight/2 - lipThickness/4, 0]}>
-        <boxGeometry args={[mouthWidth, lipThickness/2, 0.5]} />
-        <meshStandardMaterial color="#cc6666" />
+    <group position={[0, 0, 0]}>
+      {/* Face background - subtle oval shape */}
+      <mesh position={[0, 0, -0.5]} rotation={[0, 0, 0]}>
+        <sphereGeometry args={[2, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
+        <meshStandardMaterial color="#ffe0d0" />
       </mesh>
       
       {/* Mouth cavity (dark inside) */}
-      <mesh position={[0, 0, -0.2]}>
-        <boxGeometry args={[mouthWidth - 0.1, mouthHeight, 0.3]} />
-        <meshStandardMaterial color="#330000" />
+      <mesh position={[0, 0, -0.15]}>
+        <ellipsoidGeometry args={[mouthWidth/2 - 0.05, mouthHeight/2, 0.4]} />
+        <meshStandardMaterial color="#5c0f22" />
       </mesh>
       
-      {/* Tongue */}
-      <mesh 
-        ref={tongueRef}
-        position={[0, -0.2, 0.1]} 
-        rotation={[tonguePosition * 0.5, 0, 0]}
-      >
+      {/* Upper lip with natural curve */}
+      <mesh ref={upperLipRef}>
+        <cylinderGeometry args={[lipThickness*1.1, lipThickness, 0.3, 32, 1, true, Math.PI, Math.PI]} />
+        <meshStandardMaterial color="#e08a8a" side={THREE.DoubleSide} />
+      </mesh>
+      
+      {/* Lower lip with natural curve */}
+      <mesh ref={lowerLipRef}>
+        <cylinderGeometry args={[lipThickness, lipThickness*1.1, 0.3, 32, 1, true, 0, Math.PI]} />
+        <meshStandardMaterial color="#d07777" side={THREE.DoubleSide} />
+      </mesh>
+      
+      {/* Tongue - more natural curved shape */}
+      <mesh ref={tongueRef}>
         <sphereGeometry args={[0.4, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-        <meshStandardMaterial color="#ff9999" />
+        <meshStandardMaterial color="#ff9a9a" />
       </mesh>
       
       {/* Teeth (upper) */}
-      <mesh position={[0, mouthHeight/2 - 0.05, 0.1]}>
-        <boxGeometry args={[mouthWidth - 0.2, 0.1, 0.1]} />
-        <meshStandardMaterial color="#ffffff" />
+      <mesh ref={teethUpperRef} position={[0, 0, 0.05]}>
+        <boxGeometry args={[mouthWidth - 0.2, 0.12, 0.1]} />
+        <meshStandardMaterial color="#f5f5f5" />
       </mesh>
       
       {/* Teeth (lower) */}
-      <mesh position={[0, -mouthHeight/2 + 0.05, 0.1]}>
-        <boxGeometry args={[mouthWidth - 0.2, 0.1, 0.1]} />
-        <meshStandardMaterial color="#ffffff" />
+      <mesh ref={teethLowerRef} position={[0, 0, 0.05]}>
+        <boxGeometry args={[mouthWidth - 0.2, 0.12, 0.1]} />
+        <meshStandardMaterial color="#f0f0f0" />
       </mesh>
     </group>
   );
@@ -159,17 +188,19 @@ export const LipSyncMouth: React.FC<LipSyncMouthProps> = ({ word, isAnimating, p
   }, [phoneme]);
 
   return (
-    <div className="mouth-model-container w-full h-full min-h-[128px] rounded-lg overflow-hidden bg-gradient-to-b from-blue-50 to-blue-100 dark:from-gray-800 dark:to-gray-900">
+    <div className="mouth-model-container relative w-full h-full min-h-[180px] rounded-lg overflow-hidden bg-gradient-to-b from-pink-50 to-rose-100 dark:from-pink-950 dark:to-rose-900">
       <div className="phoneme-indicator text-xs font-mono text-center absolute top-1 left-0 right-0 z-10 bg-black/20 text-white py-0.5">
         {currentPhoneme && `Phoneme: ${currentPhoneme}`}
       </div>
       <Canvas camera={{ position: [0, 0, 3], fov: 40 }}>
         <ambientLight intensity={0.7} />
         <directionalLight position={[5, 5, 5]} intensity={0.8} />
-        <MouthModel 
+        <directionalLight position={[-5, 5, 5]} intensity={0.4} color="#ffe0c0" />
+        <NaturalMouthModel 
           openness={mouthShape.openness} 
           roundness={mouthShape.roundness} 
-          tonguePosition={mouthShape.tonguePosition} 
+          tonguePosition={mouthShape.tonguePosition}
+          lipThickness={mouthShape.lipThickness}
         />
         <OrbitControls 
           enableZoom={false} 
