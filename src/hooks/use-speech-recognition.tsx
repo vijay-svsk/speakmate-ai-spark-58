@@ -62,25 +62,51 @@ export const useSpeechRecognition = (): SpeechRecognitionResult => {
     
     return () => {
       if (recognition) {
-        recognition.stop();
+        try {
+          recognition.stop();
+        } catch (error) {
+          console.error('Error stopping recognition during cleanup:', error);
+        }
       }
     };
   }, []);
 
   const startListening = useCallback(() => {
-    if (recognition) {
+    if (recognition && !isListening) {
       setTranscript('');
-      recognition.start();
-      setIsListening(true);
+      try {
+        recognition.start();
+        setIsListening(true);
+      } catch (error) {
+        console.error('Error starting speech recognition:', error);
+        
+        // If recognition is already started, stop it first then restart
+        if (error instanceof DOMException && error.message.includes('already started')) {
+          try {
+            recognition.stop();
+            // Small timeout to ensure recognition has fully stopped
+            setTimeout(() => {
+              recognition.start();
+              setIsListening(true);
+            }, 100);
+          } catch (stopError) {
+            console.error('Error stopping and restarting recognition:', stopError);
+          }
+        }
+      }
     }
-  }, [recognition]);
+  }, [recognition, isListening]);
 
   const stopListening = useCallback(() => {
-    if (recognition) {
-      recognition.stop();
-      setIsListening(false);
+    if (recognition && isListening) {
+      try {
+        recognition.stop();
+        setIsListening(false);
+      } catch (error) {
+        console.error('Error stopping speech recognition:', error);
+      }
     }
-  }, [recognition]);
+  }, [recognition, isListening]);
 
   const resetTranscript = useCallback(() => {
     setTranscript('');
