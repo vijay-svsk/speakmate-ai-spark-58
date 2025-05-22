@@ -321,11 +321,11 @@ const WordScrambleGame = () => {
           <Button
             variant="ghost"
             size="icon"
-            title={"" ? "Enable sound" : "Mute sound"}
+            title="Mute sound"
             onClick={() => {}}
             className="h-10 w-10 rounded-full hover:bg-primary/10"
           >
-            {false ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            <Volume2 className="h-5 w-5" />
           </Button>
           
           <Button
