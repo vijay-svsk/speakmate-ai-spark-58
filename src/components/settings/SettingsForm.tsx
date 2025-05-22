@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -9,7 +8,6 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { useSound } from "@/lib/useSound";
 import { Moon, Sun, Volume2, VolumeX, Bell, Eye, EyeOff, Copy, Check } from "lucide-react";
 
 // Form schema with validation
@@ -25,7 +23,6 @@ const settingsFormSchema = z.object({
 type SettingsFormValues = z.infer<typeof settingsFormSchema>;
 
 export function SettingsForm() {
-  const { playSound, toggleMute, isMuted } = useSound();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [showApiKey, setShowApiKey] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -62,7 +59,6 @@ export function SettingsForm() {
         if (apiKey && apiKey.length > 10) { // Only save if looks like a valid key
           localStorage.setItem("gemini-api-key", apiKey);
           setIsSaved(true);
-          playSound("valid");
           toast({
             title: "API Key Saved",
             description: "Your API key has been automatically saved.",
@@ -72,7 +68,7 @@ export function SettingsForm() {
       
       return () => clearTimeout(timer);
     }
-  }, [form.watch("geminiApiKey"), isSaved, playSound]);
+  }, [form.watch("geminiApiKey"), isSaved]);
 
   // Reset the copy state after 2 seconds
   useEffect(() => {
@@ -94,7 +90,6 @@ export function SettingsForm() {
     localStorage.setItem("notifications-enabled", data.notificationsEnabled.toString());
     
     // Apply settings immediately
-    if (data.muteSounds !== isMuted) toggleMute();
     setIsDarkMode(data.darkMode);
     
     // Apply dark mode changes
@@ -105,7 +100,6 @@ export function SettingsForm() {
     }
     
     // Show success toast
-    playSound("valid");
     toast({
       title: "Settings saved",
       description: "Your preferences have been updated.",
@@ -118,7 +112,6 @@ export function SettingsForm() {
     if (apiKey) {
       navigator.clipboard.writeText(apiKey);
       setCopied(true);
-      playSound("keypress");
       toast({
         title: "Copied!",
         description: "API key copied to clipboard",
@@ -129,7 +122,6 @@ export function SettingsForm() {
   // Toggle API key visibility
   const toggleApiKeyVisibility = () => {
     setShowApiKey(!showApiKey);
-    playSound("keypress");
   };
   
   // Apply saved dark mode setting on component mount
@@ -142,10 +134,6 @@ export function SettingsForm() {
     } else {
       document.documentElement.classList.remove("dark");
     }
-    
-    // Apply saved mute setting on component mount
-    const muteSetting = localStorage.getItem("mute-sounds") === "true";
-    if (muteSetting !== isMuted) toggleMute();
   }, []);
 
   return (

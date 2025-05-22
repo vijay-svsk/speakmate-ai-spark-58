@@ -1,11 +1,9 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-import { useSound } from "@/lib/useSound";
 import { Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import confetti from 'canvas-confetti';
 
@@ -14,15 +12,10 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [age, setAge] = useState("");
-  const { playSound, isMuted, toggleMute } = useSound();
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Play sound when the component mounts
-    playSound('valid');
-    
-    // Add floating animations to decorative elements
     const interval = setInterval(() => {
       const floatingElements = document.querySelectorAll('.floating-element');
       floatingElements.forEach((el) => {
@@ -31,25 +24,21 @@ const Register = () => {
         (el as HTMLElement).style.transform = `translate(${randomX}px, ${randomY}px)`;
       });
     }, 2000);
-    
     return () => clearInterval(interval);
-  }, [playSound]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Celebration animation
     confetti({
       particleCount: 150,
       spread: 80,
       origin: { y: 0.6 }
     });
-    playSound('valid');
     setTimeout(() => navigate('/'), 1500);
   };
 
   const handleElementHover = (element: string) => {
     setHoveredElement(element);
-    playSound('keypress');
   };
 
   return (
@@ -88,14 +77,14 @@ const Register = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleMute}
+          onClick={() => {}}
           onMouseEnter={() => handleElementHover('sound')}
           onMouseLeave={() => setHoveredElement(null)}
           className={`rounded-full hover:bg-primary/10 hover:scale-110 transition-all duration-300 ${
             hoveredElement === 'sound' ? 'animate-pulse' : ''
           }`}
         >
-          {isMuted ? (
+          {true ? (
             <VolumeX className="h-6 w-6 text-primary" />
           ) : (
             <Volume2 className="h-6 w-6 text-primary" />
@@ -126,7 +115,7 @@ const Register = () => {
                 placeholder="Enter your name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                onFocus={() => playSound('keypress')}
+                onFocus={() => {}}
                 className="border-primary/20 focus:border-primary"
                 required
               />
@@ -142,7 +131,7 @@ const Register = () => {
                 placeholder="How old are you?"
                 value={age}
                 onChange={(e) => setAge(e.target.value)}
-                onFocus={() => playSound('keypress')}
+                onFocus={() => {}}
                 className="border-primary/20 focus:border-primary"
                 required
               />
@@ -156,7 +145,7 @@ const Register = () => {
                 placeholder="your.email@example.com"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => playSound('keypress')}
+                onFocus={() => {}}
                 className="border-primary/20 focus:border-primary"
                 required
               />
@@ -169,7 +158,7 @@ const Register = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => playSound('keypress')}
+                onFocus={() => {}}
                 className="border-primary/20 focus:border-primary"
                 required
               />

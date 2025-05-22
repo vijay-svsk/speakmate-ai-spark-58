@@ -1,26 +1,24 @@
-
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-import { useSound } from "@/lib/useSound";
+// REMOVE useSound import
 import { Volume2, VolumeX, ArrowLeft } from "lucide-react";
 import confetti from 'canvas-confetti';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { playSound, isMuted, toggleMute } = useSound();
+  // REMOVE useSound
+  // const { playSound, isMuted, toggleMute } = useSound();
   const [hoveredElement, setHoveredElement] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Play sound when the component mounts
-    playSound('valid');
-    
-    // Add floating animations
+    // REMOVE playSound('valid');
+    // Floating animations ...
     const interval = setInterval(() => {
       const floatingElements = document.querySelectorAll('.floating-element');
       floatingElements.forEach((el) => {
@@ -29,25 +27,23 @@ const Login = () => {
         (el as HTMLElement).style.transform = `translate(${randomX}px, ${randomY}px)`;
       });
     }, 2000);
-    
     return () => clearInterval(interval);
-  }, [playSound]);
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // For demo purposes, we'll just show confetti and navigate
     confetti({
       particleCount: 100,
       spread: 70,
       origin: { y: 0.6 }
     });
-    playSound('valid');
+    // REMOVE playSound('valid');
     setTimeout(() => navigate('/'), 1000);
   };
 
   const handleElementHover = (element: string) => {
     setHoveredElement(element);
-    playSound('keypress');
+    // REMOVE playSound('keypress');
   };
 
   return (
@@ -86,14 +82,14 @@ const Login = () => {
         <Button
           variant="ghost"
           size="icon"
-          onClick={toggleMute}
+          onClick={() => {}}
           onMouseEnter={() => handleElementHover('sound')}
           onMouseLeave={() => setHoveredElement(null)}
           className={`rounded-full hover:bg-primary/10 hover:scale-110 transition-all duration-300 ${
             hoveredElement === 'sound' ? 'animate-pulse' : ''
           }`}
         >
-          {isMuted ? (
+          {true ? (
             <VolumeX className="h-6 w-6 text-primary" />
           ) : (
             <Volume2 className="h-6 w-6 text-primary" />
@@ -125,7 +121,7 @@ const Login = () => {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => playSound('keypress')}
+                onFocus={() => {}}
                 className="border-primary/20 focus:border-primary"
                 required
               />
@@ -147,7 +143,7 @@ const Login = () => {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => playSound('keypress')}
+                onFocus={() => {}}
                 className="border-primary/20 focus:border-primary"
                 required
               />

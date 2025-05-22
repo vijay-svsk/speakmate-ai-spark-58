@@ -1,11 +1,9 @@
-
 import React, { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { useSound } from "@/lib/useSound";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -113,34 +111,24 @@ const LearningBubbles = () => {
 
 export function AppLayout({ children, showBackButton = true }: AppLayoutProps) {
   const navigate = useNavigate();
-  const { playSound } = useSound();
   const isHomePage = window.location.pathname === "/";
   const [mounted, setMounted] = useState(false);
   const [showBubbles, setShowBubbles] = useState(false);
 
   useEffect(() => {
-    // Play a sound when the layout mounts
-    playSound('valid');
-    
-    // Add a subtle background animation
     const body = document.body;
     body.classList.add('bg-gradient-animation');
-    
     setMounted(true);
-    
-    // Show learning bubbles after a delay
     const timer = setTimeout(() => {
       setShowBubbles(true);
     }, 500);
-    
     return () => {
       body.classList.remove('bg-gradient-animation');
       clearTimeout(timer);
     };
-  }, [playSound]);
+  }, []);
 
   const handleBack = () => {
-    playSound('keypress');
     navigate(-1);
   };
 
