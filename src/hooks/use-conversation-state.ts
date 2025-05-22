@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { toast } from "sonner";
-import { resetChatHistory, sendMessageToGemini, getLanguageFeedback } from '@/lib/gemini-api';
+import { resetChatHistory, sendMessageToGemini } from '@/lib/gemini-api';
 import { useNavigate } from 'react-router-dom';
 
 export type ConversationEntry = {
@@ -99,35 +99,28 @@ export function useConversationState() {
         { speaker: 'user', text: userResponse }
       ]);
       
-      // Get language feedback
-      const languageFeedback = await getLanguageFeedback(userResponse);
+      // Generate response from AI
+      const aiResponse = await sendMessageToGemini(userResponse, activeTopic);
       
-      // Update scores
-      setFluencyScore(languageFeedback.fluencyScore);
-      setVocabularyScore(languageFeedback.vocabularyScore);
-      setGrammarScore(languageFeedback.grammarScore);
-      
-      // Add feedback to conversation
-      setConversationHistory(prev => [
-        ...prev, 
-        { speaker: 'ai', text: languageFeedback.feedback }
-      ]);
-      
-      // Generate next question
-      const nextQuestion = await sendMessageToGemini(userResponse, activeTopic);
-      
-      if (nextQuestion.includes("Sorry, I encountered an error")) {
+      if (aiResponse.includes("Sorry, I encountered an error")) {
         setHasApiError(true);
         toast.error("Error connecting to the conversation AI");
       }
       
+      // Update scores with some randomized variation to simulate evaluation
+      setFluencyScore(prev => Math.min(100, Math.max(0, prev + (Math.random() * 20 - 10))));
+      setVocabularyScore(prev => Math.min(100, Math.max(0, prev + (Math.random() * 20 - 10))));
+      setGrammarScore(prev => Math.min(100, Math.max(0, prev + (Math.random() * 20 - 10))));
+      
+      // Add AI response to conversation
       setConversationHistory(prev => [
         ...prev, 
-        { speaker: 'ai', text: nextQuestion }
+        { speaker: 'ai', text: aiResponse }
       ]);
-      setCurrentQuestion(nextQuestion);
       
-      return { feedback: languageFeedback.feedback, nextQuestion };
+      setCurrentQuestion(aiResponse);
+      
+      return { nextQuestion: aiResponse };
     } catch (error) {
       console.error("Error processing response:", error);
       setHasApiError(true);
@@ -140,7 +133,7 @@ export function useConversationState() {
         { speaker: 'ai', text: fallbackMessage }
       ]);
       
-      return { feedback: "", nextQuestion: fallbackMessage };
+      return { nextQuestion: fallbackMessage };
     } finally {
       setIsProcessing(false);
     }

@@ -64,16 +64,9 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     if (transcript) {
       const response = await processUserResponse(transcript);
       
-      // Speak the feedback first
-      if (response?.feedback) {
-        speakText(response.feedback);
-      }
-      
-      // After a short delay, speak the next question
+      // Speak only the next question
       if (response?.nextQuestion) {
-        setTimeout(() => {
-          speakText(response.nextQuestion);
-        }, 1000);
+        speakText(response.nextQuestion);
       }
     }
   };
@@ -101,16 +94,9 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
   const handleTextSubmit = async (text: string) => {
     const response = await processUserResponse(text);
     
-    // Speak the feedback first
-    if (response?.feedback) {
-      speakText(response.feedback);
-    }
-    
-    // After a short delay, speak the next question
+    // Speak only the next question
     if (response?.nextQuestion) {
-      setTimeout(() => {
-        speakText(response.nextQuestion);
-      }, 1000);
+      speakText(response.nextQuestion);
     }
   };
 
