@@ -1,6 +1,6 @@
 
 import React, { useRef, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
+import { Canvas, extend } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
 import * as THREE from "three";
 
@@ -86,7 +86,7 @@ const NaturalMouthModel: React.FC<{
       
       {/* Mouth cavity (dark inside) */}
       <mesh position={[0, 0, -0.15]}>
-        <ellipsoidGeometry args={[mouthWidth/2 - 0.05, mouthHeight/2, 0.4]} />
+        <sphereGeometry args={[mouthWidth/2 - 0.05, mouthHeight/2, 0.4, 16, 16]} />
         <meshStandardMaterial color="#5c0f22" />
       </mesh>
       
