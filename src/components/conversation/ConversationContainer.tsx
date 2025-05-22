@@ -3,6 +3,7 @@ import React from 'react';
 import ConversationDisplay from './ConversationDisplay';
 import PerformanceMetrics from './PerformanceMetrics';
 import TopicSelector from './TopicSelector';
+import GrammarRingGraph from './GrammarRingGraph';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Settings, Trash2 } from 'lucide-react';
@@ -26,6 +27,8 @@ interface ConversationContainerProps {
   hasApiError?: boolean;
   onClearConversation?: () => void;
   onTextSubmit?: (text: string) => void;
+  lastUserSentence?: string;
+  correctedSentence?: string;
 }
 
 const ConversationContainer = ({
@@ -46,7 +49,9 @@ const ConversationContainer = ({
   onStopSpeaking,
   hasApiError,
   onClearConversation,
-  onTextSubmit
+  onTextSubmit,
+  lastUserSentence,
+  correctedSentence
 }: ConversationContainerProps) => {
   return (
     <div className="flex-1 p-6">
@@ -105,11 +110,21 @@ const ConversationContainer = ({
           onTextSubmit={onTextSubmit}
         />
 
-        <PerformanceMetrics
-          fluencyScore={fluencyScore}
-          vocabularyScore={vocabularyScore}
-          grammarScore={grammarScore}
-        />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <GrammarRingGraph 
+            fluencyScore={fluencyScore}
+            vocabularyScore={vocabularyScore}
+            grammarScore={grammarScore}
+            userSentence={lastUserSentence}
+            correctedSentence={correctedSentence}
+          />
+          
+          <PerformanceMetrics
+            fluencyScore={fluencyScore}
+            vocabularyScore={vocabularyScore}
+            grammarScore={grammarScore}
+          />
+        </div>
       </div>
     </div>
   );

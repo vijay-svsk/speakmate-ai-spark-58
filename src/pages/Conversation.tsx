@@ -19,6 +19,8 @@ const ConversationContent = () => {
     grammarScore,
     isSpeaking,
     hasApiError,
+    lastUserSentence,
+    correctedSentence,
     handleTopicChange,
     handleStartRecording,
     handleStopRecording,
@@ -48,6 +50,8 @@ const ConversationContent = () => {
       hasApiError={hasApiError}
       onClearConversation={clearConversation}
       onTextSubmit={handleTextSubmit}
+      lastUserSentence={lastUserSentence}
+      correctedSentence={correctedSentence}
     />
   );
 };
