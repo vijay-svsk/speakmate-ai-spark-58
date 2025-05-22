@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import {
   Card,
   CardHeader,
@@ -8,9 +8,10 @@ import {
   CardContent,
   CardFooter
 } from "@/components/ui/card";
-import { MessageSquare, User, Mic, MicOff, AlertOctagon, Volume, VolumeX } from 'lucide-react';
+import { MessageSquare, User, Mic, MicOff, AlertOctagon, Volume, VolumeX, Send } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Input } from "@/components/ui/input";
 
 type ConversationEntry = {
   speaker: 'ai' | 'user';
@@ -29,6 +30,7 @@ interface ConversationDisplayProps {
   isSpeaking?: boolean;
   onStopSpeaking?: () => void;
   hasApiError?: boolean;
+  onTextSubmit?: (text: string) => void;
 }
 
 const ConversationDisplay = ({
@@ -42,7 +44,8 @@ const ConversationDisplay = ({
   onSpeakMessage,
   isSpeaking,
   onStopSpeaking,
-  hasApiError
+  hasApiError,
+  onTextSubmit
 }: ConversationDisplayProps) => {
   const historyEndRef = useRef<HTMLDivElement>(null);
 
@@ -126,6 +129,7 @@ const ConversationDisplay = ({
           onStopRecording={onStopRecording}
           isSpeaking={isSpeaking}
           onStopSpeaking={onStopSpeaking}
+          onTextSubmit={onTextSubmit}
         />
       </CardFooter>
     </Card>
@@ -141,7 +145,8 @@ const RecordingControls = ({
   onStartRecording,
   onStopRecording,
   isSpeaking,
-  onStopSpeaking
+  onStopSpeaking,
+  onTextSubmit
 }: {
   isListening: boolean;
   isProcessing: boolean;
@@ -151,13 +156,24 @@ const RecordingControls = ({
   onStopRecording: () => void;
   isSpeaking?: boolean;
   onStopSpeaking?: () => void;
+  onTextSubmit?: (text: string) => void;
 }) => {
+  const [textInput, setTextInput] = useState('');
+
+  const handleTextSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (textInput.trim() && onTextSubmit && !isProcessing) {
+      onTextSubmit(textInput);
+      setTextInput('');
+    }
+  };
+
   return (
     <>
       <div className="flex items-center justify-between w-full mb-4">
         <div className="text-lg font-medium flex items-center gap-2">
           {isListening ? 'Listening...' : 
-           currentQuestion ? currentQuestion : "Press the microphone to start speaking"}
+           currentQuestion ? currentQuestion : "Type or speak your message"}
           {isSpeaking && (
             <Button 
               onClick={onStopSpeaking} 
@@ -179,11 +195,32 @@ const RecordingControls = ({
           {isListening ? <MicOff className="h-6 w-6" /> : <Mic className="h-6 w-6" />}
         </Button>
       </div>
+      
       {isListening && (
         <div className="w-full text-center font-medium bg-muted/30 p-2 rounded-md animate-pulse">
           {transcript ? transcript : 'Waiting for you to speak...'}
         </div>
       )}
+      
+      <form onSubmit={handleTextSubmit} className="w-full mt-4 flex gap-2">
+        <div className="flex-1">
+          <Input
+            value={textInput}
+            onChange={(e) => setTextInput(e.target.value)}
+            placeholder="Type your message here..."
+            disabled={isProcessing || isListening}
+            className="w-full"
+          />
+        </div>
+        <Button 
+          type="submit" 
+          disabled={!textInput.trim() || isProcessing || isListening}
+          size="icon"
+          title="Send message"
+        >
+          <Send className="h-4 w-4" />
+        </Button>
+      </form>
     </>
   );
 };

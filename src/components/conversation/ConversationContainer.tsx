@@ -25,6 +25,7 @@ interface ConversationContainerProps {
   onStopSpeaking?: () => void;
   hasApiError?: boolean;
   onClearConversation?: () => void;
+  onTextSubmit?: (text: string) => void;
 }
 
 const ConversationContainer = ({
@@ -44,7 +45,8 @@ const ConversationContainer = ({
   isSpeaking,
   onStopSpeaking,
   hasApiError,
-  onClearConversation
+  onClearConversation,
+  onTextSubmit
 }: ConversationContainerProps) => {
   return (
     <div className="flex-1 p-6">
@@ -100,6 +102,7 @@ const ConversationContainer = ({
           isSpeaking={isSpeaking}
           onStopSpeaking={onStopSpeaking}
           hasApiError={hasApiError}
+          onTextSubmit={onTextSubmit}
         />
 
         <PerformanceMetrics

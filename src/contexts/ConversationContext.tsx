@@ -21,6 +21,7 @@ interface ConversationContextType {
   speakText: (text: string) => void;
   stopSpeaking: () => void;
   clearConversation: () => void;
+  handleTextSubmit: (text: string) => void;
 }
 
 const ConversationContext = createContext<ConversationContextType | undefined>(undefined);
@@ -95,6 +96,23 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     // Reinitialize conversation
     initializeConversation();
   };
+  
+  // Handle text submission
+  const handleTextSubmit = async (text: string) => {
+    const response = await processUserResponse(text);
+    
+    // Speak the feedback first
+    if (response?.feedback) {
+      speakText(response.feedback);
+    }
+    
+    // After a short delay, speak the next question
+    if (response?.nextQuestion) {
+      setTimeout(() => {
+        speakText(response.nextQuestion);
+      }, 1000);
+    }
+  };
 
   const value = {
     activeTopic,
@@ -113,7 +131,8 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     handleStopRecording,
     speakText,
     stopSpeaking,
-    clearConversation
+    clearConversation,
+    handleTextSubmit
   };
 
   return (
