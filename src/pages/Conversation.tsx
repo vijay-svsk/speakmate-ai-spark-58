@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { toast } from "sonner";
 import { SidebarProvider } from "@/components/ui/sidebar";
@@ -14,7 +13,6 @@ const ConversationAI = () => {
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [isListening, setIsListening] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [feedback, setFeedback] = useState("");
   const [fluencyScore, setFluencyScore] = useState(60);
   const [vocabularyScore, setVocabularyScore] = useState(70);
   const [grammarScore, setGrammarScore] = useState(65);
@@ -120,13 +118,7 @@ const ConversationAI = () => {
       setIsListening(false);
       
       if (transcript) {
-        // Add user's response to conversation history
-        setConversationHistory(prev => [
-          ...prev, 
-          { speaker: 'user', text: transcript }
-        ]);
-        
-        // Generate AI feedback and next question
+        // Process user's response and get AI feedback
         processUserResponse(transcript);
       } else {
         toast.error("I didn't hear anything. Please try again.");
@@ -140,6 +132,12 @@ const ConversationAI = () => {
     setHasApiError(false);
     
     try {
+      // Add user's response to conversation history
+      setConversationHistory(prev => [
+        ...prev, 
+        { speaker: 'user', text: userResponse }
+      ]);
+      
       // Get language feedback
       const languageFeedback = await getLanguageFeedback(userResponse);
       
@@ -147,7 +145,6 @@ const ConversationAI = () => {
       setFluencyScore(languageFeedback.fluencyScore);
       setVocabularyScore(languageFeedback.vocabularyScore);
       setGrammarScore(languageFeedback.grammarScore);
-      setFeedback(languageFeedback.feedback);
       
       // Add feedback to conversation
       setConversationHistory(prev => [
