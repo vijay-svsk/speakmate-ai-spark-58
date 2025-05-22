@@ -171,6 +171,40 @@
   animation: star-float 5s infinite ease-in-out;
 }
 
+/* New shooting star animation */
+.star.shooting-star {
+  width: 4px;
+  height: 4px;
+  background: linear-gradient(to right, rgba(255, 255, 255, 0.8), transparent);
+  border-radius: 0;
+  transform: rotate(45deg);
+  animation: shooting-star 6s ease-in-out infinite;
+  opacity: 0;
+}
+
+/* Learning bubbles */
+.learning-bubbles {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.learning-bubble {
+  position: absolute;
+  padding: 0.5rem 1rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0;
+  transform: scale(0.7);
+  animation: bubble-float 15s ease-in-out infinite;
+  white-space: nowrap;
+  z-index: 1;
+}
+
 @layer components {
   .card-hover {
     @apply transition-all duration-300 hover:shadow-xl hover:scale-105;
@@ -208,6 +242,16 @@
   .interactive-border {
     @apply dark:border dark:border-accent/30 dark:hover:border-accent/70 dark:transition-all dark:duration-300;
   }
+  
+  /* Glass effect style */
+  .glass-panel {
+    @apply bg-white/30 dark:bg-gray-900/30 backdrop-blur-md border border-white/20 dark:border-gray-700/50 shadow-lg;
+  }
+  
+  /* Input field with animation */
+  .animated-input {
+    @apply relative transition-all duration-200 border-2 border-transparent focus:border-primary/50 focus:ring-2 focus:ring-primary/30;
+  }
 }
 
 @layer utilities {
@@ -221,6 +265,18 @@
     background: linear-gradient(-45deg, #2E1065, #4C1D95, #1E40AF, #1E3A8A);
     background-size: 400% 400%;
     animation: gradient 15s ease infinite;
+  }
+  
+  /* Text shimmer effect */
+  .text-shimmer {
+    @apply bg-clip-text text-transparent bg-[length:200%_100%];
+    background-image: linear-gradient(
+      90deg,
+      theme('colors.primary.DEFAULT') 0%,
+      theme('colors.accent.DEFAULT') 50%,
+      theme('colors.primary.DEFAULT') 100%
+    );
+    animation: text-shimmer 3s infinite;
   }
 }
 
@@ -298,4 +354,94 @@
 
 .animate-flip-in {
   animation: flip-in 0.5s ease-out forwards;
+}
+
+@keyframes twinkle {
+  0%, 100% { opacity: 0.2; }
+  50% { opacity: 0.8; }
+}
+
+@keyframes star-float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-2px); }
+}
+
+/* New animations */
+@keyframes shooting-star {
+  0% { transform: translateX(0) translateY(0) rotate(45deg); opacity: 0; }
+  10% { opacity: 1; }
+  40% { transform: translateX(-100px) translateY(100px) rotate(45deg); opacity: 0; }
+  100% { transform: translateX(-100px) translateY(100px) rotate(45deg); opacity: 0; }
+}
+
+@keyframes bubble-float {
+  0% { 
+    transform: translateY(0) scale(0.7); 
+    opacity: 0;
+  }
+  10% { 
+    transform: translateY(-10px) scale(1);
+    opacity: 0.7;
+  }
+  90% { 
+    transform: translateY(-100px) scale(1);
+    opacity: 0.7;
+  }
+  100% { 
+    transform: translateY(-110px) scale(0.7);
+    opacity: 0;
+  }
+}
+
+@keyframes text-shimmer {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+/* Updated animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes glow {
+  0%, 100% { box-shadow: 0 0 5px rgba(155, 135, 245, 0.5); }
+  50% { box-shadow: 0 0 20px rgba(155, 135, 245, 0.8); }
+}
+
+.animate-bounce-light {
+  animation: bounce-light 2s ease-in-out infinite;
+}
+
+.animate-pulse-light {
+  animation: pulse-light 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+/* Input focus animation */
+.input-focus-animation {
+  @apply transition-all duration-300;
+}
+
+.input-focus-animation:focus-within::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background: linear-gradient(to right, theme('colors.primary.DEFAULT'), theme('colors.accent.DEFAULT'));
+  animation: slide-in 0.3s ease;
+}
+
+@keyframes slide-in {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
 }
