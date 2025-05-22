@@ -204,19 +204,19 @@ Transcript:
 
 Respond as clean JSON ONLY, using keys:
 {
-  corrected_version,
-  mistakes: [{mistake, correction, explanation}],
-  scores: {
-    grammar: {score, label, explanation},
-    vocabulary: {score, label, explanation},
-    pronunciation: {score, label, explanation},
-    fluency: {score, label, explanation}
+  "corrected_version": "string",
+  "mistakes": [{"mistake": "string", "correction": "string", "explanation": "string"}],
+  "scores": {
+    "grammar": {"score": number, "label": "string", "explanation": "string"},
+    "vocabulary": {"score": number, "label": "string", "explanation": "string"},
+    "pronunciation": {"score": number, "label": "string", "explanation": "string"},
+    "fluency": {"score": number, "label": "string", "explanation": "string"}
   },
-  pronunciation_feedback: { difficult_words, tips, example_words },
-  fluency_feedback: { filler_words_count, unnatural_pauses, suggestions },
-  vocabulary_enhancement: { basic_words, alternatives: [{word, alternatives, samples}] },
-  communication_tips: [ ... ],
-  overall_summary: { score, level, recommendation }
+  "pronunciation_feedback": { "difficult_words": ["string"], "tips": "string", "example_words": ["string"] },
+  "fluency_feedback": { "filler_words_count": number, "unnatural_pauses": "string", "suggestions": "string" },
+  "vocabulary_enhancement": { "basic_words": ["string"], "alternatives": [{"word": "string", "alternatives": ["string"], "samples": ["string"]}] },
+  "communication_tips": ["string"],
+  "overall_summary": { "score": number, "level": "string", "recommendation": "string" }
 }
 `
           }]
@@ -361,7 +361,8 @@ Respond as clean JSON ONLY, using keys:
 
   // Helper: Safe list mapping
   function safeList(arr: undefined | null | any[], f: (x:any,i:number)=>React.ReactNode) {
-    return Array.isArray(arr) ? arr.map(f) : null;
+    if (!Array.isArray(arr)) return null;
+    return arr.map(f);
   }
 
   return (
@@ -577,15 +578,29 @@ Respond as clean JSON ONLY, using keys:
                 <CardContent>
                   <div className="mb-1">
                     <b>Difficult or mispronounced words: </b>
-                    <span>{safeList(feedback.pronunciation_feedback.difficult_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>) || "None"}</span>
+                    <span>
+                      {Array.isArray(feedback.pronunciation_feedback.difficult_words) ? (
+                        feedback.pronunciation_feedback.difficult_words.map((w: string, i: number) => (
+                          <span key={i} className="mr-2">{w}</span>
+                        ))
+                      ) : (
+                        "None"
+                      )}
+                    </span>
                   </div>
                   <div className="mb-1">
                     <b>Phonetic tips & mouth advice:</b>{" "}
-                    <span>{feedback.pronunciation_feedback.tips}</span>
+                    <span>{typeof feedback.pronunciation_feedback.tips === 'string' ? feedback.pronunciation_feedback.tips : ''}</span>
                   </div>
                   <div>
                     <b>Try practicing: </b>
-                    <span>{safeList(feedback.pronunciation_feedback.example_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}</span>
+                    <span>
+                      {Array.isArray(feedback.pronunciation_feedback.example_words) ? (
+                        feedback.pronunciation_feedback.example_words.map((w: string, i: number) => (
+                          <span key={i} className="mr-2">{w}</span>
+                        ))
+                      ) : null}
+                    </span>
                   </div>
                 </CardContent>
               </Card>
@@ -599,13 +614,13 @@ Respond as clean JSON ONLY, using keys:
                 </CardHeader>
                 <CardContent>
                   <div>
-                    <b>Filler words used:</b> {feedback.fluency_feedback.filler_words_count ?? 0}
+                    <b>Filler words used:</b> {typeof feedback.fluency_feedback.filler_words_count === 'number' ? feedback.fluency_feedback.filler_words_count : 0}
                   </div>
                   <div>
-                    <b>Unnatural pauses:</b> {feedback.fluency_feedback.unnatural_pauses ?? "None"}
+                    <b>Unnatural pauses:</b> {typeof feedback.fluency_feedback.unnatural_pauses === 'string' ? feedback.fluency_feedback.unnatural_pauses : "None"}
                   </div>
                   <div>
-                    <b>Suggestions for smoother speech:</b> {feedback.fluency_feedback.suggestions}
+                    <b>Suggestions for smoother speech:</b> {typeof feedback.fluency_feedback.suggestions === 'string' ? feedback.fluency_feedback.suggestions : ''}
                   </div>
                 </CardContent>
               </Card>
@@ -619,7 +634,11 @@ Respond as clean JSON ONLY, using keys:
                 </CardHeader>
                 <CardContent>
                   <div>
-                    <b>Basic/overused words:</b> {safeList(feedback.vocabulary_enhancement.basic_words, (w:string,i:number) => <span key={i} className="mr-2">{w}</span>)}
+                    <b>Basic/overused words:</b> {Array.isArray(feedback.vocabulary_enhancement.basic_words) ? (
+                      feedback.vocabulary_enhancement.basic_words.map((w: string, i: number) => (
+                        <span key={i} className="mr-2">{w}</span>
+                      ))
+                    ) : null}
                   </div>
                   {Array.isArray(feedback.vocabulary_enhancement.alternatives) && feedback.vocabulary_enhancement.alternatives.length > 0 ? (
                     <div className="mt-2">
@@ -627,7 +646,7 @@ Respond as clean JSON ONLY, using keys:
                       <ul className="list-disc ml-4">
                         {feedback.vocabulary_enhancement.alternatives.map((alt: any, i: number) => (
                           <li key={i}>
-                            <b>{alt.word}:</b> {alt.alternatives?.join(", ")}
+                            <b>{alt.word}:</b> {Array.isArray(alt.alternatives) ? alt.alternatives.join(", ") : ''}
                             {Array.isArray(alt.samples) && (
                               <>
                                 <br /><span className="text-xs text-muted-foreground">{alt.samples.join(" – ")}</span>
@@ -650,7 +669,9 @@ Respond as clean JSON ONLY, using keys:
                 </CardHeader>
                 <CardContent>
                   <ul className="list-disc ml-6 text-gray-700">
-                    {safeList(feedback.communication_tips, (s:string,i:number) => <li key={i}>{s}</li>)}
+                    {Array.isArray(feedback.communication_tips) ? (
+                      feedback.communication_tips.map((s: string, i: number) => <li key={i}>{s}</li>)
+                    ) : null}
                   </ul>
                 </CardContent>
               </Card>
@@ -664,10 +685,13 @@ Respond as clean JSON ONLY, using keys:
                 </CardHeader>
                 <CardContent>
                   <div>
-                    <b>Overall Score:</b> <span className="text-green-700 font-bold">{feedback.overall_summary.score} ({feedback.overall_summary.level})</span>
+                    <b>Overall Score:</b> <span className="text-green-700 font-bold">
+                      {typeof feedback.overall_summary.score === 'number' ? feedback.overall_summary.score : ''} 
+                      {typeof feedback.overall_summary.level === 'string' ? `(${feedback.overall_summary.level})` : ''}
+                    </span>
                   </div>
                   <div>
-                    <b>Recommendation:</b> {feedback.overall_summary.recommendation}
+                    <b>Recommendation:</b> {typeof feedback.overall_summary.recommendation === 'string' ? feedback.overall_summary.recommendation : ''}
                   </div>
                 </CardContent>
               </Card>

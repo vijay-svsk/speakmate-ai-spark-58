@@ -44,9 +44,11 @@ export const useSpeechRecognition = (): SpeechRecognitionResult => {
       recognition.onresult = (event) => {
         const current = event.resultIndex;
         const result = event.results[current];
-        const transcript = result[0].transcript;
-        setTranscript(transcript);
-        setLastError(null); // Clear any previous errors on successful results
+        if (result && result[0]) {
+          const transcript = result[0].transcript;
+          setTranscript(transcript);
+          setLastError(null); // Clear any previous errors on successful results
+        }
       };
       
       recognition.onerror = (event) => {
