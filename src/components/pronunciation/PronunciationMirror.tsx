@@ -1,14 +1,15 @@
+
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Mic, Volume2, Webcam, Star, ArrowRight, Bot } from "lucide-react";
+import { Mic, Volume2, Webcam, Star, ArrowRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useSpeechAudio } from "@/hooks/use-speech-audio";
 import { toast } from "sonner";
-import { LipSyncRobot } from "./LipSyncRobot";
+import { LipSyncMouth } from "./LipSyncMouth";
 
 // Sample syllables breakdown for different words
 const wordLibrary = {
@@ -91,7 +92,7 @@ export function PronunciationMirror() {
   const [stars, setStars] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [currentPhoneme, setCurrentPhoneme] = useState("");
-  const [isRobotAnimating, setIsRobotAnimating] = useState(false);
+  const [isModelAnimating, setIsModelAnimating] = useState(false);
   
   const { 
     isListening, 
@@ -157,10 +158,10 @@ export function PronunciationMirror() {
   // Pronounce the current word
   const handlePronounce = () => {
     speakText(word);
-    setIsRobotAnimating(true);
+    setIsModelAnimating(true);
     
-    // Stop robot animation after word is spoken (approx. 3s)
-    setTimeout(() => setIsRobotAnimating(false), 3000);
+    // Stop model animation after word is spoken (approx. 3s)
+    setTimeout(() => setIsModelAnimating(false), 3000);
   };
 
   // Handle recording
@@ -228,7 +229,7 @@ export function PronunciationMirror() {
   // Handle specific phoneme demonstration
   const demonstratePhoneme = (phoneme: string) => {
     setCurrentPhoneme(phoneme);
-    // Play a specific sound for this phoneme (simplified)
+    // Play a specific sound for this phoneme
     speakText(phoneme);
   };
 
@@ -237,7 +238,7 @@ export function PronunciationMirror() {
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-2xl font-bold font-playfair gradient-text">
           <Webcam className="w-7 h-7" />
-          LipSync AI
+          Pronunciation Mirror
           <span
             className="ml-4 text-sm rounded px-2 py-1 bg-primary text-white font-normal tracking-wide"
             style={{ letterSpacing: ".08em" }}
@@ -247,12 +248,12 @@ export function PronunciationMirror() {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid md:grid-cols-3 gap-8">
-          {/* Controls & Info */}
-          <div className="col-span-1 space-y-4">
-            {/* Level Dropdown */}
-            <div>
-              <label className="block text-sm font-semibold mb-1">Choose Level</label>
+        <div className="grid md:grid-cols-2 gap-8">
+          {/* Left column - Controls & Pronunciation Details */}
+          <div className="space-y-6">
+            {/* Level Selection */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-xl shadow-sm">
+              <label className="block text-sm font-semibold mb-2">Select Difficulty</label>
               <Select value={level} onValueChange={setLevel}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select level..." />
@@ -265,189 +266,217 @@ export function PronunciationMirror() {
                   ))}
                 </SelectContent>
               </Select>
-            </div>
-            {/* New Word Button */}
-            <Button variant="secondary" className="mt-3 w-full" onClick={handleNewWord}>
-              Generate Word
-            </Button>
-            {/* Word Display */}
-            <div className="mt-4 font-bold text-lg text-primary tracking-wide">{word}</div>
-            {/* Syllable Breakdown */}
-            <div className="mt-2">
-              <div className="font-semibold text-xs uppercase mb-1 text-muted-foreground">
-                Syllable Breakdown
-              </div>
-              <div className="flex flex-wrap gap-2">
-                {syllables.map((syl, i) => (
-                  <div
-                    key={i}
-                    className="rounded-lg bg-primary/10 px-4 py-2 flex flex-col items-center shadow text-sm hover:bg-primary/20 cursor-pointer transition-colors"
-                    onClick={() => demonstratePhoneme(syl.part)}
-                  >
-                    <span>{syl.part}</span>
-                    <span className="text-[11px] text-muted-foreground">{syl.tip}</span>
-                  </div>
-                ))}
+              
+              <div className="mt-4">
+                <Button variant="secondary" className="w-full" onClick={handleNewWord}>
+                  Generate New Word
+                </Button>
               </div>
             </div>
-            {/* Quick Feedback */}
+            
+            {/* Word Display & Syllables */}
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+              <div className="text-center">
+                <h3 className="text-xl font-bold text-primary mb-2">{word}</h3>
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  onClick={handlePronounce}
+                  className="mb-4"
+                >
+                  <Volume2 className="w-4 h-4 mr-2" /> Listen
+                </Button>
+              </div>
+              
+              <div className="mt-2">
+                <div className="font-semibold text-xs uppercase mb-2 text-muted-foreground">
+                  Syllable Breakdown
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  {syllables.map((syl, i) => (
+                    <div
+                      key={i}
+                      className="rounded-lg bg-primary/10 px-3 py-2 flex flex-col items-center shadow-sm text-sm hover:bg-primary/20 cursor-pointer transition-colors"
+                      onClick={() => demonstratePhoneme(syl.part)}
+                    >
+                      <span className="font-bold">{syl.part}</span>
+                      <span className="text-[11px] text-muted-foreground text-center">{syl.tip}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            {/* Practice Controls */}
+            <div className="p-4 bg-white dark:bg-gray-800 rounded-xl shadow-sm">
+              <div className="flex flex-wrap gap-3 justify-center">
+                <Button
+                  onClick={handleRecord}
+                  variant={isListening ? "secondary" : "default"}
+                  className="flex gap-1 items-center"
+                  disabled={analyzing}
+                >
+                  <Mic className="w-5 h-5 mr-1" />
+                  {isListening ? "Recording..." : "Practice"}
+                </Button>
+                
+                <Button
+                  onClick={handleStopRecording}
+                  variant="outline"
+                  className="flex gap-1 items-center"
+                  disabled={!isListening}
+                >
+                  <Volume2 className="w-5 h-5 mr-1" />
+                  Stop
+                </Button>
+                
+                <Button
+                  onClick={handleAnalyze}
+                  variant="default"
+                  className="flex gap-1 items-center"
+                  disabled={analyzing || !transcript}
+                >
+                  {analyzing ? "Analyzing..." : "Analyze"}
+                </Button>
+              </div>
+              
+              {/* Transcription display */}
+              {transcript && (
+                <div className="mt-3 px-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-md w-full">
+                  <div className="text-xs text-muted-foreground mb-1">Your pronunciation:</div>
+                  <div className="text-sm">{transcript}</div>
+                </div>
+              )}
+            </div>
+            
+            {/* Feedback */}
             {feedback && (
               <motion.div
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="mt-6 rounded-lg bg-green-50 px-4 py-2 text-green-800 text-sm shadow-sm"
+                className="p-4 rounded-lg bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300 text-sm shadow-sm"
               >
-                <b>Tip:</b> {feedback}
+                <div className="font-semibold mb-1">Feedback:</div>
+                {feedback}
               </motion.div>
             )}
           </div>
-
-          {/* Lip Sync Comparison Zone */}
-          <div className="col-span-2 flex flex-col items-center gap-2">
-            <div className="flex gap-8 items-end pt-1 pb-2">
-              {/* Native Speaker Reference with Robot */}
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-[170px] h-[128px] relative bg-gray-200 dark:bg-gray-700 mb-2 rounded-lg shadow-inner border border-gray-300 dark:border-gray-600 overflow-hidden">
-                  <LipSyncRobot 
-                    word={word} 
-                    isAnimating={isRobotAnimating} 
-                    phoneme={currentPhoneme}
-                  />
-                </div>
-                <div className="flex items-center">
-                  <Bot className="w-4 h-4 mr-1 text-primary" />
-                  <span className="text-xs font-semibold text-muted-foreground">LipSync AI</span>
-                </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  className="mt-1"
-                  onClick={handlePronounce}
-                >
-                  <Volume2 className="w-4 h-4 mr-1" /> Listen
-                </Button>
+          
+          {/* Right column - Visual Aids */}
+          <div className="flex flex-col gap-6">
+            {/* Mouth Model */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+              <div className="text-sm font-semibold mb-2 text-center">Mouth Visualization</div>
+              <div className="h-48 relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-inner border border-gray-200 dark:border-gray-600">
+                <LipSyncMouth 
+                  word={word} 
+                  isAnimating={isModelAnimating} 
+                  phoneme={currentPhoneme}
+                />
               </div>
-              {/* Webcam Feed + Overlay */}
-              <div className="flex flex-col items-center gap-2">
-                <div className="relative w-[170px] h-[128px] rounded-lg shadow-inner overflow-hidden bg-black border border-primary">
-                  <video
-                    ref={webcamRef}
-                    width={170}
-                    height={128}
-                    autoPlay
-                    muted
-                    playsInline
-                    className="absolute w-full h-full object-cover"
-                    style={{ borderRadius: 12 }}
-                  />
-                  {/* Overlay sample: animated oval (simulate lip shape detection for demo) */}
+              <div className="text-xs text-center mt-2 text-muted-foreground">
+                Click on syllables to see mouth positions
+              </div>
+            </div>
+            
+            {/* Webcam Mirror */}
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+              <div className="text-sm font-semibold mb-2 text-center">Your Mouth Position</div>
+              <div className="relative h-48 rounded-lg shadow-inner overflow-hidden bg-black border border-primary">
+                <video
+                  ref={webcamRef}
+                  autoPlay
+                  muted
+                  playsInline
+                  className="absolute w-full h-full object-cover"
+                />
+                {/* Overlay with mouth position guide */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                   <motion.div
                     animate={{
                       borderColor: ["#e53935", "#00c853", "#e53935"],
                       scale: [1, 1.1, 1],
                     }}
                     transition={{ duration: 1.7, repeat: Infinity }}
-                    className="absolute left-1/2 top-3/4 w-20 h-7 rounded-full border-4 border-primary/70 bg-transparent pointer-events-none"
+                    className="w-20 h-7 rounded-full border-2 border-primary/70 bg-transparent"
                     style={{
-                      transform: "translate(-50%,-50%)",
                       borderRadius: "55% 45% 60% 40% / 50% 60% 40% 50%",
                     }}
                   ></motion.div>
                 </div>
-                <span className="text-xs font-semibold text-muted-foreground">
-                  Your Mouth (Live)
-                </span>
+              </div>
+              <div className="text-xs text-center mt-2 text-muted-foreground">
+                Try to match your mouth position with the model
               </div>
             </div>
-            {/* Control Buttons */}
-            <div className="flex gap-3 mt-2">
-              <Button
-                onClick={handleRecord}
-                variant={isListening ? "secondary" : "default"}
-                className="flex gap-1 items-center"
-                disabled={analyzing}
-              >
-                <Mic className="w-5 h-5 mr-1" />
-                {isListening ? "Recording..." : "Test"}
-              </Button>
-              <Button
-                onClick={handleStopRecording}
-                variant="outline"
-                className="flex gap-1 items-center"
-                disabled={!isListening}
-              >
-                <Volume2 className="w-5 h-5 mr-1" />
-                Stop
-              </Button>
-              <Button
-                onClick={handleAnalyze}
-                variant="default"
-                className="flex gap-1 items-center"
-                disabled={analyzing || !transcript}
-              >
-                {analyzing ? "Analyzing..." : "Analyze"}
-              </Button>
-              <Button
-                onClick={handleNewWord}
-                variant="ghost"
-                className="flex gap-1 items-center"
-              >
-                Next Word <ArrowRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-            {/* Transcription display */}
-            {transcript && (
-              <div className="mt-3 px-4 py-2 bg-gray-100 dark:bg-gray-800 rounded-md w-full max-w-md">
-                <div className="text-xs text-muted-foreground mb-1">Your pronunciation:</div>
-                <div className="text-sm">{transcript}</div>
+            
+            {/* Scoring */}
+            {score > 0 && (
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
+                <div className="flex flex-col items-center">
+                  <div className="flex gap-2 mb-2">
+                    {[1, 2, 3].map((n) => (
+                      <Star
+                        key={n}
+                        className={`h-6 w-6 ${
+                          n <= stars ? "text-yellow-400" : "text-gray-300"
+                        }`}
+                        fill={n <= stars ? "#ffd600" : "none"}
+                      />
+                    ))}
+                  </div>
+                  
+                  <div className="font-bold text-lg text-primary mb-2">
+                    Your Score: {score}%
+                  </div>
+                  
+                  <Progress 
+                    value={score} 
+                    max={100} 
+                    className="h-3 w-full rounded-full bg-primary/5" 
+                  />
+                  
+                  <div className="mt-4 flex justify-center">
+                    <PieChart width={140} height={100}>
+                      <Pie
+                        data={pie}
+                        dataKey="value"
+                        nameKey="name"
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={24}
+                        outerRadius={40}
+                        startAngle={180}
+                        endAngle={0}
+                        paddingAngle={4}
+                        stroke="none"
+                      >
+                        {pie.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                        ))}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </div>
+                  
+                  <div className="text-xs text-muted-foreground">
+                    Syllable accuracy breakdown
+                  </div>
+                </div>
               </div>
             )}
-            {/* Feedback and scoring */}
-            <div className="mt-6 px-4 w-full flex flex-col items-center gap-3">
-              <div className="flex gap-3 items-center">
-                {[1, 2, 3].map((n) => (
-                  <Star
-                    key={n}
-                    className={`h-6 w-6 ${
-                      score >= 80 && n <= stars
-                        ? "text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                    fill={score >= 80 && n <= stars ? "#ffd600" : "none"}
-                  />
-                ))}
-              </div>
-              <div className="font-bold text-lg text-primary">
-                {score > 0 ? `Your Match: ${score}%` : "No score yet"}
-              </div>
-              <Progress value={score} max={100} className="h-3 rounded-full bg-primary/5" />
-              <div className="w-full flex justify-center mt-3">
-                <PieChart width={140} height={100}>
-                  <Pie
-                    data={pie}
-                    dataKey="value"
-                    nameKey="name"
-                    cx="50%"
-                    cy="50%"
-                    innerRadius={24}
-                    outerRadius={40}
-                    startAngle={180}
-                    endAngle={0}
-                    paddingAngle={4}
-                    stroke="none"
-                  >
-                    {pie.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Per-phoneme accuracy score
-              </div>
-            </div>
           </div>
+        </div>
+        
+        {/* Next Word Button */}
+        <div className="mt-6 flex justify-center">
+          <Button
+            onClick={handleNewWord}
+            variant="outline"
+            className="flex gap-1 items-center"
+          >
+            Next Word <ArrowRight className="w-4 h-4 ml-1" />
+          </Button>
         </div>
       </CardContent>
     </Card>
