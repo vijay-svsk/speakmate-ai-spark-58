@@ -3,8 +3,7 @@ import React from 'react';
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AppSidebar from "@/components/app-sidebar";
 import ConversationContainer from '@/components/conversation/ConversationContainer';
-import { ConversationProvider } from '@/contexts/ConversationContext';
-import { useConversation } from '@/contexts/ConversationContext';
+import { ConversationProvider, useConversation } from '@/contexts/ConversationContext';
 
 // Intermediate component to access the context
 const ConversationContent = () => {
@@ -55,14 +54,14 @@ const ConversationContent = () => {
 
 const ConversationAI = () => {
   return (
-    <ConversationProvider>
-      <SidebarProvider>
+    <SidebarProvider>
+      <ConversationProvider>
         <div className="flex min-h-screen bg-background w-full">
           <AppSidebar />
           <ConversationContent />
         </div>
-      </SidebarProvider>
-    </ConversationProvider>
+      </ConversationProvider>
+    </SidebarProvider>
   );
 };
 
