@@ -1,14 +1,14 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Mic, Volume2, Webcam, Star, ArrowRight } from "lucide-react";
+import { Mic, Volume2, Webcam, Star, ArrowRight, Bot, Robot } from "lucide-react";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useSpeechAudio } from "@/hooks/use-speech-audio";
 import { toast } from "sonner";
+import { LipSyncRobot } from "./LipSyncRobot";
 
 // Sample syllables breakdown for different words
 const wordLibrary = {
@@ -90,6 +90,8 @@ export function PronunciationMirror() {
   const [feedback, setFeedback] = useState("");
   const [stars, setStars] = useState(0);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [currentPhoneme, setCurrentPhoneme] = useState("");
+  const [isRobotAnimating, setIsRobotAnimating] = useState(false);
   
   const { 
     isListening, 
@@ -155,6 +157,10 @@ export function PronunciationMirror() {
   // Pronounce the current word
   const handlePronounce = () => {
     speakText(word);
+    setIsRobotAnimating(true);
+    
+    // Stop robot animation after word is spoken (approx. 3s)
+    setTimeout(() => setIsRobotAnimating(false), 3000);
   };
 
   // Handle recording
@@ -219,6 +225,13 @@ export function PronunciationMirror() {
     }, 1700);
   };
 
+  // Handle specific phoneme demonstration
+  const demonstratePhoneme = (phoneme: string) => {
+    setCurrentPhoneme(phoneme);
+    // Play a specific sound for this phoneme (simplified)
+    speakText(phoneme);
+  };
+
   return (
     <Card className="p-1 overflow-visible animate-fade-in shadow-xl rounded-2xl">
       <CardHeader>
@@ -268,7 +281,8 @@ export function PronunciationMirror() {
                 {syllables.map((syl, i) => (
                   <div
                     key={i}
-                    className="rounded-lg bg-primary/10 px-4 py-2 flex flex-col items-center shadow text-sm"
+                    className="rounded-lg bg-primary/10 px-4 py-2 flex flex-col items-center shadow text-sm hover:bg-primary/20 cursor-pointer transition-colors"
+                    onClick={() => demonstratePhoneme(syl.part)}
                   >
                     <span>{syl.part}</span>
                     <span className="text-[11px] text-muted-foreground">{syl.tip}</span>
@@ -291,21 +305,19 @@ export function PronunciationMirror() {
           {/* Lip Sync Comparison Zone */}
           <div className="col-span-2 flex flex-col items-center gap-2">
             <div className="flex gap-8 items-end pt-1 pb-2">
-              {/* Native Speaker Reference (Animated image or small demo video) */}
+              {/* Native Speaker Reference with Robot */}
               <div className="flex flex-col items-center gap-2">
-                <div className="w-[170px] h-[128px] bg-gray-200 dark:bg-gray-700 mb-2 rounded-lg shadow-inner flex items-center justify-center border border-gray-300 dark:border-gray-600">
-                  {/* Placeholder: Animate emoji silhouette */}
-                  <motion.span
-                    animate={{ scale: [1, 1.1, 1] }}
-                    transition={{ repeat: Infinity, duration: 1.6 }}
-                    className="text-[70px] select-none"
-                    role="img"
-                    aria-label="Mouth demo"
-                  >
-                    🗣️
-                  </motion.span>
+                <div className="w-[170px] h-[128px] relative bg-gray-200 dark:bg-gray-700 mb-2 rounded-lg shadow-inner border border-gray-300 dark:border-gray-600 overflow-hidden">
+                  <LipSyncRobot 
+                    word={word} 
+                    isAnimating={isRobotAnimating} 
+                    phoneme={currentPhoneme}
+                  />
                 </div>
-                <span className="text-xs font-semibold text-muted-foreground">Native Model</span>
+                <div className="flex items-center">
+                  <Robot className="w-4 h-4 mr-1 text-primary" />
+                  <span className="text-xs font-semibold text-muted-foreground">LipSync AI</span>
+                </div>
                 <Button 
                   variant="outline" 
                   size="sm" 
