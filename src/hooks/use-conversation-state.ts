@@ -146,6 +146,14 @@ export function useConversationState() {
     }
   };
 
+  // Clear conversation history
+  const clearConversationHistory = () => {
+    setConversationHistory([]);
+    setCurrentQuestion("");
+    resetChatHistory(activeTopic);
+    toast.success("Conversation cleared");
+  };
+
   return {
     activeTopic,
     conversationHistory,
@@ -157,6 +165,7 @@ export function useConversationState() {
     hasApiError,
     initializeConversation,
     handleTopicChange,
-    processUserResponse
+    processUserResponse,
+    clearConversationHistory
   };
 }

@@ -20,6 +20,7 @@ interface ConversationContextType {
   handleStopRecording: () => void;
   speakText: (text: string) => void;
   stopSpeaking: () => void;
+  clearConversation: () => void;
 }
 
 const ConversationContext = createContext<ConversationContextType | undefined>(undefined);
@@ -36,7 +37,8 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     hasApiError,
     initializeConversation,
     handleTopicChange,
-    processUserResponse
+    processUserResponse,
+    clearConversationHistory
   } = useConversationState();
 
   const {
@@ -84,6 +86,16 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     return topicGreeting;
   };
 
+  // Clear conversation and reinitialize
+  const clearConversation = () => {
+    // Stop any ongoing speech
+    stopSpeaking();
+    // Clear conversation history
+    clearConversationHistory();
+    // Reinitialize conversation
+    initializeConversation();
+  };
+
   const value = {
     activeTopic,
     conversationHistory,
@@ -100,7 +112,8 @@ export const ConversationProvider: React.FC<{ children: React.ReactNode }> = ({ 
     handleStartRecording,
     handleStopRecording,
     speakText,
-    stopSpeaking
+    stopSpeaking,
+    clearConversation
   };
 
   return (

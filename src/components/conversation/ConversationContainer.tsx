@@ -5,7 +5,7 @@ import PerformanceMetrics from './PerformanceMetrics';
 import TopicSelector from './TopicSelector';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Settings } from 'lucide-react';
+import { Settings, Trash2 } from 'lucide-react';
 
 interface ConversationContainerProps {
   activeTopic: string;
@@ -24,6 +24,7 @@ interface ConversationContainerProps {
   isSpeaking?: boolean;
   onStopSpeaking?: () => void;
   hasApiError?: boolean;
+  onClearConversation?: () => void;
 }
 
 const ConversationContainer = ({
@@ -42,7 +43,8 @@ const ConversationContainer = ({
   onSpeakMessage,
   isSpeaking,
   onStopSpeaking,
-  hasApiError
+  hasApiError,
+  onClearConversation
 }: ConversationContainerProps) => {
   return (
     <div className="flex-1 p-6">
@@ -55,6 +57,16 @@ const ConversationContainer = ({
               onTopicChange={onTopicChange}
               disabled={isProcessing || isListening}
             />
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={onClearConversation}
+              disabled={isProcessing || isListening || conversationHistory.length === 0}
+              className="flex items-center gap-1"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Clear</span>
+            </Button>
             <Button variant="outline" size="sm" asChild>
               <Link to="/settings" className="flex items-center gap-1">
                 <Settings className="w-4 h-4" />

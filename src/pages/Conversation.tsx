@@ -24,7 +24,8 @@ const ConversationContent = () => {
     handleStartRecording,
     handleStopRecording,
     speakText,
-    stopSpeaking
+    stopSpeaking,
+    clearConversation
   } = useConversation();
 
   return (
@@ -45,6 +46,7 @@ const ConversationContent = () => {
       isSpeaking={isSpeaking}
       onStopSpeaking={stopSpeaking}
       hasApiError={hasApiError}
+      onClearConversation={clearConversation}
     />
   );
 };
