@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -21,7 +20,9 @@ export default {
 		extend: {
 			fontFamily: {
 				playfair: ['"Playfair Display"', "serif"],
-				inter: ['Inter', "sans-serif"]
+				inter: ['Inter', "sans-serif"],
+                space: ['Space Grotesk', 'sans-serif'],
+                mono: ['Space Mono', 'monospace']
 			},
 			colors: {
 				// Add required semantic color keys for Tailwind utility classes like border-border
@@ -103,7 +104,18 @@ export default {
 					listening: '#f59e0b',  // amber
 					writing: '#a855f7',    // purple
 					reading: '#ec4899'     // pink
-				}
+				},
+				// New space-themed colors
+                space: {
+                    dark: '#0F172A',    // deep space blue
+                    light: '#F8FAFC',   // star white
+                    nebula: '#8B5CF6',  // purple nebula
+                    cosmic: '#06B6D4',  // cosmic blue
+                    meteor: '#FB7185',  // meteor red
+                    dust: '#94A3B8',    // space dust
+                    void: '#020617',    // black void
+                    starlight: '#E2E8F0', // starlight
+                }
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -184,6 +196,34 @@ export default {
 					'40%': { transform: 'translateX(-100px) translateY(100px) rotate(45deg)', opacity: '0' },
 					'100%': { transform: 'translateX(-100px) translateY(100px) rotate(45deg)', opacity: '0' },
 				},
+				"orbit": {
+                    '0%': { transform: 'rotate(0deg) translateX(100px) rotate(0deg)' },
+                    '100%': { transform: 'rotate(360deg) translateX(100px) rotate(-360deg)' },
+                },
+                "nebula-pulse": {
+                    '0%, 100%': { opacity: '0.2', transform: 'scale(1)' },
+                    '50%': { opacity: '0.5', transform: 'scale(1.1)' },
+                },
+                "meteor": {
+                    '0%': { 
+                        opacity: '0',
+                        transform: 'translateX(0) translateY(0) rotate(315deg) scale(0)'
+                    },
+                    '10%': { 
+                        opacity: '1',
+                        transform: 'translateX(-20px) translateY(20px) rotate(315deg) scale(1)'
+                    },
+                    '90%': { opacity: '1' },
+                    '100%': {
+                        opacity: '0',
+                        transform: 'translateX(-300px) translateY(300px) rotate(315deg) scale(0.2)'
+                    },
+                },
+                "cosmic-ripple": {
+                    '0%': { boxShadow: '0 0 0 0 rgba(155, 135, 245, 0.4)' },
+                    '70%': { boxShadow: '0 0 0 20px rgba(155, 135, 245, 0)' },
+                    '100%': { boxShadow: '0 0 0 0 rgba(155, 135, 245, 0)' },
+                },
 			},
 			animation: {
 				'fade-in': 'fade-in 0.5s cubic-bezier(.4,0,.2,1)',
@@ -203,6 +243,10 @@ export default {
 				'text-shimmer': 'text-shimmer 3s infinite linear',
 				'bubble-float': 'bubble-float 15s ease-in-out infinite',
 				'shooting-star': 'shooting-star 6s ease-in-out infinite',
+				"orbit": "orbit 20s linear infinite",
+                "nebula-pulse": "nebula-pulse 15s infinite",
+                "meteor": "meteor 5s ease-out forwards",
+                "cosmic-ripple": "cosmic-ripple 2s infinite",
 			},
 			boxShadow: {
 				'glow-primary': '0 0 10px rgba(155, 135, 245, 0.7)',
@@ -215,6 +259,12 @@ export default {
 				'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
 				'gradient-conic': 'conic-gradient(from var(--angle), var(--tw-gradient-stops))',
 				'gradient-spotlight': 'radial-gradient(circle at center, var(--tw-gradient-stops))',
+                'space-gradient': 
+                  'linear-gradient(to right, rgb(29, 78, 216), rgb(30, 64, 175), rgb(17, 24, 39))',
+                'space-glow': 
+                  'radial-gradient(circle, rgba(56, 189, 248, 0.8) 0%, rgba(59, 130, 246, 0.5) 25%, rgba(30, 64, 175, 0.3) 50%, transparent 70%)',
+                'nebula-pattern':
+                  'repeating-radial-gradient(circle at top left, rgba(56, 189, 248, 0.1) 0%, rgba(99, 102, 241, 0.1) 12%, transparent 39%), repeating-radial-gradient(circle at bottom right, rgba(139, 92, 246, 0.1) 0%, rgba(248, 113, 113, 0.1) 12%, transparent 62%)',
 			},
 			transitionProperty: {
 				'height': 'height',
