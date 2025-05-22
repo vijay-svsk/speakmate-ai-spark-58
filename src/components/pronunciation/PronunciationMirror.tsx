@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Progress } from "@/components/ui/progress";
-import { Mic, Volume2, Webcam, Star, ArrowRight, Bot, Robot } from "lucide-react";
+import { Mic, Volume2, Webcam, Star, ArrowRight, Bot } from "lucide-react";
 import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useSpeechAudio } from "@/hooks/use-speech-audio";
@@ -315,7 +315,7 @@ export function PronunciationMirror() {
                   />
                 </div>
                 <div className="flex items-center">
-                  <Robot className="w-4 h-4 mr-1 text-primary" />
+                  <Bot className="w-4 h-4 mr-1 text-primary" />
                   <span className="text-xs font-semibold text-muted-foreground">LipSync AI</span>
                 </div>
                 <Button 
