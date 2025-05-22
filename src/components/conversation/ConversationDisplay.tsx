@@ -8,7 +8,7 @@ import {
   CardContent,
   CardFooter
 } from "@/components/ui/card";
-import { MessageSquare, User, Mic, MicOff, AlertOctagon, Volume, VolumeX, Send } from 'lucide-react';
+import { MessageSquare, User, Mic, MicOff, AlertOctagon, Volume, VolumeX, Send, Check } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Input } from "@/components/ui/input";
@@ -31,6 +31,8 @@ interface ConversationDisplayProps {
   onStopSpeaking?: () => void;
   hasApiError?: boolean;
   onTextSubmit?: (text: string) => void;
+  lastUserSentence?: string;
+  correctedSentence?: string;
 }
 
 const ConversationDisplay = ({
@@ -45,7 +47,9 @@ const ConversationDisplay = ({
   isSpeaking,
   onStopSpeaking,
   hasApiError,
-  onTextSubmit
+  onTextSubmit,
+  lastUserSentence,
+  correctedSentence
 }: ConversationDisplayProps) => {
   const historyEndRef = useRef<HTMLDivElement>(null);
 
@@ -130,6 +134,8 @@ const ConversationDisplay = ({
           isSpeaking={isSpeaking}
           onStopSpeaking={onStopSpeaking}
           onTextSubmit={onTextSubmit}
+          lastUserSentence={lastUserSentence}
+          correctedSentence={correctedSentence}
         />
       </CardFooter>
     </Card>
@@ -146,7 +152,9 @@ const RecordingControls = ({
   onStopRecording,
   isSpeaking,
   onStopSpeaking,
-  onTextSubmit
+  onTextSubmit,
+  lastUserSentence,
+  correctedSentence
 }: {
   isListening: boolean;
   isProcessing: boolean;
@@ -157,6 +165,8 @@ const RecordingControls = ({
   isSpeaking?: boolean;
   onStopSpeaking?: () => void;
   onTextSubmit?: (text: string) => void;
+  lastUserSentence?: string;
+  correctedSentence?: string;
 }) => {
   const [textInput, setTextInput] = useState('');
 
@@ -221,6 +231,23 @@ const RecordingControls = ({
           <Send className="h-4 w-4" />
         </Button>
       </form>
+
+      {lastUserSentence && correctedSentence && !isListening && !isProcessing && (
+        <div className="mt-4 p-3 border rounded-md bg-green-50">
+          <div className="flex items-center gap-2 mb-1.5 text-green-700">
+            <Check className="h-4 w-4" />
+            <span className="font-medium">Sentence Correction</span>
+          </div>
+          {lastUserSentence === correctedSentence ? (
+            <p className="text-green-700">Perfect! Your sentence was grammatically correct.</p>
+          ) : (
+            <div className="space-y-1">
+              <p className="text-muted-foreground">Your sentence: <span className="font-medium text-foreground">{lastUserSentence}</span></p>
+              <p className="text-green-700">Corrected: <span className="font-medium">{correctedSentence}</span></p>
+            </div>
+          )}
+        </div>
+      )}
     </>
   );
 };

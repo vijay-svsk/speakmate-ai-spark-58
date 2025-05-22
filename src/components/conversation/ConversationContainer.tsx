@@ -1,7 +1,6 @@
 
 import React from 'react';
 import ConversationDisplay from './ConversationDisplay';
-import PerformanceMetrics from './PerformanceMetrics';
 import TopicSelector from './TopicSelector';
 import GrammarRingGraph from './GrammarRingGraph';
 import { Link } from 'react-router-dom';
@@ -108,22 +107,20 @@ const ConversationContainer = ({
           onStopSpeaking={onStopSpeaking}
           hasApiError={hasApiError}
           onTextSubmit={onTextSubmit}
+          lastUserSentence={lastUserSentence}
+          correctedSentence={correctedSentence}
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <GrammarRingGraph 
-            fluencyScore={fluencyScore}
-            vocabularyScore={vocabularyScore}
-            grammarScore={grammarScore}
-            userSentence={lastUserSentence}
-            correctedSentence={correctedSentence}
-          />
-          
-          <PerformanceMetrics
-            fluencyScore={fluencyScore}
-            vocabularyScore={vocabularyScore}
-            grammarScore={grammarScore}
-          />
+        <div className="mt-4">
+          {(lastUserSentence && correctedSentence) && (
+            <GrammarRingGraph 
+              fluencyScore={fluencyScore}
+              vocabularyScore={vocabularyScore}
+              grammarScore={grammarScore}
+              userSentence={lastUserSentence}
+              correctedSentence={correctedSentence}
+            />
+          )}
         </div>
       </div>
     </div>
