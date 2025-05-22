@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useSound } from "@/lib/useSound";
-import { ApiKeySection } from "@/components/settings/ApiKeySection";
 
 export default function Settings() {
   const navigate = useNavigate();
@@ -19,13 +18,8 @@ export default function Settings() {
 
   return (
     <AppLayout>
-      <div className="flex-1 p-6 relative overflow-hidden">
-        {/* Space particles background */}
-        <div className="absolute inset-0 z-0">
-          <div className="stars-container"></div>
-        </div>
-        
-        <div className="max-w-4xl mx-auto space-y-8 relative z-10">
+      <div className="flex-1 p-6">
+        <div className="max-w-4xl mx-auto space-y-6">
           <div className="flex items-center gap-4 mb-8">
             <Button
               variant="ghost"
@@ -45,19 +39,8 @@ export default function Settings() {
           <div className="relative">
             <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/10 rounded-full blur-3xl opacity-70 dark:opacity-30 animate-pulse-light"></div>
             <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-accent/10 rounded-full blur-3xl opacity-70 dark:opacity-30 animate-pulse-light"></div>
-            
-            {/* API Key Section */}
-            <div className="mb-8">
-              <ApiKeySection />
-            </div>
-            
-            {/* Settings Form */}
             <SettingsForm />
           </div>
-          
-          {/* Floating space elements */}
-          <div className="absolute top-20 right-10 w-24 h-24 rounded-full bg-primary/5 animate-float"></div>
-          <div className="absolute bottom-40 left-10 w-16 h-16 rounded-full bg-accent/5 animate-float" style={{ animationDelay: '1s' }}></div>
         </div>
       </div>
     </AppLayout>
