@@ -1,10 +1,8 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { getDifficultyWordList, getRandomWordByDifficulty, scrambleWord } from "@/lib/word-utils";
-import { useSound } from "@/lib/useSound";
 import { HelpCircle, RotateCcw, Check, Star, Trophy, Volume2, VolumeX, MoveHorizontal } from "lucide-react";
 import { LetterTile } from "./LetterTile";
 import Sortable from 'sortablejs';
@@ -23,7 +21,6 @@ const MAX_HINTS = {
 
 const WordScrambleGame = () => {
   const { toast } = useToast();
-  const { playSound, isMuted, toggleMute } = useSound();
   const [difficulty, setDifficulty] = useState<Difficulty | null>(null);
   const [originalWord, setOriginalWord] = useState<string>("");
   const [scrambledWord, setScrambledWord] = useState<string>("");
@@ -64,7 +61,6 @@ const WordScrambleGame = () => {
         delay: 50, // Small delay helps on mobile
         delayOnTouchOnly: true,
         onStart: () => {
-          playSound('keypress');
           setShowHelpAnimation(false); // Hide help animation once user starts dragging
         },
         onEnd: (evt) => {
@@ -88,8 +84,6 @@ const WordScrambleGame = () => {
               newArrangement.splice(letterIndex, 1);
               setCurrentArrangement(newArrangement);
             }
-            
-            playSound('valid');
           }
         }
       });
@@ -116,8 +110,6 @@ const WordScrambleGame = () => {
       const newArrangement = [...currentArrangement];
       newArrangement.splice(index, 1);
       setCurrentArrangement(newArrangement);
-      
-      playSound('valid');
     } else {
       // No empty pots
       toast({
@@ -125,7 +117,6 @@ const WordScrambleGame = () => {
         description: "Remove a letter from a pot first.",
         variant: "destructive",
       });
-      playSound('invalid');
     }
   };
 
@@ -227,8 +218,6 @@ const WordScrambleGame = () => {
       setHintsUsed(prev => prev + 1);
       setHintedIndexes(prev => [...prev, hintIndex]);
       
-      playSound('valid');
-      
       toast({
         title: "Hint used",
         description: `A letter has been placed in its correct position. ${maxHints - hintsUsed - 1} hints left.`
@@ -252,7 +241,6 @@ const WordScrambleGame = () => {
     
     if (currentGuess === originalWord) {
       setIsCorrect(true);
-      playSound('win');
       setPuzzlesSolved(prev => prev + 1);
       
       toast({
@@ -262,7 +250,6 @@ const WordScrambleGame = () => {
     } else {
       setIsCorrect(false);
       setShowInvalidAnimation(true);
-      playSound('invalid');
       
       // Reset animation state after animation completes
       setTimeout(() => setShowInvalidAnimation(false), 800);
@@ -286,8 +273,6 @@ const WordScrambleGame = () => {
       const newPotArrangement = [...potArrangement];
       newPotArrangement[index] = null;
       setPotArrangement(newPotArrangement);
-      
-      playSound('keypress');
     }
   };
 
@@ -336,11 +321,11 @@ const WordScrambleGame = () => {
           <Button
             variant="ghost"
             size="icon"
-            title={isMuted ? "Enable sound" : "Mute sound"}
-            onClick={toggleMute}
+            title={"" ? "Enable sound" : "Mute sound"}
+            onClick={() => {}}
             className="h-10 w-10 rounded-full hover:bg-primary/10"
           >
-            {isMuted ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
+            {false ? <VolumeX className="h-5 w-5" /> : <Volume2 className="h-5 w-5" />}
           </Button>
           
           <Button

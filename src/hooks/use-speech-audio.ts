@@ -1,13 +1,10 @@
-
 import { useState, useCallback } from 'react';
 import { toast } from 'sonner';
 import { useSpeechRecognition } from '@/hooks/use-speech-recognition';
-import { useSound } from '@/lib/useSound';
 
 export function useSpeechAudio() {
   const [isListening, setIsListening] = useState(false);
   const [isSpeaking, setIsSpeaking] = useState(false);
-  const { playSound } = useSound();
   
   const { 
     transcript, 
@@ -27,22 +24,20 @@ export function useSpeechAudio() {
     setIsListening(true);
     resetTranscript();
     startListening();
-    playSound('keypress');
     toast.info("Listening... Speak now.");
-  }, [supported, resetTranscript, startListening, playSound]);
+  }, [supported, resetTranscript, startListening]);
 
   // Stop recording
   const handleStopRecording = useCallback(() => {
     if (isListening) {
       stopListening();
       setIsListening(false);
-      playSound('valid');
       
       if (!transcript) {
         toast.error("I didn't hear anything. Please try again.");
       }
     }
-  }, [isListening, stopListening, transcript, playSound]);
+  }, [isListening, stopListening, transcript]);
 
   // Handle text-to-speech
   const speakText = useCallback((text: string) => {

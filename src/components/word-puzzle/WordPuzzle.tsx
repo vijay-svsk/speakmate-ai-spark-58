@@ -1,11 +1,8 @@
-
 import React, { useState } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Volume2, VolumeX } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useSound } from "@/lib/useSound";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import WordGuessGame from "@/components/word-puzzle/WordGuessGame";
 import WordScrambleGame from "@/components/word-puzzle/WordScrambleGame";
 import VocabularyArcade from "@/components/word-puzzle/VocabularyArcade";
@@ -36,7 +33,6 @@ const gameOptions = [
 ];
 
 const WordPuzzle = () => {
-  const { isMuted, toggleMute, playSound } = useSound();
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
 
   const selectGame = (gameId: string) => {
@@ -44,7 +40,6 @@ const WordPuzzle = () => {
       return; // Don't select games marked as coming soon
     }
     setSelectedGame(gameId);
-    playSound('keypress');
   };
 
   return (
@@ -60,11 +55,11 @@ const WordPuzzle = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleMute}
-            title={isMuted ? "Enable sound" : "Mute sound"}
+            onClick={() => {}}
+            title={true ? "Enable sound" : "Mute sound"}
             className="h-10 w-10 rounded-full hover:bg-primary/10"
           >
-            {isMuted ? 
+            {true ? 
               <VolumeX className="h-5 w-5" /> : 
               <Volume2 className="h-5 w-5" />
             }

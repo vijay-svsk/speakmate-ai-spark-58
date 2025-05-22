@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Book, ArrowRight, Star, HelpCircle, Award } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useSound } from "@/lib/useSound";
 import { motion, AnimatePresence } from "framer-motion";
 import { LevelSelector } from "@/components/vocabulary/LevelSelector";
 
@@ -232,7 +230,6 @@ const VocabularyArcade: React.FC = () => {
   // Animation refs
   const wordRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const { playSound } = useSound();
 
   // Start a new game
   const startGame = (selectedLevel: "beginner" | "intermediate" | "advanced") => {
@@ -244,8 +241,6 @@ const VocabularyArcade: React.FC = () => {
     setBadge("");
     loadWord(0, selectedLevel);
     
-    // Play sound and show toast
-    playSound('valid');
     toast({
       title: `${selectedLevel.charAt(0).toUpperCase() + selectedLevel.slice(1)} Mode`,
       description: "Get ready to become a Word Master!"
@@ -285,7 +280,6 @@ const VocabularyArcade: React.FC = () => {
     if (showAnswer) return; // Prevent selection after answer is revealed
     
     setSelectedOption(index);
-    playSound('keypress');
   };
 
   // Check the selected answer
@@ -303,7 +297,6 @@ const VocabularyArcade: React.FC = () => {
     
     if (options[selectedOption].isCorrect) {
       // Correct answer
-      playSound('win');
       setScore(prev => prev + 1);
       
       toast({
@@ -314,8 +307,6 @@ const VocabularyArcade: React.FC = () => {
       // Add confetti effect here
     } else {
       // Incorrect answer
-      playSound('lose');
-      
       toast({
         title: "Not quite right",
         description: `The correct definition of "${currentWord?.word}" is "${currentWord?.definition}"`,
@@ -331,7 +322,6 @@ const VocabularyArcade: React.FC = () => {
     } else {
       loadWord(currentWordIndex + 1);
       setCurrentWordIndex(prev => prev + 1);
-      playSound('keypress');
     }
   };
 
@@ -340,7 +330,6 @@ const VocabularyArcade: React.FC = () => {
     if (usedHint || showAnswer) return;
     
     setUsedHint(true);
-    playSound('valid');
     
     // Find an incorrect option to eliminate
     const incorrectIndices = options.map((opt, i) => !opt.isCorrect ? i : -1).filter(i => i !== -1);
@@ -359,7 +348,6 @@ const VocabularyArcade: React.FC = () => {
   // Handle round completion
   const handleRoundComplete = () => {
     setRoundCompleted(true);
-    playSound('win');
     
     // Determine badge based on score
     const totalWords = vocabularyData[level].length;
@@ -385,7 +373,6 @@ const VocabularyArcade: React.FC = () => {
   // Toggle word info panel
   const toggleWordInfo = () => {
     setShowWordInfo(!showWordInfo);
-    playSound('keypress');
   };
 
   return (

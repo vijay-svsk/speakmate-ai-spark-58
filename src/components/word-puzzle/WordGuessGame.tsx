@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -6,7 +5,6 @@ import { useToast } from "@/components/ui/use-toast";
 import { getRandomWord, isValidWord, checkWordGuess, generateKeyboardStatus } from "@/lib/word-utils";
 import { WordGrid } from "@/components/word-puzzle/WordGrid";
 import { Keyboard } from "@/components/word-puzzle/Keyboard";
-import { useSound } from "@/lib/useSound";
 import { ArrowLeft, RotateCcw } from "lucide-react";
 import { GameOverScreen } from "@/components/word-puzzle/GameOverScreen";
 
@@ -15,7 +13,6 @@ const WORD_LENGTH = 5;
 
 export const WordGuessGame = () => {
   const { toast } = useToast();
-  const { playSound } = useSound();
   const [targetWord, setTargetWord] = useState<string>("");
   const [currentGuess, setCurrentGuess] = useState<string>("");
   const [guesses, setGuesses] = useState<string[]>([]);
@@ -64,14 +61,12 @@ export const WordGuessGame = () => {
 
   const handleKeyPress = (key: string) => {
     if (currentGuess.length < WORD_LENGTH) {
-      playSound('keypress');
       setCurrentGuess((prev) => prev + key.toLowerCase());
     }
   };
 
   const handleBackspace = () => {
     if (currentGuess.length > 0) {
-      playSound('keypress');
       setCurrentGuess((prev) => prev.slice(0, -1));
     }
   };
@@ -93,7 +88,6 @@ export const WordGuessGame = () => {
     // Check if the guess is a valid word
     if (!isValidWord(currentGuess)) {
       setShowInvalidAnimation(true);
-      playSound('invalid');
       
       // Reset animation state after animation completes
       setTimeout(() => setShowInvalidAnimation(false), 800);
@@ -107,7 +101,6 @@ export const WordGuessGame = () => {
     }
     
     setIsSubmitting(true);
-    playSound('valid');
     
     // Get statuses for the current guess
     const newStatus = checkWordGuess(currentGuess, targetWord);
@@ -124,7 +117,6 @@ export const WordGuessGame = () => {
     if (currentGuess.toLowerCase() === targetWord.toLowerCase()) {
       setHasWon(true);
       setIsGameOver(true);
-      playSound('win');
       toast({
         title: "You won! 🎉",
         description: `You guessed the word in ${newGuesses.length} ${newGuesses.length === 1 ? 'try' : 'tries'}!`,
@@ -133,7 +125,6 @@ export const WordGuessGame = () => {
     // Check if the player lost
     else if (newGuesses.length >= MAX_ATTEMPTS) {
       setIsGameOver(true);
-      playSound('lose');
       toast({
         title: "Game Over",
         description: `The word was "${targetWord}".`,

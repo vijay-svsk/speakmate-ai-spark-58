@@ -1,10 +1,8 @@
-
 import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Volume2, VolumeX } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useSound } from "@/lib/useSound";
 import WordGuessGame from "@/components/word-puzzle/WordGuessGame";
 import WordScrambleGame from "@/components/word-puzzle/WordScrambleGame";
 import VocabularyArcade from "@/components/word-puzzle/VocabularyArcade";
@@ -36,23 +34,18 @@ const gameOptions = [
 ];
 
 const WordPuzzle = () => {
-  const { isMuted, toggleMute, playSound } = useSound();
   const [selectedGame, setSelectedGame] = useState<string | null>(null);
   const [hoveredGame, setHoveredGame] = useState<string | null>(null);
 
   useEffect(() => {
     // Play sound when component mounts
-    playSound('valid');
-  }, [playSound]);
+  }, []);
 
   const selectGame = (gameId: string) => {
     if (gameOptions.find(game => game.id === gameId)?.comingSoon) {
       return; // Don't select games marked as coming soon
     }
     setSelectedGame(gameId);
-    playSound('keypress');
-    
-    // Trigger confetti when selecting a game
     confetti({
       particleCount: 50,
       spread: 60,
@@ -62,7 +55,6 @@ const WordPuzzle = () => {
 
   const handleBack = () => {
     setSelectedGame(null);
-    playSound('keypress');
   };
 
   return (
@@ -78,11 +70,11 @@ const WordPuzzle = () => {
           <Button
             variant="ghost"
             size="icon"
-            onClick={toggleMute}
-            title={isMuted ? "Enable sound" : "Mute sound"}
+            onClick={() => {}}
+            title={"Enable sound"}
             className="h-10 w-10 rounded-full hover:bg-primary/10 hover:scale-110 transition-all duration-300"
           >
-            {isMuted ? 
+            {true ? 
               <VolumeX className="h-5 w-5 text-primary" /> : 
               <Volume2 className="h-5 w-5 text-primary" />
             }
@@ -97,7 +89,6 @@ const WordPuzzle = () => {
                 onClick={() => selectGame(game.id)}
                 onMouseEnter={() => {
                   setHoveredGame(game.id);
-                  playSound('keypress');
                 }}
                 onMouseLeave={() => setHoveredGame(null)}
                 className={`cursor-pointer transform transition-all duration-300 hover:scale-105 hover:shadow-xl border-primary/10 ${

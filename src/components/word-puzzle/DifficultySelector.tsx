@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useSound } from "@/lib/useSound";
 import { Difficulty } from './WordScrambleGame';
 
 interface DifficultySelectorProps {
@@ -12,10 +10,8 @@ interface DifficultySelectorProps {
 export const DifficultySelector: React.FC<DifficultySelectorProps> = ({ 
   onSelectDifficulty 
 }) => {
-  const { playSound } = useSound();
 
   const handleSelect = (difficulty: Difficulty) => {
-    playSound('win');
     onSelectDifficulty(difficulty);
   };
 

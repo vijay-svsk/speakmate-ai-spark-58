@@ -1,4 +1,3 @@
-
 import {
   Sidebar,
   SidebarContent,
@@ -23,7 +22,6 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useSound } from "@/lib/useSound";
 import { useEffect, useState } from "react";
 
 const navItems = [
@@ -43,7 +41,6 @@ const navItems = [
 export function AppSidebar() {
   // Get current path to highlight active route
   const currentPath = window.location.pathname;
-  const { playSound } = useSound();
   const [hoveredItem, setHoveredItem] = useState<string | null>(null);
 
   return (
@@ -62,7 +59,6 @@ export function AppSidebar() {
                     isActive={currentPath === item.route}
                     onMouseEnter={() => {
                       setHoveredItem(item.title);
-                      playSound('keypress');
                     }}
                     onMouseLeave={() => setHoveredItem(null)}
                   >
