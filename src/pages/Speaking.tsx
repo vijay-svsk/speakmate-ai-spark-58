@@ -1,6 +1,7 @@
+
 import React, { useRef, useState, useEffect } from "react";
-import { Mic, CircleStop, ChartBar, LineChart, ArrowLeft, Settings } from "lucide-react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Mic, CircleStop, ChartBar, LineChart, ArrowLeft, Settings, AlertTriangle, VolumeX } from "lucide-react";
+import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
@@ -8,6 +9,8 @@ import { toast } from "sonner";
 import { useNavigate } from "react-router-dom";
 import { ResponsiveContainer, RadarChart as RChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, Tooltip } from "recharts";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
+import { AlertCircle } from "lucide-react";
 
 // Sample topics for the speaking practice select dropdown
 const sampleTopics = [
@@ -20,12 +23,6 @@ const sampleTopics = [
   "Technology",
 ];
 
-// Set up SpeechRecognition cross-browser
-const SpeechRecognition =
-  typeof window !== "undefined"
-    ? (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    : undefined;
-
 export default function Speaking() {
   const [selectedTopic, setSelectedTopic] = useState("");
   const [recording, setRecording] = useState(false);
@@ -36,9 +33,35 @@ export default function Speaking() {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  
+  // Use the enhanced speech recognition hook
+  const {
+    transcript: recognizedText,
+    resetTranscript,
+    startListening,
+    stopListening,
+    isListening,
+    supported,
+    lastError
+  } = useSpeechRecognition();
+
+  // Sync the recognized text with our component state
+  useEffect(() => {
+    if (recognizedText) {
+      setTranscript(recognizedText);
+    }
+  }, [recognizedText]);
+
+  // Display error messages from speech recognition
+  useEffect(() => {
+    if (lastError) {
+      toast.error(`Speech recognition error: ${lastError}`, {
+        duration: 3000,
+      });
+    }
+  }, [lastError]);
 
   // Load the API key from localStorage on component mount
   useEffect(() => {
@@ -66,24 +89,10 @@ export default function Speaking() {
     setAudioUrl(null);
     setRecording(true);
 
-    // Start SpeechRecognition if available
-    if (SpeechRecognition) {
-      const recognition = new SpeechRecognition();
-      recognition.continuous = true;
-      recognition.interimResults = true;
-      recognition.lang = "en-US";
-      recognition.onresult = (event: any) => {
-        let runningTranscript = "";
-        for (let i = 0; i < event.results.length; ++i) {
-          runningTranscript += event.results[i][0].transcript;
-        }
-        setTranscript(runningTranscript.trim());
-      };
-      recognition.onerror = (event: any) => {
-        toast.error("Speech recognition error: " + (event.error || "Unknown recognition error."));
-      };
-      recognitionRef.current = recognition;
-      recognition.start();
+    // Start SpeechRecognition
+    if (supported) {
+      resetTranscript();
+      startListening();
     } else {
       toast.error("Speech recognition not supported. Live transcription isn't available in your browser.");
     }
@@ -91,7 +100,10 @@ export default function Speaking() {
     // Start audio recording
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new window.MediaRecorder(stream);
+      const mediaRecorder = new window.MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
       audioChunksRef.current = [];
       mediaRecorder.ondataavailable = (e) => audioChunksRef.current.push(e.data);
       mediaRecorder.onstop = async () => {
@@ -110,16 +122,20 @@ export default function Speaking() {
   // Stop recording (audio + live transcript)
   const handleStop = () => {
     setRecording(false);
+    
     // Stop SpeechRecognition
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      recognitionRef.current = null;
-    }
+    stopListening();
+    
     // Stop audio recording
-    mediaRecorderRef.current?.stop();
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
+      mediaRecorderRef.current.stop();
+      
+      // Release microphone
+      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
+    }
   };
 
-  // Analyze button - enhanced Gemini API prompt and response structure
+  // Enhanced analyze function with better error handling and API communication
   const handleAnalyze = async () => {
     if (!transcript.trim()) {
       toast.error("No transcript available. Please record some speech first.");
@@ -141,45 +157,47 @@ export default function Speaking() {
     try {
       const speechText = transcript;
       
-      // Enhanced Gemini Prompt per user request:
+      // Enhanced Gemini Prompt with clearer instructions:
       const prompt = [
         {
           parts: [{
             text: `
-You are an expert English language coach. I am building a website to help users improve their English speaking skills using AI. I will provide you with a transcript of what the user has spoken. Based on that transcript, give a detailed, structured, and friendly feedback report with the following sections:
+You are an expert English language coach with years of experience in teaching and providing detailed feedback. I am building a website to help users improve their English speaking skills using AI.
 
-1. **Corrected Version**: Rewrite the user's speech with proper grammar, vocabulary, and sentence structure.
+I will provide you with a transcript of what the user has spoken. Based on that transcript, give a detailed, structured, and VERY ACCURATE feedback report with these sections:
 
-2. **Highlight Mistakes**: List each mistake, the correction, and explain the grammar/vocabulary rule behind it in simple terms.
+1. **Corrected Version**: Rewrite the user's speech with proper grammar, vocabulary, and sentence structure. Be meticulous about accuracy.
+
+2. **Highlight Mistakes**: List each mistake, the correction, and explain the grammar/vocabulary rule behind it in simple but precise terms.
 
 3. **Grammar, Vocabulary, Pronunciation, and Fluency Scores**:
    - Provide scores out of 100 for each category.
    - Categorize the score: 0-60 = Needs Improvement, 61-80 = Average, 81-100 = Good.
-   - Explain why the score was given and what to improve.
+   - Explain why the score was given and what to improve with specific examples.
 
 4. **Pronunciation Analysis**:
-   - Identify any difficult or mispronounced words.
-   - Give phonetic tips and mouth movement advice.
-   - Provide examples or similar words to practice.
+   - Identify any difficult or mispronounced words with high precision.
+   - Give detailed phonetic tips and mouth movement advice.
+   - Provide 2-3 similar words to practice with the same phonetic pattern.
 
 5. **Fluency Feedback**:
-   - Count filler words used ("um", "like", "uh").
-   - Identify unnatural pauses or abrupt stops.
-   - Suggest techniques for smoother speech.
+   - Count exact number of filler words used ("um", "like", "uh").
+   - Identify specific unnatural pauses or abrupt stops.
+   - Suggest concrete techniques for smoother speech flow.
 
 6. **Vocabulary Enhancement**:
    - Identify basic or overused words in the transcript.
-   - Suggest 2-3 better alternatives with sample sentences.
+   - Suggest 2-3 better alternatives with sample sentences showing proper usage.
 
 7. **Communication Tips**:
-   - Give 3 personalized tips to help the user improve.
-   - Make these encouraging and based on their performance.
+   - Give 3 personalized tips to help the user improve based on their specific speech pattern.
+   - Make these tips actionable and specific to their current level.
 
 8. **Final Summary**:
    - Provide an overall score and label (Beginner, Intermediate, Advanced).
-   - Suggest if the user should retry or move to the next level.
+   - Give clear next steps and suggest if the user should retry or move to the next level.
 
-Please make the feedback positive, constructive, and educational. Use clear formatting (like bullet points and bold titles) so it can be easily displayed in a dashboard.
+Please make the feedback positive, constructive, educational, and HIGHLY ACCURATE. Format everything clearly so it can be easily displayed in a dashboard.
 
 Transcript:
 "${speechText}"
@@ -205,7 +223,7 @@ Respond as clean JSON ONLY, using keys:
         }
       ];
 
-      // Updated API endpoint to use the gemini-1.5-flash model for better compatibility
+      // Updated API endpoint to use the most suitable model
       const apiRes = await fetch(
         `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`,
         {
@@ -222,6 +240,7 @@ Respond as clean JSON ONLY, using keys:
         const errorText = await apiRes.text();
         console.error("API error:", errorText);
         
+        // More specific error handling based on status codes
         if (apiRes.status === 400 && errorText.includes("API key not valid")) {
           toast.error("Your API key is invalid. Please check your API key in Settings.", {
             action: {
@@ -229,17 +248,20 @@ Respond as clean JSON ONLY, using keys:
               onClick: () => navigate('/settings')
             }
           });
-          setLoading(false);
-          return;
+        } else if (apiRes.status === 429) {
+          toast.error("API rate limit exceeded. Please try again later or use a different API key.");
         } else {
-          throw new Error(`API error: ${apiRes.status}`);
+          throw new Error(`API error (${apiRes.status}): ${errorText || "Unknown error"}`);
         }
+        
+        setLoading(false);
+        return;
       }
       
       const json = await apiRes.json();
       console.log("API response:", json);
 
-      // Try to extract strict JSON (Gemini sometimes returns markdown code).
+      // More robust JSON extraction logic
       const text = (json?.candidates?.[0]?.content?.parts?.[0]?.text || "").trim();
       let feedbackObj = null;
       try {
@@ -250,15 +272,30 @@ Respond as clean JSON ONLY, using keys:
         } else if (cleanText.startsWith("```")) {
           cleanText = cleanText.replace(/^```/, "").replace(/```$/, "").trim();
         }
-        feedbackObj = JSON.parse(cleanText.match(/\{[\s\S]*\}/)?.[0] ?? cleanText);
+        
+        // Try to find valid JSON in the response
+        const jsonMatch = cleanText.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          feedbackObj = JSON.parse(jsonMatch[0]);
+        } else {
+          feedbackObj = JSON.parse(cleanText);
+        }
+        
+        // Validate the parsed JSON has the expected structure
+        if (!feedbackObj.corrected_version || !feedbackObj.scores) {
+          throw new Error("Invalid response format");
+        }
+        
       } catch (e) {
         console.error("Error parsing JSON:", e);
-        feedbackObj = { raw: text }; // fallback: show as raw text
+        toast.error("Could not parse the AI response. Please try again.");
+        feedbackObj = { raw: text, parsing_error: true };
       }
+      
       setFeedback(feedbackObj);
     } catch (e: any) {
       console.error("Analysis error:", e);
-      toast.error("Analysis failed: " + (e.message || "Could not reach Gemini API"));
+      toast.error("Analysis failed: " + (e.message || "Could not reach Gemini API. Please check your connection."));
     }
     setLoading(false);
   };
@@ -268,11 +305,12 @@ Respond as clean JSON ONLY, using keys:
     if (!highlighted_errors?.length) return original;
     let highlighted = original;
     highlighted_errors.forEach((err) => {
-      if (err.error) {
-        // Naive replacement - ideally word-boundary match
+      if (err.mistake) {
+        // More precise replacement with word boundary check
+        const regex = new RegExp(`\\b${err.mistake.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, "gi");
         highlighted = highlighted.replace(
-          new RegExp(err.error, "gi"),
-          `<span class="text-red-600 font-semibold underline decoration-wavy decoration-red-500 cursor-pointer" title="${err.rule || ""}">${err.error}</span>`
+          regex,
+          `<span class="text-red-600 font-semibold underline decoration-wavy decoration-red-500 cursor-pointer" title="${err.explanation || ""}">${err.mistake}</span>`
         );
       }
     });
@@ -349,17 +387,27 @@ Respond as clean JSON ONLY, using keys:
               </Select>
             </div>
 
+            {/* Browser Support Warning */}
+            {!supported && (
+              <div className="flex items-center gap-2 p-3 rounded-md bg-amber-50 border border-amber-200 text-amber-700">
+                <AlertTriangle className="h-5 w-5 flex-shrink-0" />
+                <span className="text-sm">
+                  Speech recognition is not supported in this browser. Please use Chrome, Edge, or Safari for best experience.
+                </span>
+              </div>
+            )}
+
             {/* Recorder */}
             <div className="flex items-center gap-3">
               <Button
                 onClick={handleStart}
-                disabled={recording}
+                disabled={recording || !supported}
                 variant="default"
                 className="flex gap-2"
                 aria-label="Start Speaking"
               >
                 <Mic className="w-5 h-5" />
-                Speak
+                {supported ? "Speak" : "Not Supported"}
               </Button>
               <Button
                 onClick={handleStop}
@@ -375,7 +423,7 @@ Respond as clean JSON ONLY, using keys:
                 onClick={handleAnalyze}
                 disabled={!transcript || loading || !apiKey}
                 variant="outline"
-                className="flex gap-2"
+                className={`flex gap-2 ${loading ? "animate-pulse" : ""}`}
                 aria-label="Analyze"
               >
                 {loading ? "Analyzing..." : "Analyze"}
@@ -392,21 +440,39 @@ Respond as clean JSON ONLY, using keys:
               </Button>
             </div>
 
+            {/* Recording Status Indicator */}
+            {recording && (
+              <div className="flex items-center gap-2 text-sm text-primary">
+                <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
+                <span>Recording... Speak clearly into your microphone</span>
+              </div>
+            )}
+
             {/* Transcript Display */}
-            <Textarea
-              className="text-base"
-              rows={3}
-              value={transcript}
-              onChange={e => setTranscript(e.target.value)}
-              placeholder="Transcript will appear here..."
-            />
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-sm font-medium">Speech Transcript</label>
+                {isListening && (
+                  <span className="text-xs text-primary animate-pulse">Listening...</span>
+                )}
+              </div>
+              <Textarea
+                className="text-base min-h-[100px]"
+                value={transcript}
+                onChange={e => setTranscript(e.target.value)}
+                placeholder="Transcript will appear here as you speak..."
+              />
+            </div>
 
             {/* Audio playback */}
             {audioUrl && (
-              <audio controls className="mt-2 w-full">
-                <source src={audioUrl} />
-                Your browser does not support audio.
-              </audio>
+              <div>
+                <label className="text-sm font-medium block mb-1">Recorded Audio</label>
+                <audio controls className="w-full">
+                  <source src={audioUrl} />
+                  Your browser does not support audio.
+                </audio>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -414,11 +480,41 @@ Respond as clean JSON ONLY, using keys:
         {/* Results */}
         {loading && (
           <div className="mt-4 flex justify-center">
-            <div className="animate-pulse text-primary">🙌 Analyzing your speech...</div>
+            <div className="animate-pulse text-primary flex items-center gap-2">
+              <div className="h-2 w-2 bg-primary rounded-full animate-ping"></div>
+              <div className="h-2 w-2 bg-primary rounded-full animate-ping" style={{ animationDelay: "0.2s" }}></div>
+              <div className="h-2 w-2 bg-primary rounded-full animate-ping" style={{ animationDelay: "0.4s" }}></div>
+              <span className="ml-2">Analyzing your speech...</span>
+            </div>
           </div>
         )}
         {feedback && (
           <div className="space-y-6">
+            {/* Parsing error message */}
+            {feedback.parsing_error && (
+              <Card className="rounded-xl border border-red-200 bg-red-50">
+                <CardHeader>
+                  <div className="flex items-center gap-2 text-red-600">
+                    <AlertCircle className="h-5 w-5" />
+                    <span className="font-semibold">Analysis Error</span>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-red-700 mb-2">
+                    There was an error processing the AI response. Please try again with a different speech sample.
+                  </p>
+                  <div className="text-xs text-red-500 overflow-auto max-h-[200px] p-2 bg-red-100 rounded">
+                    <pre>{feedback.raw}</pre>
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="outline" onClick={handleAnalyze} className="text-red-600 border-red-200">
+                    Try Again
+                  </Button>
+                </CardFooter>
+              </Card>
+            )}
+
             {/* 1. Corrected Version */}
             {feedback.corrected_version && (
               <Card className="rounded-xl border-0 bg-green-50 shadow">
@@ -578,7 +674,7 @@ Respond as clean JSON ONLY, using keys:
             )}
 
             {/* Fallback Raw response (in case JSON failed) */}
-            {feedback.raw && (
+            {feedback.raw && !feedback.parsing_error && (
               <Card className="rounded-xl">
                 <CardHeader>Gemini Response</CardHeader>
                 <CardContent>
