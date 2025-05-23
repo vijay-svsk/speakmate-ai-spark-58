@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -8,14 +9,13 @@ import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "@/components/ui/use-toast";
 import { Card, CardContent } from "@/components/ui/card";
-import { Moon, Sun, Volume2, VolumeX, Bell, Eye, EyeOff, Copy, Check } from "lucide-react";
+import { Moon, Sun, Bell, Eye, EyeOff, Copy, Check, Search } from "lucide-react";
 
-// Form schema with validation
+// Form schema with validation (removed muteSounds)
 const settingsFormSchema = z.object({
   geminiApiKey: z.string().min(1, {
     message: "API key is required.",
   }),
-  muteSounds: z.boolean().default(false),
   darkMode: z.boolean().default(false),
   notificationsEnabled: z.boolean().default(true),
 });
@@ -27,18 +27,16 @@ export function SettingsForm() {
   const [showApiKey, setShowApiKey] = useState(false);
   const [copied, setCopied] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   
-  // Get default values from localStorage
+  // Get default values from localStorage (removed muteSounds)
   const loadSettings = (): SettingsFormValues => {
-    // Try to get settings from localStorage or use defaults
     const savedApiKey = localStorage.getItem("gemini-api-key") || "";
-    const savedMuteSounds = localStorage.getItem("mute-sounds") === "true";
     const savedDarkMode = localStorage.getItem("dark-mode") === "true";
     const savedNotifications = localStorage.getItem("notifications-enabled") !== "false";
     
     return {
       geminiApiKey: savedApiKey,
-      muteSounds: savedMuteSounds,
       darkMode: savedDarkMode,
       notificationsEnabled: savedNotifications,
     };
@@ -78,14 +76,13 @@ export function SettingsForm() {
     }
   }, [copied]);
 
-  // Handle form submission
+  // Handle form submission (removed muteSounds)
   const onSubmit = (data: SettingsFormValues) => {
     // Save API key to localStorage
     localStorage.setItem("gemini-api-key", data.geminiApiKey);
     setIsSaved(true);
     
-    // Save other settings
-    localStorage.setItem("mute-sounds", data.muteSounds.toString());
+    // Save other settings (removed mute-sounds)
     localStorage.setItem("dark-mode", data.darkMode.toString());
     localStorage.setItem("notifications-enabled", data.notificationsEnabled.toString());
     
@@ -136,12 +133,114 @@ export function SettingsForm() {
     }
   }, []);
 
+  // Filter settings based on search query
+  const settingsItems = [
+    {
+      id: "darkMode",
+      title: "Dark Mode",
+      description: "Switch between light and dark theme.",
+      icon: isDarkMode ? Moon : Sun,
+      component: (
+        <FormField
+          control={form.control}
+          name="darkMode"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border hover:shadow-md transition-all duration-300">
+              <div className="space-y-0.5 flex items-center gap-3">
+                {field.value ? (
+                  <Moon className="h-5 w-5 text-primary" />
+                ) : (
+                  <Sun className="h-5 w-5 text-accent" />
+                )}
+                <div>
+                  <FormLabel className="text-base">Dark Mode</FormLabel>
+                  <p className="text-sm text-muted-foreground">
+                    Switch between light and dark theme.
+                  </p>
+                </div>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={(checked) => {
+                    field.onChange(checked);
+                    setIsDarkMode(checked);
+                    
+                    if (checked) {
+                      document.documentElement.classList.add("dark");
+                    } else {
+                      document.documentElement.classList.remove("dark");
+                    }
+                  }}
+                  className="data-[state=checked]:bg-primary"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      )
+    },
+    {
+      id: "notifications",
+      title: "Enable Notifications",
+      description: "Receive notifications about progress and achievements.",
+      icon: Bell,
+      component: (
+        <FormField
+          control={form.control}
+          name="notificationsEnabled"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border hover:shadow-md transition-all duration-300">
+              <div className="space-y-0.5 flex items-center gap-3">
+                <Bell className={`h-5 w-5 ${field.value ? 'text-primary' : 'text-muted-foreground'}`} />
+                <div>
+                  <FormLabel className="text-base">Enable Notifications</FormLabel>
+                  <p className="text-sm text-muted-foreground">
+                    Receive notifications about progress and achievements.
+                  </p>
+                </div>
+              </div>
+              <FormControl>
+                <Switch
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  className="data-[state=checked]:bg-primary"
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+      )
+    }
+  ];
+
+  const filteredSettings = settingsItems.filter(item =>
+    item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    item.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <Card className="animate-fade-in dark-card backdrop-blur-sm border-2">
           <CardContent className="pt-6">
             <div className="space-y-6">
+              {/* Search Bar */}
+              <div className="space-y-4">
+                <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                  Search Settings
+                </h2>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Search for settings..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10 dark:bg-gray-800/80 dark:border-gray-700 transition-all duration-200 border-2 focus-visible:border-primary"
+                  />
+                </div>
+              </div>
+
               {/* API Key Section */}
               <div className="space-y-4">
                 <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
@@ -213,100 +312,18 @@ export function SettingsForm() {
                   General Settings
                 </h2>
                 
-                <FormField
-                  control={form.control}
-                  name="muteSounds"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border hover:shadow-md transition-all duration-300">
-                      <div className="space-y-0.5 flex items-center gap-3">
-                        {field.value ? (
-                          <VolumeX className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                          <Volume2 className="h-5 w-5 text-primary" />
-                        )}
-                        <div>
-                          <FormLabel className="text-base">Mute Sound Effects</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Turn off all sound effects in the application.
-                          </p>
-                        </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            // Don't toggle here, wait for form submission
-                          }}
-                          className="data-[state=checked]:bg-primary"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="darkMode"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border hover:shadow-md transition-all duration-300">
-                      <div className="space-y-0.5 flex items-center gap-3">
-                        {field.value ? (
-                          <Moon className="h-5 w-5 text-primary" />
-                        ) : (
-                          <Sun className="h-5 w-5 text-accent" />
-                        )}
-                        <div>
-                          <FormLabel className="text-base">Dark Mode</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Switch between light and dark theme.
-                          </p>
-                        </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={(checked) => {
-                            field.onChange(checked);
-                            setIsDarkMode(checked);
-                            
-                            if (checked) {
-                              document.documentElement.classList.add("dark");
-                            } else {
-                              document.documentElement.classList.remove("dark");
-                            }
-                          }}
-                          className="data-[state=checked]:bg-primary"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="notificationsEnabled"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 dark:border-gray-700 dark:bg-gray-800/50 interactive-border hover:shadow-md transition-all duration-300">
-                      <div className="space-y-0.5 flex items-center gap-3">
-                        <Bell className={`h-5 w-5 ${field.value ? 'text-primary' : 'text-muted-foreground'}`} />
-                        <div>
-                          <FormLabel className="text-base">Enable Notifications</FormLabel>
-                          <p className="text-sm text-muted-foreground">
-                            Receive notifications about progress and achievements.
-                          </p>
-                        </div>
-                      </div>
-                      <FormControl>
-                        <Switch
-                          checked={field.value}
-                          onCheckedChange={field.onChange}
-                          className="data-[state=checked]:bg-primary"
-                        />
-                      </FormControl>
-                    </FormItem>
-                  )}
-                />
+                {filteredSettings.length === 0 ? (
+                  <div className="text-center py-8 text-muted-foreground">
+                    <Search className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                    <p>No settings found matching "{searchQuery}"</p>
+                  </div>
+                ) : (
+                  filteredSettings.map((setting) => (
+                    <div key={setting.id}>
+                      {setting.component}
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </CardContent>
