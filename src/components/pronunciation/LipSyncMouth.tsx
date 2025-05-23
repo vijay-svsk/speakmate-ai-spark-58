@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect, useState } from "react";
 import { Canvas } from "@react-three/fiber";
 import { OrbitControls } from "@react-three/drei";
@@ -13,25 +12,25 @@ interface LipSyncMouthProps {
 // Enhanced phoneme mapping with more detailed mouth features
 const PHONEME_SHAPES = {
   // Vowels
-  "A": { openness: 0.7, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.7, lipThickness: 0.25 },  // as in "cat"
-  "E": { openness: 0.5, roundness: 0.2, tonguePosition: 0.5, tongueHeight: 0.5, jawDrop: 0.5, lipThickness: 0.28 },  // as in "bed"
-  "I": { openness: 0.3, roundness: 0.2, tonguePosition: 0.7, tongueHeight: 0.6, jawDrop: 0.3, lipThickness: 0.3 },   // as in "fit"
-  "O": { openness: 0.6, roundness: 0.8, tonguePosition: 0.2, tongueHeight: 0.2, jawDrop: 0.6, lipThickness: 0.32 },  // as in "hot"
-  "U": { openness: 0.4, roundness: 0.7, tonguePosition: 0.1, tongueHeight: 0.3, jawDrop: 0.4, lipThickness: 0.35 },  // as in "put"
+  "A": { openness: 0.7, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.7, lipThickness: 0.25, teethVisible: false, tongueVisible: false },  // as in "cat"
+  "E": { openness: 0.5, roundness: 0.2, tonguePosition: 0.5, tongueHeight: 0.5, jawDrop: 0.5, lipThickness: 0.28, teethVisible: false, tongueVisible: false },  // as in "bed"
+  "I": { openness: 0.3, roundness: 0.2, tonguePosition: 0.7, tongueHeight: 0.6, jawDrop: 0.3, lipThickness: 0.3, teethVisible: false, tongueVisible: false },   // as in "fit"
+  "O": { openness: 0.6, roundness: 0.8, tonguePosition: 0.2, tongueHeight: 0.2, jawDrop: 0.6, lipThickness: 0.32, teethVisible: false, tongueVisible: false },  // as in "hot"
+  "U": { openness: 0.4, roundness: 0.7, tonguePosition: 0.1, tongueHeight: 0.3, jawDrop: 0.4, lipThickness: 0.35, teethVisible: false, tongueVisible: false },  // as in "put"
   
   // Consonants
-  "F": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, tongueHeight: 0.3, jawDrop: 0.2, lipThickness: 0.25, teethVisible: true },  // as in "fish"
-  "V": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, tongueHeight: 0.3, jawDrop: 0.2, lipThickness: 0.25, teethVisible: true },  // as in "van"
-  "P": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.32 },  // as in "map"
-  "B": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.32 },  // as in "bat"
-  "M": { openness: 0.1, roundness: 0.5, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.35 },  // as in "map"
-  "TH": { openness: 0.3, roundness: 0.2, tonguePosition: 0.8, tongueHeight: 0.7, jawDrop: 0.3, lipThickness: 0.25, tongueVisible: true },  // as in "think"
-  "L": { openness: 0.4, roundness: 0.1, tonguePosition: 0.9, tongueHeight: 0.8, jawDrop: 0.4, lipThickness: 0.28, tongueVisible: true },   // as in "lip"
-  "S": { openness: 0.2, roundness: 0.3, tonguePosition: 0.7, tongueHeight: 0.5, jawDrop: 0.2, lipThickness: 0.28, teethVisible: true },    // as in "sit"
-  "R": { openness: 0.3, roundness: 0.5, tonguePosition: 0.6, tongueHeight: 0.4, jawDrop: 0.3, lipThickness: 0.3, tongueVisible: true },     // as in "run"
+  "F": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, tongueHeight: 0.3, jawDrop: 0.2, lipThickness: 0.25, teethVisible: true, tongueVisible: false },  // as in "fish"
+  "V": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, tongueHeight: 0.3, jawDrop: 0.2, lipThickness: 0.25, teethVisible: true, tongueVisible: false },  // as in "van"
+  "P": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.32, teethVisible: false, tongueVisible: false },  // as in "map"
+  "B": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.32, teethVisible: false, tongueVisible: false },  // as in "bat"
+  "M": { openness: 0.1, roundness: 0.5, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.35, teethVisible: false, tongueVisible: false },  // as in "map"
+  "TH": { openness: 0.3, roundness: 0.2, tonguePosition: 0.8, tongueHeight: 0.7, jawDrop: 0.3, lipThickness: 0.25, teethVisible: false, tongueVisible: true },  // as in "think"
+  "L": { openness: 0.4, roundness: 0.1, tonguePosition: 0.9, tongueHeight: 0.8, jawDrop: 0.4, lipThickness: 0.28, teethVisible: false, tongueVisible: true },   // as in "lip"
+  "S": { openness: 0.2, roundness: 0.3, tonguePosition: 0.7, tongueHeight: 0.5, jawDrop: 0.2, lipThickness: 0.28, teethVisible: true, tongueVisible: false },    // as in "sit"
+  "R": { openness: 0.3, roundness: 0.5, tonguePosition: 0.6, tongueHeight: 0.4, jawDrop: 0.3, lipThickness: 0.3, teethVisible: false, tongueVisible: true },     // as in "run"
   
   // Default
-  "default": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.3 }
+  "default": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.3, teethVisible: false, tongueVisible: false }
 };
 
 // Educational notes for each phoneme
