@@ -1,8 +1,10 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Speaking from "./pages/Speaking";
@@ -21,6 +23,33 @@ import MirrorPractice from "./pages/MirrorPractice";
 
 const queryClient = new QueryClient();
 
+// Protected Route component
+const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    // Check if user is authenticated (localStorage check)
+    const authToken = localStorage.getItem('authToken');
+    const userSession = localStorage.getItem('userSession');
+    setIsAuthenticated(!!(authToken || userSession));
+  }, []);
+
+  if (isAuthenticated === null) {
+    // Loading state
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
@@ -28,21 +57,68 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/speaking" element={<Speaking />} />
-          <Route path="/pronunciation" element={<Pronunciation />} />
-          <Route path="/story" element={<Story />} />
-          <Route path="/conversation" element={<Conversation />} />
-          <Route path="/grammar" element={<Grammar />} />
-          <Route path="/vocabulary" element={<Vocabulary />} />
-          <Route path="/reflex" element={<Reflex />} />
-          <Route path="/progress" element={<Progress />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="/word-puzzle" element={<WordPuzzle />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/mirror-practice" element={<MirrorPractice />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="/" element={
+            <ProtectedRoute>
+              <Index />
+            </ProtectedRoute>
+          } />
+          <Route path="/speaking" element={
+            <ProtectedRoute>
+              <Speaking />
+            </ProtectedRoute>
+          } />
+          <Route path="/pronunciation" element={
+            <ProtectedRoute>
+              <Pronunciation />
+            </ProtectedRoute>
+          } />
+          <Route path="/story" element={
+            <ProtectedRoute>
+              <Story />
+            </ProtectedRoute>
+          } />
+          <Route path="/conversation" element={
+            <ProtectedRoute>
+              <Conversation />
+            </ProtectedRoute>
+          } />
+          <Route path="/grammar" element={
+            <ProtectedRoute>
+              <Grammar />
+            </ProtectedRoute>
+          } />
+          <Route path="/vocabulary" element={
+            <ProtectedRoute>
+              <Vocabulary />
+            </ProtectedRoute>
+          } />
+          <Route path="/reflex" element={
+            <ProtectedRoute>
+              <Reflex />
+            </ProtectedRoute>
+          } />
+          <Route path="/progress" element={
+            <ProtectedRoute>
+              <Progress />
+            </ProtectedRoute>
+          } />
+          <Route path="/settings" element={
+            <ProtectedRoute>
+              <Settings />
+            </ProtectedRoute>
+          } />
+          <Route path="/word-puzzle" element={
+            <ProtectedRoute>
+              <WordPuzzle />
+            </ProtectedRoute>
+          } />
+          <Route path="/mirror-practice" element={
+            <ProtectedRoute>
+              <MirrorPractice />
+            </ProtectedRoute>
+          } />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

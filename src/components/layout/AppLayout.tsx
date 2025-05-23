@@ -1,9 +1,10 @@
+
 import React, { useEffect, useState } from "react";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
-import { ArrowLeft } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { DashboardHeader } from "./DashboardHeader";
+import { MobileBottomNav } from "./MobileBottomNav";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -80,90 +81,72 @@ const StarsBackground = () => {
   );
 };
 
-// Learning bubble component for floating educational elements
-const LearningBubbles = () => {
-  const bubbles = [
-    { id: 1, text: "Vocabulary", color: "from-blue-500 to-indigo-600" },
-    { id: 2, text: "Grammar", color: "from-green-500 to-teal-600" },
-    { id: 3, text: "Speaking", color: "from-red-500 to-pink-600" },
-    { id: 4, text: "Listening", color: "from-yellow-500 to-amber-600" },
-    { id: 5, text: "Writing", color: "from-purple-500 to-violet-600" },
-  ];
-  
-  return (
-    <div className="learning-bubbles">
-      {bubbles.map((bubble, index) => (
-        <div 
-          key={bubble.id}
-          className={`learning-bubble bg-gradient-to-br ${bubble.color} text-white`}
-          style={{ 
-            animationDelay: `${index * 0.8}s`,
-            left: `${(index * 20) % 80 + 10}%`,
-            top: `${((index * 15) % 40) + 30}%`,
-          }}
-        >
-          {bubble.text}
-        </div>
-      ))}
-    </div>
-  );
-};
-
-export function AppLayout({ children, showBackButton = true }: AppLayoutProps) {
-  const navigate = useNavigate();
-  const isHomePage = window.location.pathname === "/";
+export function AppLayout({ children, showBackButton = false }: AppLayoutProps) {
+  const isMobile = useIsMobile();
   const [mounted, setMounted] = useState(false);
-  const [showBubbles, setShowBubbles] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const body = document.body;
     body.classList.add('bg-gradient-animation');
     setMounted(true);
-    const timer = setTimeout(() => {
-      setShowBubbles(true);
-    }, 500);
     return () => {
       body.classList.remove('bg-gradient-animation');
-      clearTimeout(timer);
     };
   }, []);
 
-  const handleBack = () => {
-    navigate(-1);
-  };
+  // Get user info from localStorage
+  const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+  const userName = userSession.name || 'User';
+  const userEmail = userSession.email || 'user@echo.ai';
 
   return (
     <SidebarProvider>
-      <div className="flex min-h-screen w-full overflow-hidden bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900 dark:text-gray-100 transition-all duration-500 ease-in-out">
+      <div className="flex min-h-screen w-full overflow-hidden bg-gradient-to-br from-background to-muted/30 transition-all duration-500 ease-in-out">
         {mounted && <StarsBackground />}
-        {mounted && showBubbles && isHomePage && <LearningBubbles />}
         
-        <AppSidebar />
+        {/* Desktop Sidebar */}
+        {!isMobile && <AppSidebar />}
         
-        <main className="flex-1 overflow-auto transition-all duration-300 ease-in-out relative">
-          {!isHomePage && showBackButton && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="m-4 hover:bg-primary/10 hover:scale-110 transition-all duration-300 dark-button relative group" 
-              onClick={handleBack}
-              aria-label="Go back"
-            >
-              <ArrowLeft className="h-5 w-5 text-primary" />
-              <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap text-muted-foreground">Go back</span>
-            </Button>
-          )}
+        {/* Mobile Sidebar Overlay */}
+        {isMobile && isSidebarOpen && (
+          <>
+            <div 
+              className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+              onClick={() => setIsSidebarOpen(false)}
+            />
+            <div className="fixed left-0 top-0 bottom-0 w-72 z-50">
+              <AppSidebar />
+            </div>
+          </>
+        )}
+        
+        {/* Main Content Area */}
+        <div className="flex-1 flex flex-col">
+          {/* Header */}
+          <DashboardHeader 
+            onMenuClick={() => setIsSidebarOpen(!isSidebarOpen)}
+            userName={userName}
+            userEmail={userEmail}
+          />
           
-          <div className="animate-fade-in relative z-10">
-            {children}
-          </div>
+          {/* Content */}
+          <main className="flex-1 overflow-auto relative">
+            <div className="animate-fade-in relative z-10 pb-20 md:pb-4">
+              {children}
+            </div>
+            
+            {/* Footer Brand (Desktop only) */}
+            <div className="hidden md:block fixed bottom-5 right-5 opacity-70 text-xs text-muted-foreground">
+              <span className="bg-background/50 px-2 py-1 rounded-md backdrop-blur-sm border border-border/30">
+                Echo.ai English Tutor
+              </span>
+            </div>
+          </main>
           
-          <div className="fixed bottom-5 right-5 opacity-70 text-xs text-muted-foreground dark:text-gray-500">
-            <span className="bg-white/50 dark:bg-gray-800/50 px-2 py-1 rounded-md backdrop-blur-sm">
-              Iyraa English Tutor
-            </span>
-          </div>
-        </main>
+          {/* Mobile Bottom Navigation */}
+          {isMobile && <MobileBottomNav />}
+        </div>
       </div>
     </SidebarProvider>
   );

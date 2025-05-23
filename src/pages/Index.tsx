@@ -1,7 +1,7 @@
+
 import React, { useEffect, useState } from "react";
-import AppSidebar from "@/components/app-sidebar";
-import { SidebarProvider } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { AppLayout } from "@/components/layout/AppLayout";
 // Dashboard components
 import { DailyGoals } from "@/components/dashboard/DailyGoals";
 import { StreakTracker } from "@/components/dashboard/StreakTracker";
@@ -11,8 +11,6 @@ import { MotivationalTipCard } from "@/components/dashboard/MotivationalTipCard"
 import { WeeklyProgressChart } from "@/components/progress/WeeklyProgressChart";
 import { SkillRadarChart } from "@/components/progress/SkillRadarChart";
 import confetti from 'canvas-confetti';
-import { Moon, Sun } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
 // Quick start actions
@@ -21,19 +19,19 @@ const quickStarts = [
     label: "Speaking Practice",
     icon: "Mic",
     route: "/speaking",
-    color: "bg-gradient-to-br from-primary to-purple-400 text-white hover:shadow-lg hover:shadow-primary/30 dark:border dark:border-primary/40 dark:hover:shadow-primary/40",
+    color: "bg-gradient-to-br from-primary to-purple-400 text-white hover:shadow-lg hover:shadow-primary/30 border-2 border-primary/20 hover:border-primary/40",
   },
   {
     label: "Conversation AI",
     icon: "MessageSquare",
     route: "/conversation",
-    color: "bg-gradient-to-br from-accent to-blue-400 text-white hover:shadow-lg hover:shadow-accent/30 dark:border dark:border-accent/40 dark:hover:shadow-accent/40",
+    color: "bg-gradient-to-br from-accent to-blue-400 text-white hover:shadow-lg hover:shadow-accent/30 border-2 border-accent/20 hover:border-accent/40",
   },
   {
     label: "Progress Report",
     icon: "BarChart",
     route: "/progress",
-    color: "bg-gradient-to-br from-primary to-accent text-white hover:shadow-lg hover:shadow-primary/30 dark:border dark:border-primary/40 dark:hover:shadow-primary/40",
+    color: "bg-gradient-to-br from-primary to-accent text-white hover:shadow-lg hover:shadow-primary/30 border-2 border-primary/20 hover:border-primary/40",
   },
 ];
 
@@ -41,9 +39,9 @@ function WelcomeCard() {
   const [name, setName] = useState("Speaker");
 
   useEffect(() => {
-    const savedName = localStorage.getItem('userName');
-    if (savedName) {
-      setName(savedName);
+    const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+    if (userSession.name) {
+      setName(userSession.name);
     }
 
     // Trigger confetti on dashboard load
@@ -57,12 +55,16 @@ function WelcomeCard() {
   }, []);
 
   return (
-    <Card className="w-full shadow-xl rounded-2xl animate-fade-in mb-4 bg-gradient-to-r from-white to-blue-50 dark:from-gray-800 dark:to-blue-900 dark-card">
-      <CardHeader>
-        <h2 className="font-playfair text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Welcome back, {name}!</h2>
+    <Card className="w-full shadow-xl border-2 border-border/50 rounded-2xl animate-fade-in mb-6 bg-gradient-to-r from-background to-muted/30">
+      <CardHeader className="pb-4">
+        <h2 className="font-playfair text-2xl md:text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          Welcome back, {name}!
+        </h2>
       </CardHeader>
       <CardContent>
-        <p className="text-gray-700 dark:text-gray-300 text-lg">Your language learning journey continues. Here's your progress today.</p>
+        <p className="text-muted-foreground text-base md:text-lg">
+          Your language learning journey continues. Here's your progress today.
+        </p>
       </CardContent>
     </Card>
   );
@@ -82,65 +84,22 @@ function QuickStartPanel() {
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 w-full mb-6">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 w-full mb-6">
       {quickStarts.map((item, i) => {
         const IconComponent = lucideIcons[item.icon as keyof typeof lucideIcons];
         return (
           <button
             key={item.label}
             onClick={() => handleClick(item.route)}
-            className={`rounded-2xl flex flex-col items-center justify-center p-6 h-36 shadow-lg hover:scale-105 transition-all duration-300 ${item.color} animate-fade-in dark-button`}
+            className={`rounded-2xl flex flex-col items-center justify-center p-6 h-32 md:h-36 shadow-lg hover:scale-105 transition-all duration-300 ${item.color} animate-fade-in`}
             style={{ animationDelay: `${i * 100}ms` }}
           >
             {IconComponent && <IconComponent />}
-            <span className="font-semibold mt-2">{item.label}</span>
+            <span className="font-semibold mt-2 text-center">{item.label}</span>
           </button>
         );
       })}
     </div>
-  );
-}
-
-function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    // Check initial theme preference
-    const darkModePreference = localStorage.getItem('dark-mode');
-    const darkMode = darkModePreference === 'true';
-    setIsDark(darkMode);
-
-    // Apply theme
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, []);
-
-  const toggleTheme = () => {
-    const newDarkMode = !isDark;
-    setIsDark(newDarkMode);
-
-    if (newDarkMode) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-
-    localStorage.setItem('dark-mode', newDarkMode.toString());
-  };
-
-  return (
-    <Button
-      variant="outline"
-      size="icon"
-      className="fixed top-4 right-4 rounded-full p-2 z-10 dark-button bg-white dark:bg-gray-800 text-gray-800 dark:text-white"
-      onClick={toggleTheme}
-      aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
-    >
-      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-    </Button>
   );
 }
 
@@ -168,49 +127,44 @@ const Index = () => {
   }, []);
 
   return (
-    <SidebarProvider>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-900 dark:to-blue-900 flex w-full transition-all duration-500 ease-in-out">
-        <AppSidebar />
-        {/* Main Content */}
-        <div className="flex-1 flex flex-col items-center px-2 py-8 md:p-12">
-          <ThemeToggle />
-          <div className={`w-full max-w-6xl space-y-8 ${showAnimation ? 'animate-fade-in' : 'opacity-0'}`}>
-            <WelcomeCard />
-            <QuickStartPanel />
+    <AppLayout>
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className={`space-y-6 ${showAnimation ? 'animate-fade-in' : 'opacity-0'}`}>
+          <WelcomeCard />
+          <QuickStartPanel />
 
-            {/* Progress Summary Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="transform hover:scale-105 transition-all duration-300 hover:shadow-xl dark-card rounded-xl">
-                <WeeklyProgressChart />
-              </div>
-              <div className="transform hover:scale-105 transition-all duration-300 hover:shadow-xl dark-card rounded-xl">
-                <SkillRadarChart />
-              </div>
+          {/* Progress Summary Section */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="transform hover:scale-[1.02] transition-all duration-300 hover:shadow-xl border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
+              <WeeklyProgressChart />
             </div>
-
-            {/* Daily Goals and Streak Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="transform hover:scale-105 transition-all duration-300 dark-card rounded-xl">
-                <DailyGoals />
-              </div>
-              <div className="transform hover:scale-105 transition-all duration-300 dark-card rounded-xl">
-                <StreakTracker streakData={mockStreakData} currentStreak={5} />
-              </div>
+            <div className="transform hover:scale-[1.02] transition-all duration-300 hover:shadow-xl border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
+              <SkillRadarChart />
             </div>
+          </div>
 
-            {/* Level and Motivation Section */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="transform hover:scale-105 transition-all duration-300 dark-card rounded-xl">
-                <LevelIndicator level="Intermediate" xp={1250} xpToNextLevel={2000} />
-              </div>
-              <div className="transform hover:scale-105 transition-all duration-300 dark-card rounded-xl">
-                <MotivationalTipCard />
-              </div>
+          {/* Daily Goals and Streak Section */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
+              <DailyGoals />
+            </div>
+            <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
+              <StreakTracker streakData={mockStreakData} currentStreak={5} />
+            </div>
+          </div>
+
+          {/* Level and Motivation Section */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
+              <LevelIndicator level="Intermediate" xp={1250} xpToNextLevel={2000} />
+            </div>
+            <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
+              <MotivationalTipCard />
             </div>
           </div>
         </div>
       </div>
-    </SidebarProvider>
+    </AppLayout>
   );
 };
 

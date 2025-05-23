@@ -1,187 +1,220 @@
+
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "react-router-dom";
-// REMOVE useSound import
-import { Volume2, VolumeX, ArrowLeft } from "lucide-react";
+import { Volume2, VolumeX, Eye, EyeOff } from "lucide-react";
 import confetti from 'canvas-confetti';
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // REMOVE useSound
-  // const { playSound, isMuted, toggleMute } = useSound();
-  const [hoveredElement, setHoveredElement] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // REMOVE playSound('valid');
-    // Floating animations ...
-    const interval = setInterval(() => {
-      const floatingElements = document.querySelectorAll('.floating-element');
-      floatingElements.forEach((el) => {
-        const randomX = Math.random() * 20 - 10;
-        const randomY = Math.random() * 20 - 10;
-        (el as HTMLElement).style.transform = `translate(${randomX}px, ${randomY}px)`;
-      });
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
+    // Check if already authenticated
+    const authToken = localStorage.getItem('authToken');
+    if (authToken) {
+      navigate('/');
+    }
+  }, [navigate]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-    // REMOVE playSound('valid');
-    setTimeout(() => navigate('/'), 1000);
+    setIsLoading(true);
+    
+    // Simulate login process
+    setTimeout(() => {
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+      
+      // Set authentication token
+      localStorage.setItem('authToken', 'demo-token');
+      localStorage.setItem('userSession', JSON.stringify({
+        email,
+        name: email.split('@')[0],
+        loginTime: new Date().toISOString()
+      }));
+      
+      setIsLoading(false);
+      navigate('/');
+    }, 1500);
   };
 
-  const handleElementHover = (element: string) => {
-    setHoveredElement(element);
-    // REMOVE playSound('keypress');
+  const handleGuestLogin = () => {
+    localStorage.setItem('authToken', 'guest-token');
+    localStorage.setItem('userSession', JSON.stringify({
+      email: 'guest@echo.ai',
+      name: 'Guest User',
+      loginTime: new Date().toISOString()
+    }));
+    navigate('/');
   };
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 dark:from-blue-900 dark:to-purple-900 p-4 relative overflow-hidden">
-      {/* Floating elements */}
-      <img src="https://cdn.pixabay.com/photo/2016/04/01/09/24/book-1299643_1280.png" 
-        alt="Book" 
-        className="floating-element absolute w-20 h-20 top-20 left-[10%] opacity-60 transition-all duration-1000" />
-      
-      <img src="https://cdn.pixabay.com/photo/2013/07/13/10/17/pen-156869_1280.png" 
-        alt="Pen" 
-        className="floating-element absolute w-16 h-16 top-40 right-[15%] opacity-60 transition-all duration-1000" />
-      
-      <img src="https://cdn.pixabay.com/photo/2016/03/31/15/31/alphabet-1293108_1280.png" 
-        alt="Letters" 
-        className="floating-element absolute w-24 h-24 bottom-20 left-[20%] opacity-60 transition-all duration-1000" />
+    <div className="min-h-screen flex">
+      {/* Left side - Login Form */}
+      <div className="flex-1 flex items-center justify-center p-4 bg-gradient-to-br from-background to-muted/30">
+        <div className="w-full max-w-md space-y-6">
+          {/* Logo and Title */}
+          <div className="text-center space-y-2">
+            <h1 className="text-4xl font-playfair font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Echo.ai
+            </h1>
+            <p className="text-muted-foreground">
+              Welcome back! Please sign in to your account.
+            </p>
+          </div>
 
-      {/* Navigation back */}
-      <div className="absolute top-4 left-4">
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => navigate('/')}
-          onMouseEnter={() => handleElementHover('back')}
-          onMouseLeave={() => setHoveredElement(null)}
-          className={`rounded-full hover:bg-primary/10 hover:scale-110 transition-all duration-300 ${
-            hoveredElement === 'back' ? 'animate-pulse' : ''
-          }`}
-        >
-          <ArrowLeft className="h-6 w-6 text-primary" />
-        </Button>
+          {/* Login Card */}
+          <Card className="border-2 border-border/50 shadow-xl">
+            <CardHeader className="space-y-1 pb-4">
+              <CardTitle className="text-2xl text-center">Sign In</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Email Address</Label>
+                  <Input
+                    id="email"
+                    placeholder="your.email@example.com"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="h-12 border-2 focus:border-primary transition-colors"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    <Link
+                      to="/forgot-password"
+                      className="text-sm text-primary hover:text-primary/80 transition-colors"
+                    >
+                      Forgot password?
+                    </Link>
+                  </div>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="h-12 border-2 focus:border-primary transition-colors pr-10"
+                      required
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-1 top-1 h-10 w-10 hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full h-12 text-base font-semibold bg-gradient-to-r from-primary to-accent hover:from-primary/90 hover:to-accent/90 transition-all duration-300 transform hover:scale-[1.02]"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Signing in...
+                    </div>
+                  ) : (
+                    "Sign In"
+                  )}
+                </Button>
+              </form>
+            </CardContent>
+            <CardFooter className="flex flex-col space-y-4">
+              <Button
+                variant="outline"
+                className="w-full h-12 border-2 hover:bg-muted/50 transition-colors"
+                onClick={handleGuestLogin}
+              >
+                Continue as Guest
+              </Button>
+              <div className="text-center">
+                <span className="text-muted-foreground">New to Echo.ai? </span>
+                <Link
+                  to="/register"
+                  className="text-primary hover:text-primary/80 font-semibold transition-colors"
+                >
+                  Create an account
+                </Link>
+              </div>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
 
-      {/* Sound toggle button */}
+      {/* Right side - Hero Image/Content (Hidden on mobile) */}
+      <div className="hidden lg:flex lg:flex-1 bg-gradient-to-br from-primary/10 to-accent/10 relative overflow-hidden">
+        <div className="flex items-center justify-center w-full p-12">
+          <div className="text-center space-y-6 max-w-md">
+            <div className="space-y-4">
+              <h2 className="text-3xl font-bold text-foreground">
+                Master English with AI
+              </h2>
+              <p className="text-lg text-muted-foreground">
+                Join thousands of learners improving their English skills with our AI-powered platform.
+              </p>
+            </div>
+            
+            {/* Feature highlights */}
+            <div className="space-y-3 text-left">
+              {[
+                "🎯 Personalized learning paths",
+                "🗣️ Real-time pronunciation feedback",
+                "🧩 Interactive word puzzles",
+                "📈 Track your progress"
+              ].map((feature, index) => (
+                <div key={index} className="flex items-center gap-3 p-3 bg-white/50 dark:bg-gray-800/50 rounded-lg border border-border/30">
+                  <span className="text-sm font-medium">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Floating elements */}
+        <div className="absolute top-10 right-10 animate-float">
+          <div className="bg-primary/20 p-4 rounded-full">
+            <div className="w-12 h-12 bg-primary/30 rounded-full"></div>
+          </div>
+        </div>
+        <div className="absolute bottom-20 left-10 animate-float" style={{ animationDelay: '1s' }}>
+          <div className="bg-accent/20 p-3 rounded-full">
+            <div className="w-8 h-8 bg-accent/30 rounded-full"></div>
+          </div>
+        </div>
+      </div>
+
+      {/* Sound toggle - positioned absolutely */}
       <div className="absolute top-4 right-4">
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => {}}
-          onMouseEnter={() => handleElementHover('sound')}
-          onMouseLeave={() => setHoveredElement(null)}
-          className={`rounded-full hover:bg-primary/10 hover:scale-110 transition-all duration-300 ${
-            hoveredElement === 'sound' ? 'animate-pulse' : ''
-          }`}
+          className="rounded-full hover:bg-primary/10 hover:scale-110 transition-all duration-300"
         >
-          {true ? (
-            <VolumeX className="h-6 w-6 text-primary" />
-          ) : (
-            <Volume2 className="h-6 w-6 text-primary" />
-          )}
+          <VolumeX className="h-5 w-5 text-primary" />
         </Button>
-      </div>
-
-      {/* Logo */}
-      <div className="mb-8 text-center">
-        <h1 className="text-5xl font-playfair font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent animate-bounce-light">
-          Echo.ai
-        </h1>
-        <p className="text-muted-foreground mt-2">Learning is fun with Echo.ai!</p>
-      </div>
-
-      <Card className="w-full max-w-md animate-fade-in shadow-xl border-primary/20 hover:border-primary/50 transition-all duration-500">
-        <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl text-center bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Welcome Back!
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-primary">Email</Label>
-              <Input
-                id="email"
-                placeholder="your.email@example.com"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onFocus={() => {}}
-                className="border-primary/20 focus:border-primary"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password" className="text-primary">Password</Label>
-                <Link
-                  to="/forgot-password"
-                  className="text-sm text-accent hover:text-accent-dark transition-colors"
-                  onMouseEnter={() => handleElementHover('forgot')}
-                  onMouseLeave={() => setHoveredElement(null)}
-                >
-                  Forgot password?
-                </Link>
-              </div>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onFocus={() => {}}
-                className="border-primary/20 focus:border-primary"
-                required
-              />
-            </div>
-            <Button
-              type="submit"
-              className="w-full bg-primary hover:bg-primary-dark hover:scale-105 transition-all duration-300"
-              onMouseEnter={() => handleElementHover('login')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
-              Log in
-            </Button>
-          </form>
-        </CardContent>
-        <CardFooter className="flex flex-col space-y-4">
-          <div className="text-center w-full">
-            <span className="text-muted-foreground">New here? </span>
-            <Link
-              to="/register"
-              className="text-accent hover:text-accent-dark hover:underline transition-colors"
-              onMouseEnter={() => handleElementHover('register')}
-              onMouseLeave={() => setHoveredElement(null)}
-            >
-              Create an account
-            </Link>
-          </div>
-        </CardFooter>
-      </Card>
-
-      {/* Decorative elements */}
-      <div className="absolute bottom-10 right-10 animate-float">
-        <div className="bg-primary/10 p-4 rounded-full">
-          <img 
-            src="https://cdn.pixabay.com/photo/2021/03/11/07/39/child-6086010_1280.png" 
-            alt="Learning kid" 
-            className="w-24 h-24 object-contain" 
-          />
-        </div>
       </div>
     </div>
   );
