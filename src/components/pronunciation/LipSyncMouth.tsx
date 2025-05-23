@@ -1,7 +1,5 @@
-import React, { useRef, useEffect, useState } from "react";
-import { Canvas } from "@react-three/fiber";
-import { OrbitControls } from "@react-three/drei";
-import * as THREE from "three";
+
+import React, { useEffect, useState, useRef } from "react";
 
 interface LipSyncMouthProps {
   word: string;
@@ -9,213 +7,270 @@ interface LipSyncMouthProps {
   phoneme?: string;
 }
 
-// Enhanced phoneme mapping with more detailed mouth features
+// Enhanced phoneme shapes with detailed mouth positions
 const PHONEME_SHAPES = {
-  // Vowels
-  "A": { openness: 0.7, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.7, lipThickness: 0.25, teethVisible: false, tongueVisible: false },  // as in "cat"
-  "E": { openness: 0.5, roundness: 0.2, tonguePosition: 0.5, tongueHeight: 0.5, jawDrop: 0.5, lipThickness: 0.28, teethVisible: false, tongueVisible: false },  // as in "bed"
-  "I": { openness: 0.3, roundness: 0.2, tonguePosition: 0.7, tongueHeight: 0.6, jawDrop: 0.3, lipThickness: 0.3, teethVisible: false, tongueVisible: false },   // as in "fit"
-  "O": { openness: 0.6, roundness: 0.8, tonguePosition: 0.2, tongueHeight: 0.2, jawDrop: 0.6, lipThickness: 0.32, teethVisible: false, tongueVisible: false },  // as in "hot"
-  "U": { openness: 0.4, roundness: 0.7, tonguePosition: 0.1, tongueHeight: 0.3, jawDrop: 0.4, lipThickness: 0.35, teethVisible: false, tongueVisible: false },  // as in "put"
+  // Vowels - mouth opening and tongue positions
+  "A": { 
+    mouthWidth: 45, mouthHeight: 35, 
+    tongueY: 25, tongueWidth: 30, 
+    upperLipY: 15, lowerLipY: 50,
+    jawY: 45, teethGap: 25,
+    description: "Wide open mouth, tongue low and flat"
+  },
+  "E": { 
+    mouthWidth: 35, mouthHeight: 20, 
+    tongueY: 20, tongueWidth: 28, 
+    upperLipY: 20, lowerLipY: 40,
+    jawY: 35, teethGap: 15,
+    description: "Medium opening, tongue slightly raised"
+  },
+  "I": { 
+    mouthWidth: 25, mouthHeight: 12, 
+    tongueY: 15, tongueWidth: 25, 
+    upperLipY: 24, lowerLipY: 36,
+    jawY: 32, teethGap: 8,
+    description: "Small opening, tongue high and forward"
+  },
+  "O": { 
+    mouthWidth: 20, mouthHeight: 25, 
+    tongueY: 30, tongueWidth: 20, 
+    upperLipY: 18, lowerLipY: 43,
+    jawY: 40, teethGap: 20,
+    description: "Round lips, tongue low and back"
+  },
+  "U": { 
+    mouthWidth: 15, mouthHeight: 20, 
+    tongueY: 28, tongueWidth: 18, 
+    upperLipY: 20, lowerLipY: 40,
+    jawY: 38, teethGap: 15,
+    description: "Pursed lips, tongue relaxed back"
+  },
   
-  // Consonants
-  "F": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, tongueHeight: 0.3, jawDrop: 0.2, lipThickness: 0.25, teethVisible: true, tongueVisible: false },  // as in "fish"
-  "V": { openness: 0.2, roundness: 0.1, tonguePosition: 0.5, tongueHeight: 0.3, jawDrop: 0.2, lipThickness: 0.25, teethVisible: true, tongueVisible: false },  // as in "van"
-  "P": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.32, teethVisible: false, tongueVisible: false },  // as in "map"
-  "B": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.32, teethVisible: false, tongueVisible: false },  // as in "bat"
-  "M": { openness: 0.1, roundness: 0.5, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.35, teethVisible: false, tongueVisible: false },  // as in "map"
-  "TH": { openness: 0.3, roundness: 0.2, tonguePosition: 0.8, tongueHeight: 0.7, jawDrop: 0.3, lipThickness: 0.25, teethVisible: false, tongueVisible: true },  // as in "think"
-  "L": { openness: 0.4, roundness: 0.1, tonguePosition: 0.9, tongueHeight: 0.8, jawDrop: 0.4, lipThickness: 0.28, teethVisible: false, tongueVisible: true },   // as in "lip"
-  "S": { openness: 0.2, roundness: 0.3, tonguePosition: 0.7, tongueHeight: 0.5, jawDrop: 0.2, lipThickness: 0.28, teethVisible: true, tongueVisible: false },    // as in "sit"
-  "R": { openness: 0.3, roundness: 0.5, tonguePosition: 0.6, tongueHeight: 0.4, jawDrop: 0.3, lipThickness: 0.3, teethVisible: false, tongueVisible: true },     // as in "run"
-  
-  // Default
-  "default": { openness: 0.1, roundness: 0.3, tonguePosition: 0.3, tongueHeight: 0.2, jawDrop: 0.1, lipThickness: 0.3, teethVisible: false, tongueVisible: false }
+  // Consonants with specific mouth positions
+  "F": { 
+    mouthWidth: 30, mouthHeight: 8, 
+    tongueY: 35, tongueWidth: 25, 
+    upperLipY: 26, lowerLipY: 34,
+    jawY: 32, teethGap: 3,
+    description: "Lower lip touches upper teeth"
+  },
+  "V": { 
+    mouthWidth: 30, mouthHeight: 8, 
+    tongueY: 35, tongueWidth: 25, 
+    upperLipY: 26, lowerLipY: 34,
+    jawY: 32, teethGap: 3,
+    description: "Lower lip touches upper teeth, voice on"
+  },
+  "P": { 
+    mouthWidth: 0, mouthHeight: 0, 
+    tongueY: 30, tongueWidth: 25, 
+    upperLipY: 30, lowerLipY: 30,
+    jawY: 30, teethGap: 0,
+    description: "Lips completely closed, then pop open"
+  },
+  "B": { 
+    mouthWidth: 0, mouthHeight: 0, 
+    tongueY: 30, tongueWidth: 25, 
+    upperLipY: 30, lowerLipY: 30,
+    jawY: 30, teethGap: 0,
+    description: "Lips closed, voice while opening"
+  },
+  "M": { 
+    mouthWidth: 0, mouthHeight: 0, 
+    tongueY: 30, tongueWidth: 25, 
+    upperLipY: 30, lowerLipY: 30,
+    jawY: 30, teethGap: 0,
+    description: "Lips closed, sound through nose"
+  },
+  "TH": { 
+    mouthWidth: 35, mouthHeight: 15, 
+    tongueY: 22, tongueWidth: 30, 
+    upperLipY: 22, lowerLipY: 37,
+    jawY: 35, teethGap: 10,
+    description: "Tongue tip between teeth"
+  },
+  "L": { 
+    mouthWidth: 30, mouthHeight: 18, 
+    tongueY: 18, tongueWidth: 25, 
+    upperLipY: 21, lowerLipY: 39,
+    jawY: 36, teethGap: 12,
+    description: "Tongue tip touches roof behind teeth"
+  },
+  "S": { 
+    mouthWidth: 25, mouthHeight: 8, 
+    tongueY: 25, tongueWidth: 28, 
+    upperLipY: 26, lowerLipY: 34,
+    jawY: 32, teethGap: 4,
+    description: "Teeth close, air hisses through"
+  },
+  "R": { 
+    mouthWidth: 28, mouthHeight: 15, 
+    tongueY: 20, tongueWidth: 22, 
+    upperLipY: 22, lowerLipY: 37,
+    jawY: 35, teethGap: 10,
+    description: "Tongue curved back, not touching roof"
+  },
+  "default": { 
+    mouthWidth: 25, mouthHeight: 10, 
+    tongueY: 30, tongueWidth: 25, 
+    upperLipY: 25, lowerLipY: 35,
+    jawY: 32, teethGap: 5,
+    description: "Relaxed mouth position"
+  }
 };
 
-// Educational notes for each phoneme
-const PHONEME_NOTES = {
-  "A": "Open your mouth wide, tongue flat and low",
-  "E": "Medium mouth opening, tongue slightly raised",
-  "I": "Small mouth opening, tongue high in mouth",
-  "O": "Round lips into an 'O' shape, tongue low",
-  "U": "Pucker lips forward, tongue relaxed back",
-  "F": "Lower lip touches upper teeth, blow air through",
-  "V": "Lower lip touches upper teeth, vibrate voice",
-  "P": "Close lips completely, then pop them open",
-  "B": "Close lips completely, voice while opening",
-  "M": "Lips closed, sound through nose",
-  "TH": "Tongue between teeth, blow air through",
-  "L": "Tongue tip touches roof of mouth behind teeth",
-  "S": "Teeth close together, air hisses through",
-  "R": "Tongue curved back, not touching roof",
-  "default": "Relaxed mouth position"
-};
-
-// Enhanced Natural Mouth Component with animated features
-const EnhancedMouthModel: React.FC<{ 
-  openness: number; 
-  roundness: number; 
-  tonguePosition: number;
-  tongueHeight: number;
-  jawDrop: number;
-  lipThickness: number;
-  teethVisible?: boolean;
-  tongueVisible?: boolean;
-}> = ({ 
-  openness, 
-  roundness, 
-  tonguePosition,
-  tongueHeight,
-  jawDrop,
-  lipThickness,
-  teethVisible = false,
-  tongueVisible = false
-}) => {
-  // References for animation
-  const upperLipRef = useRef<THREE.Mesh>(null);
-  const lowerLipRef = useRef<THREE.Mesh>(null);
-  const jawRef = useRef<THREE.Group>(null);
-  const tongueRef = useRef<THREE.Mesh>(null);
-  const teethUpperRef = useRef<THREE.Mesh>(null);
-  const teethLowerRef = useRef<THREE.Mesh>(null);
-  
-  // Calculate mouth dimensions based on phoneme parameters
-  const mouthWidth = 1.0 + (roundness * 0.5);
-  const mouthHeight = 0.1 + (openness * 0.7);
-  const lipCurve = 0.2 + (roundness * 0.2);
-  
-  // Update mouth shape based on parameters
-  useEffect(() => {
-    if (!upperLipRef.current || !lowerLipRef.current || !tongueRef.current || 
-        !teethUpperRef.current || !teethLowerRef.current || !jawRef.current) return;
-    
-    // Animate all mouth parts over 300ms for smoother transitions
-    const startTime = Date.now();
-    const duration = 300;
-    
-    // Store initial positions
-    const initialJawY = jawRef.current.position.y;
-    const initialTongueY = tongueRef.current.position.y;
-    const initialTongueZ = tongueRef.current.position.z;
-    const initialTongueRotX = tongueRef.current.rotation.x;
-    
-    // Target positions
-    const targetJawY = -jawDrop * 0.3;
-    const targetTongueY = -0.1 - (tongueHeight * 0.15);
-    const targetTongueZ = -0.1 + (tonguePosition * 0.3);
-    const targetTongueRotX = -Math.PI/6 + (tonguePosition * Math.PI/4);
-    
-    // Animation function
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-      
-      // Ease function (ease-out)
-      const easeProgress = 1 - Math.pow(1 - progress, 3);
-      
-      // Upper lip position and shape
-      if (upperLipRef.current) {
-        upperLipRef.current.position.y = mouthHeight/2 + lipThickness/4;
-        upperLipRef.current.scale.x = mouthWidth;
-        upperLipRef.current.scale.z = 0.5 + lipCurve;
-      }
-      
-      // Jaw and lower lip animation
-      if (jawRef.current) {
-        // Interpolate jaw position
-        jawRef.current.position.y = initialJawY + (targetJawY - initialJawY) * easeProgress;
-      }
-      
-      // Tongue animation
-      if (tongueRef.current) {
-        // Interpolate tongue position and rotation
-        tongueRef.current.position.y = initialTongueY + (targetTongueY - initialTongueY) * easeProgress;
-        tongueRef.current.position.z = initialTongueZ + (targetTongueZ - initialTongueZ) * easeProgress;
-        tongueRef.current.rotation.x = initialTongueRotX + (targetTongueRotX - initialTongueRotX) * easeProgress;
-        
-        // Set tongue visibility
-        tongueRef.current.visible = tongueVisible || tonguePosition > 0.5;
-      }
-      
-      // Teeth positions
-      if (teethUpperRef.current && teethLowerRef.current) {
-        teethUpperRef.current.position.y = mouthHeight/2 - 0.05;
-        teethLowerRef.current.position.y = -0.05 + jawRef.current.position.y;
-        
-        // Set teeth visibility
-        teethUpperRef.current.visible = teethVisible || openness > 0.3;
-        teethLowerRef.current.visible = teethVisible || openness > 0.3;
-      }
-      
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-    
-    animate();
-  }, [mouthWidth, mouthHeight, openness, roundness, tonguePosition, tongueHeight, jawDrop, lipCurve, lipThickness, teethVisible, tongueVisible]);
-
+// SVG Mouth Component with smooth animations
+const AnimatedMouth: React.FC<{
+  shape: any;
+  isAnimating: boolean;
+}> = ({ shape, isAnimating }) => {
   return (
-    <group position={[0, 0, 0]}>
-      {/* Face background - subtle oval shape */}
-      <mesh position={[0, 0, -0.5]} rotation={[0, 0, 0]}>
-        <sphereGeometry args={[2, 32, 16, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-        <meshStandardMaterial color="#ffe0d0" />
-      </mesh>
-      
-      {/* Mouth cavity (dark inside) */}
-      <mesh position={[0, 0, -0.15]}>
-        <sphereGeometry args={[mouthWidth/2 - 0.05, mouthHeight/2, 0.4, 16, 16]} />
-        <meshStandardMaterial color="#5c0f22" />
-      </mesh>
-      
-      {/* Upper lip with natural curve */}
-      <mesh ref={upperLipRef}>
-        <cylinderGeometry args={[lipThickness*1.1, lipThickness, 0.3, 32, 1, true, Math.PI, Math.PI]} />
-        <meshStandardMaterial color="#e08a8a" side={THREE.DoubleSide} />
-      </mesh>
-      
-      {/* Jaw group - contains lower lip and lower teeth that move together */}
-      <group ref={jawRef}>
-        {/* Lower lip with natural curve */}
-        <mesh ref={lowerLipRef} position={[0, -mouthHeight/2 - lipThickness/4, 0]}>
-          <cylinderGeometry args={[lipThickness, lipThickness*1.1, 0.3, 32, 1, true, 0, Math.PI]} />
-          <meshStandardMaterial color="#d07777" side={THREE.DoubleSide} />
-        </mesh>
+    <div className="relative w-full h-full flex items-center justify-center bg-gradient-to-br from-pink-50 to-rose-100 dark:from-pink-950/30 dark:to-rose-900/30 rounded-2xl border border-pink-200 dark:border-pink-800">
+      <svg
+        width="200"
+        height="150"
+        viewBox="0 0 200 150"
+        className="max-w-full max-h-full"
+      >
+        {/* Face outline */}
+        <ellipse
+          cx="100"
+          cy="75"
+          rx="85"
+          ry="65"
+          fill="#ffe0d0"
+          stroke="#e0b8a0"
+          strokeWidth="2"
+          className="transition-all duration-500"
+        />
         
-        {/* Teeth (lower) - moves with jaw */}
-        <mesh ref={teethLowerRef} position={[0, -mouthHeight/2 + 0.05, 0.05]}>
-          <boxGeometry args={[mouthWidth - 0.2, 0.12, 0.1]} />
-          <meshStandardMaterial color="#f0f0f0" />
-        </mesh>
-      </group>
+        {/* Mouth cavity (dark inside) */}
+        <ellipse
+          cx="100"
+          cy={70 + shape.jawY * 0.2}
+          rx={shape.mouthWidth * 0.8}
+          ry={shape.mouthHeight * 0.6}
+          fill="#8b2635"
+          className="transition-all duration-700 ease-out"
+        />
+        
+        {/* Upper teeth */}
+        <rect
+          x={100 - shape.mouthWidth * 0.7}
+          y={shape.upperLipY + 50}
+          width={shape.mouthWidth * 1.4}
+          height="6"
+          fill="#f8f8f8"
+          rx="3"
+          className="transition-all duration-500"
+          style={{
+            opacity: shape.teethGap > 5 ? 1 : 0
+          }}
+        />
+        
+        {/* Lower teeth */}
+        <rect
+          x={100 - shape.mouthWidth * 0.7}
+          y={shape.lowerLipY + 50}
+          width={shape.mouthWidth * 1.4}
+          height="6"
+          fill="#f0f0f0"
+          rx="3"
+          className="transition-all duration-500"
+          style={{
+            opacity: shape.teethGap > 5 ? 1 : 0
+          }}
+        />
+        
+        {/* Tongue */}
+        <ellipse
+          cx="100"
+          cy={shape.tongueY + 55}
+          rx={shape.tongueWidth * 0.8}
+          ry="12"
+          fill="#ff9999"
+          stroke="#e67777"
+          strokeWidth="1"
+          className="transition-all duration-600 ease-out"
+          style={{
+            opacity: shape.tongueY < 25 ? 1 : 0.3
+          }}
+        />
+        
+        {/* Upper lip */}
+        <ellipse
+          cx="100"
+          cy={shape.upperLipY + 50}
+          rx={shape.mouthWidth}
+          ry="8"
+          fill="#d4888a"
+          className="transition-all duration-700 ease-out"
+        />
+        
+        {/* Lower lip */}
+        <ellipse
+          cx="100"
+          cy={shape.lowerLipY + 50}
+          rx={shape.mouthWidth}
+          ry="10"
+          fill="#cc7779"
+          className="transition-all duration-700 ease-out"
+        />
+        
+        {/* Animation indicators */}
+        {isAnimating && (
+          <>
+            {/* Breath indicator for sounds like 'F', 'S' */}
+            {(shape.description.includes("air") || shape.description.includes("hiss")) && (
+              <g>
+                <circle cx="130" cy="70" r="2" fill="#87ceeb" opacity="0.7">
+                  <animate attributeName="r" values="2;8;2" dur="1s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.7;0;0.7" dur="1s" repeatCount="indefinite" />
+                </circle>
+                <circle cx="140" cy="75" r="1.5" fill="#87ceeb" opacity="0.5">
+                  <animate attributeName="r" values="1.5;6;1.5" dur="1.2s" repeatCount="indefinite" />
+                  <animate attributeName="opacity" values="0.5;0;0.5" dur="1.2s" repeatCount="indefinite" />
+                </circle>
+              </g>
+            )}
+            
+            {/* Vibration indicator for voiced sounds */}
+            {shape.description.includes("voice") && (
+              <g>
+                <rect x="95" y="40" width="10" height="3" fill="#4ade80" opacity="0.8">
+                  <animate attributeName="height" values="3;8;3" dur="0.3s" repeatCount="indefinite" />
+                </rect>
+                <rect x="105" y="42" width="8" height="2" fill="#22c55e" opacity="0.6">
+                  <animate attributeName="height" values="2;6;2" dur="0.4s" repeatCount="indefinite" />
+                </rect>
+              </g>
+            )}
+          </>
+        )}
+      </svg>
       
-      {/* Tongue - more natural curved shape */}
-      <mesh ref={tongueRef}>
-        <sphereGeometry args={[0.4, 16, 8, 0, Math.PI * 2, 0, Math.PI * 0.5]} />
-        <meshStandardMaterial color="#ff9a9a" />
-      </mesh>
-      
-      {/* Teeth (upper) - fixed to upper jaw */}
-      <mesh ref={teethUpperRef} position={[0, 0, 0.05]}>
-        <boxGeometry args={[mouthWidth - 0.2, 0.12, 0.1]} />
-        <meshStandardMaterial color="#f5f5f5" />
-      </mesh>
-    </group>
+      {/* Educational overlay */}
+      <div className="absolute bottom-4 left-4 right-4 bg-black/80 text-white text-xs p-2 rounded-lg backdrop-blur-sm">
+        <div className="text-center font-medium">
+          {shape.description}
+        </div>
+      </div>
+    </div>
   );
 };
 
-export const LipSyncMouth: React.FC<LipSyncMouthProps> = ({ word, isAnimating, phoneme }) => {
-  const [mouthShape, setMouthShape] = useState(PHONEME_SHAPES["default"]);
+export const LipSyncMouth: React.FC<LipSyncMouthProps> = ({ 
+  word, 
+  isAnimating, 
+  phoneme 
+}) => {
+  const [currentShape, setCurrentShape] = useState(PHONEME_SHAPES["default"]);
   const [currentPhoneme, setCurrentPhoneme] = useState("");
-  const [instructionText, setInstructionText] = useState("");
   const animationRef = useRef<number | null>(null);
   const phonemeIndexRef = useRef(0);
   
-  // Break down word into phonemes (simplified)
+  // Extract phonemes from word
   const getWordPhonemes = (word: string): string[] => {
-    // This is a simplified phoneme extraction
     return word.toUpperCase().split("").map(char => {
       if ("AEIOU".includes(char)) return char;
       if ("BCDFGHJKLMNPQRSTVWXYZ".includes(char)) return char;
@@ -223,40 +278,43 @@ export const LipSyncMouth: React.FC<LipSyncMouthProps> = ({ word, isAnimating, p
     }).filter(p => p !== "");
   };
 
-  // Animation loop for phoneme sequence
+  // Animate through phonemes when word is being spoken
   useEffect(() => {
-    if (!isAnimating || !word) return;
+    if (!isAnimating || !word) {
+      setCurrentShape(PHONEME_SHAPES["default"]);
+      return;
+    }
     
     const phonemes = getWordPhonemes(word);
+    if (phonemes.length === 0) return;
+    
     let startTime = Date.now();
-    const phonemeDuration = 600; // ms per phoneme (increased for better visibility)
+    const phonemeDuration = 800; // Slightly longer for better learning
     
     const animate = () => {
       const now = Date.now();
       const elapsed = now - startTime;
       
       if (elapsed > phonemeDuration) {
-        // Move to next phoneme
         phonemeIndexRef.current = (phonemeIndexRef.current + 1) % phonemes.length;
         startTime = now;
         
         const nextPhoneme = phonemes[phonemeIndexRef.current];
         setCurrentPhoneme(nextPhoneme);
         
-        // Get mouth shape for this phoneme or use default
         const shape = PHONEME_SHAPES[nextPhoneme as keyof typeof PHONEME_SHAPES] || 
                       PHONEME_SHAPES["default"];
-        setMouthShape(shape);
-        
-        // Set educational instruction for this phoneme
-        setInstructionText(
-          PHONEME_NOTES[nextPhoneme as keyof typeof PHONEME_NOTES] || 
-          PHONEME_NOTES["default"]
-        );
+        setCurrentShape(shape);
       }
       
       animationRef.current = requestAnimationFrame(animate);
     };
+    
+    // Reset to first phoneme
+    phonemeIndexRef.current = 0;
+    const firstPhoneme = phonemes[0];
+    setCurrentPhoneme(firstPhoneme);
+    setCurrentShape(PHONEME_SHAPES[firstPhoneme as keyof typeof PHONEME_SHAPES] || PHONEME_SHAPES["default"]);
     
     animationRef.current = requestAnimationFrame(animate);
     
@@ -267,57 +325,29 @@ export const LipSyncMouth: React.FC<LipSyncMouthProps> = ({ word, isAnimating, p
     };
   }, [isAnimating, word]);
   
-  // Handle direct phoneme prop change
+  // Handle direct phoneme selection
   useEffect(() => {
-    if (phoneme) {
+    if (phoneme && !isAnimating) {
       setCurrentPhoneme(phoneme);
       const shape = PHONEME_SHAPES[phoneme as keyof typeof PHONEME_SHAPES] || 
                     PHONEME_SHAPES["default"];
-      setMouthShape(shape);
-      
-      // Set educational instruction for this phoneme
-      setInstructionText(
-        PHONEME_NOTES[phoneme as keyof typeof PHONEME_NOTES] || 
-        PHONEME_NOTES["default"]
-      );
+      setCurrentShape(shape);
     }
-  }, [phoneme]);
+  }, [phoneme, isAnimating]);
 
   return (
-    <div className="mouth-model-container relative w-full h-full min-h-[180px] rounded-lg overflow-hidden bg-gradient-to-b from-pink-50 to-rose-100 dark:from-pink-950 dark:to-rose-900">
-      <div className="phoneme-indicator text-xs font-mono text-center absolute top-1 left-0 right-0 z-10 bg-black/20 text-white py-0.5">
-        {currentPhoneme && `Phoneme: ${currentPhoneme}`}
+    <div className="relative w-full h-full min-h-[200px] rounded-2xl overflow-hidden shadow-lg">
+      {/* Phoneme indicator */}
+      <div className="absolute top-2 left-2 right-2 z-10">
+        <div className="bg-primary/90 text-primary-foreground px-3 py-1 rounded-full text-sm font-mono text-center backdrop-blur-sm">
+          {currentPhoneme ? `Sound: ${currentPhoneme}` : "Ready to practice"}
+        </div>
       </div>
       
-      {/* Educational instruction text */}
-      {instructionText && (
-        <div className="instruction-text text-xs text-center absolute bottom-1 left-0 right-0 z-10 bg-black/20 text-white py-0.5 px-2">
-          {instructionText}
-        </div>
-      )}
-      
-      <Canvas camera={{ position: [0, 0, 3], fov: 40 }}>
-        <ambientLight intensity={0.7} />
-        <directionalLight position={[5, 5, 5]} intensity={0.8} />
-        <directionalLight position={[-5, 5, 5]} intensity={0.4} color="#ffe0c0" />
-        <EnhancedMouthModel
-          openness={mouthShape.openness} 
-          roundness={mouthShape.roundness} 
-          tonguePosition={mouthShape.tonguePosition || 0.3}
-          tongueHeight={mouthShape.tongueHeight || 0.2}
-          jawDrop={mouthShape.jawDrop || 0.1}
-          lipThickness={mouthShape.lipThickness}
-          teethVisible={mouthShape.teethVisible}
-          tongueVisible={mouthShape.tongueVisible}
-        />
-        <OrbitControls 
-          enableZoom={false} 
-          enablePan={false} 
-          rotateSpeed={0.5}
-          minPolarAngle={Math.PI/2 - 0.5}
-          maxPolarAngle={Math.PI/2 + 0.5}
-        />
-      </Canvas>
+      <AnimatedMouth 
+        shape={currentShape} 
+        isAnimating={isAnimating}
+      />
     </div>
   );
 };
