@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { Volume2, VolumeX } from "lucide-react";
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import WordGuessGame from "@/components/word-puzzle/WordGuessGame";
 import WordScrambleGame from "@/components/word-puzzle/WordScrambleGame";
 import VocabularyArcade from "@/components/word-puzzle/VocabularyArcade";
+import AlphabetSudoku from "@/components/word-puzzle/AlphabetSudoku";
 import confetti from 'canvas-confetti';
 
 // Game options with their details
@@ -29,6 +31,13 @@ const gameOptions = [
     name: "Vocabulary Arcade",
     description: "Match words with their correct definitions",
     icon: "📚",
+    comingSoon: false,
+  },
+  {
+    id: "alphabet-sudoku",
+    name: "Alphabet Sudoku",
+    description: "Logic puzzle using letters instead of numbers",
+    icon: "🧩",
     comingSoon: false,
   },
 ];
@@ -82,7 +91,7 @@ const WordPuzzle = () => {
         </header>
 
         {!selectedGame ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-6">
             {gameOptions.map((game) => (
               <Card 
                 key={game.id}
@@ -117,15 +126,18 @@ const WordPuzzle = () => {
             {selectedGame === "word-guess" && <WordGuessGame />}
             {selectedGame === "word-scramble" && <WordScrambleGame />}
             {selectedGame === "vocabulary-arcade" && <VocabularyArcade />}
+            {selectedGame === "alphabet-sudoku" && <AlphabetSudoku />}
             
-            <Button 
-              onClick={handleBack} 
-              variant="outline"
-              className="mt-6 hover:bg-primary/10 hover:scale-105 transition-all duration-300 flex items-center gap-2"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
-              Back to Game Selection
-            </Button>
+            {selectedGame !== "alphabet-sudoku" && (
+              <Button 
+                onClick={handleBack} 
+                variant="outline"
+                className="mt-6 hover:bg-primary/10 hover:scale-105 transition-all duration-300 flex items-center gap-2"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg>
+                Back to Game Selection
+              </Button>
+            )}
           </div>
         )}
       </div>
