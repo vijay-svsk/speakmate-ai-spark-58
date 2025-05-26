@@ -83,7 +83,7 @@ export function PronunciationMirror() {
   const webcamRef = useRef<HTMLVideoElement | null>(null);
   const [level, setLevel] = useState("beginner");
   const [word, setWord] = useState("");
-  const [syllables, setSyllables<{part: string, tip: string}[]>([]);
+  const [syllables, setSyllables] = useState<{part: string, tip: string}[]>([]);
   const [score, setScore] = useState(0);
   const [pie, setPie] = useState<{name: string, value: number}[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
