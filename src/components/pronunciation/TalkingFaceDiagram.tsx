@@ -68,7 +68,6 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
   const [currentMouthShape, setCurrentMouthShape] = useState(PHONEME_MOUTH_SHAPES["default"]);
   const [currentPhoneme, setCurrentPhoneme] = useState("");
   const [animationSpeed, setAnimationSpeed] = useState(400);
-  const [showPhonemeBreakdown, setShowPhonemeBreakdown] = useState(true);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentPhonemeIndex, setCurrentPhonemeIndex] = useState(0);
   const [showTongue, setShowTongue] = useState(true);
@@ -157,7 +156,7 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full min-h-[320px] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800">
+    <div className="relative w-full h-full min-h-[400px] rounded-2xl overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-blue-200 dark:border-blue-800">
       
       {/* Enhanced Controls Header */}
       <div className="absolute top-3 left-3 right-3 z-10 space-y-2">
@@ -200,17 +199,17 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
         </div>
       </div>
 
-      {/* Enhanced Face Area */}
+      {/* Enhanced Face Area - Now takes full available space */}
       <div className="absolute inset-0 pt-20 pb-16 px-4 flex items-center justify-center">
-        <div className={`w-full max-w-sm transition-all duration-300 ${isPlaying ? 'scale-105' : 'scale-100'}`}>
+        <div className={`w-full max-w-lg transition-all duration-300 ${isPlaying ? 'scale-105' : 'scale-100'}`}>
           
-          {/* Face Container with breathing effect */}
-          <div className={`bg-white/95 dark:bg-gray-800/95 rounded-full p-6 backdrop-blur-sm shadow-2xl border-4 border-primary/20 ${isPlaying ? 'animate-pulse' : ''}`}>
+          {/* Face Container with breathing effect - Made larger */}
+          <div className={`bg-white/95 dark:bg-gray-800/95 rounded-full p-8 backdrop-blur-sm shadow-2xl border-4 border-primary/20 ${isPlaying ? 'animate-pulse' : ''}`}>
             
-            {/* Enhanced Face SVG */}
+            {/* Enhanced Face SVG - Made larger */}
             <svg
-              width="240"
-              height="240"
+              width="320"
+              height="320"
               viewBox="0 0 200 200"
               className="w-full h-full"
             >
@@ -377,37 +376,9 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
         </div>
       </div>
 
-      {/* Enhanced Phoneme Breakdown */}
-      {showPhonemeBreakdown && word && (
-        <div className="absolute bottom-16 left-3 right-3 bg-white/95 dark:bg-gray-800/95 rounded-lg p-3 backdrop-blur-sm border border-primary/20">
-          <div className="text-xs font-semibold mb-2 text-center">Phoneme Sequence</div>
-          <div className="flex flex-wrap justify-center gap-1">
-            {wordPhonemes.map((p, i) => (
-              <div
-                key={i}
-                className={`px-2 py-1 rounded text-xs font-mono transition-all duration-200 cursor-pointer ${
-                  i === currentPhonemeIndex 
-                    ? 'bg-primary text-primary-foreground scale-110 shadow-md' 
-                    : 'bg-gray-100 dark:bg-gray-700 hover:bg-primary/20'
-                }`}
-                onClick={() => {
-                  setCurrentPhoneme(p);
-                  setCurrentPhonemeIndex(i);
-                  const shape = PHONEME_MOUTH_SHAPES[p as keyof typeof PHONEME_MOUTH_SHAPES] || 
-                                PHONEME_MOUTH_SHAPES["default"];
-                  setCurrentMouthShape(shape);
-                }}
-              >
-                /{p}/
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Enhanced Bottom Status */}
       <div className="absolute bottom-3 left-3 right-3 bg-black/80 text-white text-xs p-2 rounded-lg backdrop-blur-sm">
-        <div className="text-center flex items-center justify-between">
+        <div className="text-center flex items-center justify-center">
           <div className="flex items-center gap-2">
             {isPlaying ? (
               <>🗣️ <span className="font-semibold">Speaking {word}...</span></>
@@ -415,14 +386,6 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
               <>💭 <span>Ready to practice</span></>
             )}
           </div>
-          <Button
-            size="sm"
-            variant="ghost"
-            onClick={() => setShowPhonemeBreakdown(!showPhonemeBreakdown)}
-            className="h-5 text-white hover:bg-white/20 text-xs px-2"
-          >
-            {showPhonemeBreakdown ? "Hide" : "Show"} Breakdown
-          </Button>
         </div>
       </div>
 
