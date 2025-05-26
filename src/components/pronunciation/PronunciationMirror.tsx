@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useSpeechAudio } from "@/hooks/use-speech-audio";
 import { toast } from "sonner";
-import { EnhancedMouthDiagram } from "./EnhancedMouthDiagram";
+import { LottieMouthDiagram } from "./LottieMouthDiagram";
 
 // Sample syllables breakdown for different words
 const wordLibrary = {
@@ -83,7 +83,7 @@ export function PronunciationMirror() {
   const webcamRef = useRef<HTMLVideoElement | null>(null);
   const [level, setLevel] = useState("beginner");
   const [word, setWord] = useState("");
-  const [syllables, setSyllables] = useState<{part: string, tip: string}[]>([]);
+  const [syllables, setSyllables<{part: string, tip: string}[]>([]);
   const [score, setScore] = useState(0);
   const [pie, setPie] = useState<{name: string, value: number}[]>([]);
   const [analyzing, setAnalyzing] = useState(false);
@@ -363,18 +363,22 @@ export function PronunciationMirror() {
           
           {/* Right column - Visual Aids */}
           <div className="flex flex-col gap-6">
-            {/* Enhanced Mouth Diagram */}
+            {/* Lottie-Enhanced Mouth Diagram */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
-              <div className="text-sm font-semibold mb-2 text-center">Anatomical Mouth Diagram</div>
-              <div className="h-64 relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-inner border border-gray-200 dark:border-gray-600">
-                <EnhancedMouthDiagram 
+              <div className="text-sm font-semibold mb-2 text-center flex items-center justify-center gap-2">
+                <span>🎬</span>
+                Lottie Mouth Animation
+                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Enhanced</span>
+              </div>
+              <div className="h-64 relative rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20 shadow-inner border border-blue-200 dark:border-blue-800">
+                <LottieMouthDiagram 
                   word={word} 
                   isAnimating={isModelAnimating} 
                   phoneme={currentPhoneme}
                 />
               </div>
               <div className="text-xs text-center mt-2 text-muted-foreground">
-                Click syllables above • Hover parts for details
+                High-quality Lottie animations • Click syllables • Hover for details
               </div>
             </div>
             
