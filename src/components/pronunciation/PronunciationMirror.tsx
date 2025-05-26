@@ -1,4 +1,3 @@
-
 import React, { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +8,7 @@ import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useSpeechAudio } from "@/hooks/use-speech-audio";
 import { toast } from "sonner";
-import { LipSyncMouth } from "./LipSyncMouth";
+import { EnhancedMouthDiagram } from "./EnhancedMouthDiagram";
 
 // Sample syllables breakdown for different words
 const wordLibrary = {
@@ -364,18 +363,18 @@ export function PronunciationMirror() {
           
           {/* Right column - Visual Aids */}
           <div className="flex flex-col gap-6">
-            {/* Mouth Model */}
+            {/* Enhanced Mouth Diagram */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
-              <div className="text-sm font-semibold mb-2 text-center">Mouth Visualization</div>
-              <div className="h-48 relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-inner border border-gray-200 dark:border-gray-600">
-                <LipSyncMouth 
+              <div className="text-sm font-semibold mb-2 text-center">Anatomical Mouth Diagram</div>
+              <div className="h-64 relative rounded-lg overflow-hidden bg-gray-100 dark:bg-gray-700 shadow-inner border border-gray-200 dark:border-gray-600">
+                <EnhancedMouthDiagram 
                   word={word} 
                   isAnimating={isModelAnimating} 
                   phoneme={currentPhoneme}
                 />
               </div>
               <div className="text-xs text-center mt-2 text-muted-foreground">
-                Click on syllables to see mouth positions
+                Click syllables above • Hover parts for details
               </div>
             </div>
             
