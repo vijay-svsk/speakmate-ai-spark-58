@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useRef } from "react";
 import { Volume2, Play, Pause, RotateCcw, Eye, EyeOff, Zap, Settings, Camera, Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,40 +11,40 @@ interface TalkingFaceDiagramProps {
   phoneme?: string;
 }
 
-// Enhanced phoneme to mouth shape mapping with more accurate representations
+// Enhanced phoneme to mouth shape mapping with more accurate lip movements
 const PHONEME_MOUTH_SHAPES = {
-  // Vowels - More precise mouth shapes
-  "A": { width: 85, height: 55, lipRound: 0.2, tonguePos: "low", teethShow: true, jawDrop: 0.8 },
-  "E": { width: 65, height: 35, lipRound: 0.1, tonguePos: "mid", teethShow: true, jawDrop: 0.4 },
-  "I": { width: 45, height: 25, lipRound: 0.1, tonguePos: "high", teethShow: true, jawDrop: 0.2 },
-  "O": { width: 50, height: 55, lipRound: 0.9, tonguePos: "mid", teethShow: false, jawDrop: 0.6 },
-  "U": { width: 35, height: 45, lipRound: 0.85, tonguePos: "high", teethShow: false, jawDrop: 0.5 },
+  // Vowels - More precise mouth shapes with better lip movement
+  "A": { width: 95, height: 65, lipRound: 0.1, tonguePos: "low", teethShow: true, jawDrop: 0.9, lipSeparation: 0.8 },
+  "E": { width: 75, height: 40, lipRound: 0.05, tonguePos: "mid", teethShow: true, jawDrop: 0.5, lipSeparation: 0.6 },
+  "I": { width: 50, height: 28, lipRound: 0.1, tonguePos: "high", teethShow: true, jawDrop: 0.3, lipSeparation: 0.4 },
+  "O": { width: 45, height: 60, lipRound: 0.95, tonguePos: "mid", teethShow: false, jawDrop: 0.7, lipSeparation: 0.2 },
+  "U": { width: 35, height: 50, lipRound: 0.9, tonguePos: "high", teethShow: false, jawDrop: 0.6, lipSeparation: 0.1 },
   
-  // Consonants - More detailed shapes
-  "P": { width: 0, height: 0, lipRound: 0.3, tonguePos: "neutral", teethShow: false, jawDrop: 0.1 },
-  "B": { width: 8, height: 8, lipRound: 0.3, tonguePos: "neutral", teethShow: false, jawDrop: 0.2 },
-  "T": { width: 30, height: 15, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.3 },
-  "D": { width: 35, height: 18, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.35 },
-  "K": { width: 45, height: 30, lipRound: 0.2, tonguePos: "back", teethShow: false, jawDrop: 0.4 },
-  "G": { width: 50, height: 35, lipRound: 0.2, tonguePos: "back", teethShow: false, jawDrop: 0.45 },
+  // Consonants - More detailed lip movements
+  "P": { width: 0, height: 0, lipRound: 0.3, tonguePos: "neutral", teethShow: false, jawDrop: 0.1, lipSeparation: 0.0 },
+  "B": { width: 8, height: 8, lipRound: 0.3, tonguePos: "neutral", teethShow: false, jawDrop: 0.2, lipSeparation: 0.1 },
+  "T": { width: 35, height: 18, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.35, lipSeparation: 0.5 },
+  "D": { width: 40, height: 22, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.4, lipSeparation: 0.6 },
+  "K": { width: 50, height: 35, lipRound: 0.2, tonguePos: "back", teethShow: false, jawDrop: 0.5, lipSeparation: 0.7 },
+  "G": { width: 55, height: 40, lipRound: 0.2, tonguePos: "back", teethShow: false, jawDrop: 0.55, lipSeparation: 0.8 },
   
-  // Fricatives - Enhanced precision
-  "F": { width: 55, height: 18, lipRound: 0.1, tonguePos: "neutral", teethShow: true, jawDrop: 0.25 },
-  "V": { width: 55, height: 22, lipRound: 0.1, tonguePos: "neutral", teethShow: true, jawDrop: 0.3 },
-  "S": { width: 40, height: 12, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.2 },
-  "Z": { width: 40, height: 15, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.25 },
-  "TH": { width: 50, height: 20, lipRound: 0.1, tonguePos: "between", teethShow: true, jawDrop: 0.3 },
+  // Fricatives - Enhanced precision for lip movement
+  "F": { width: 60, height: 20, lipRound: 0.1, tonguePos: "neutral", teethShow: true, jawDrop: 0.3, lipSeparation: 0.3 },
+  "V": { width: 60, height: 25, lipRound: 0.1, tonguePos: "neutral", teethShow: true, jawDrop: 0.35, lipSeparation: 0.4 },
+  "S": { width: 45, height: 15, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.25, lipSeparation: 0.3 },
+  "Z": { width: 45, height: 18, lipRound: 0.1, tonguePos: "tip", teethShow: true, jawDrop: 0.3, lipSeparation: 0.4 },
+  "TH": { width: 55, height: 25, lipRound: 0.1, tonguePos: "between", teethShow: true, jawDrop: 0.4, lipSeparation: 0.5 },
   
-  // Nasals
-  "M": { width: 0, height: 0, lipRound: 0.5, tonguePos: "neutral", teethShow: false, jawDrop: 0.1 },
-  "N": { width: 35, height: 12, lipRound: 0.1, tonguePos: "tip", teethShow: false, jawDrop: 0.25 },
+  // Nasals with proper lip closure
+  "M": { width: 0, height: 0, lipRound: 0.5, tonguePos: "neutral", teethShow: false, jawDrop: 0.1, lipSeparation: 0.0 },
+  "N": { width: 40, height: 15, lipRound: 0.1, tonguePos: "tip", teethShow: false, jawDrop: 0.3, lipSeparation: 0.4 },
   
-  // Liquids
-  "L": { width: 45, height: 30, lipRound: 0.1, tonguePos: "tip", teethShow: false, jawDrop: 0.4 },
-  "R": { width: 50, height: 35, lipRound: 0.3, tonguePos: "curl", teethShow: false, jawDrop: 0.45 },
+  // Liquids with better tongue positioning
+  "L": { width: 50, height: 35, lipRound: 0.1, tonguePos: "tip", teethShow: false, jawDrop: 0.45, lipSeparation: 0.6 },
+  "R": { width: 55, height: 40, lipRound: 0.3, tonguePos: "curl", teethShow: false, jawDrop: 0.5, lipSeparation: 0.7 },
   
-  // Default
-  "default": { width: 45, height: 30, lipRound: 0.3, tonguePos: "neutral", teethShow: false, jawDrop: 0.3 }
+  // Default relaxed position
+  "default": { width: 50, height: 35, lipRound: 0.3, tonguePos: "neutral", teethShow: false, jawDrop: 0.35, lipSeparation: 0.5 }
 };
 
 // Enhanced word to phoneme breakdown
@@ -160,17 +159,17 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
     }
   }, [phoneme, isAnimating]);
 
-  // Enhanced tongue position calculation
+  // Enhanced tongue position calculation with better accuracy
   const getTonguePosition = () => {
     switch (currentMouthShape.tonguePos) {
-      case "high": return { x: 120, y: 160, rotation: -12, width: 18, height: 8 };
-      case "mid": return { x: 120, y: 170, rotation: 0, width: 20, height: 10 };
-      case "low": return { x: 120, y: 185, rotation: 8, width: 22, height: 12 };
-      case "tip": return { x: 115, y: 155, rotation: -18, width: 16, height: 7 };
-      case "back": return { x: 125, y: 180, rotation: 12, width: 24, height: 14 };
-      case "curl": return { x: 120, y: 160, rotation: -25, width: 18, height: 9 };
-      case "between": return { x: 110, y: 150, rotation: -8, width: 15, height: 6 };
-      default: return { x: 120, y: 172, rotation: 0, width: 20, height: 10 };
+      case "high": return { x: 160, y: 200, rotation: -15, width: 24, height: 10 };
+      case "mid": return { x: 160, y: 215, rotation: 0, width: 28, height: 14 };
+      case "low": return { x: 160, y: 235, rotation: 10, width: 32, height: 18 };
+      case "tip": return { x: 150, y: 190, rotation: -22, width: 20, height: 9 };
+      case "back": return { x: 170, y: 230, rotation: 15, width: 35, height: 20 };
+      case "curl": return { x: 160, y: 200, rotation: -30, width: 22, height: 12 };
+      case "between": return { x: 140, y: 185, rotation: -10, width: 18, height: 8 };
+      default: return { x: 160, y: 220, rotation: 0, width: 28, height: 14 };
     }
   };
 
@@ -190,7 +189,7 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
   };
 
   return (
-    <div className="relative w-full h-full min-h-[500px] rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30 border-2 border-blue-200 dark:border-blue-700 shadow-2xl">
+    <div className="relative w-full h-full min-h-[700px] rounded-3xl overflow-hidden bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 dark:from-blue-950/30 dark:via-indigo-950/30 dark:to-purple-950/30 border-2 border-blue-200 dark:border-blue-700 shadow-2xl">
       
       {/* Advanced Controls Header */}
       <div className="absolute top-4 left-4 right-4 z-20 space-y-3">
@@ -311,21 +310,21 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
         </div>
       </div>
 
-      {/* Enhanced Face Area - Much Larger */}
+      {/* Much Larger Face Area - Significantly Increased Size */}
       <div className="absolute inset-0 pt-32 pb-20 px-6 flex items-center justify-center">
-        <div className={`w-full max-w-2xl transition-all duration-500 ${isPlaying ? 'scale-105' : 'scale-100'} ${mirrorMode ? 'scale-x-[-1]' : ''}`}>
+        <div className={`w-full max-w-4xl transition-all duration-500 ${isPlaying ? 'scale-105' : 'scale-100'} ${mirrorMode ? 'scale-x-[-1]' : ''}`}>
           
-          {/* Face Container with advanced styling */}
-          <div className={`bg-gradient-to-br from-white/98 to-gray-50/98 dark:from-gray-800/98 dark:to-gray-900/98 rounded-full p-8 backdrop-blur-md shadow-2xl border-4 border-gradient-to-r from-primary/30 to-purple-500/30 ${isPlaying ? 'animate-pulse' : ''}`}>
+          {/* Face Container with much larger sizing */}
+          <div className={`bg-gradient-to-br from-white/98 to-gray-50/98 dark:from-gray-800/98 dark:to-gray-900/98 rounded-full p-12 backdrop-blur-md shadow-2xl border-4 border-gradient-to-r from-primary/30 to-purple-500/30 ${isPlaying ? 'animate-pulse' : ''}`}>
             
-            {/* Much Larger Face SVG */}
+            {/* Much Larger Face SVG - Increased from 400x400 to 600x600 */}
             <svg
-              width="400"
-              height="400"
-              viewBox="0 0 240 240"
+              width="600"
+              height="600"
+              viewBox="0 0 320 320"
               className="w-full h-full"
             >
-              {/* Enhanced Face outline */}
+              {/* Enhanced Face outline - Larger */}
               <defs>
                 <radialGradient id="faceGradient" cx="50%" cy="40%" r="50%">
                   <stop offset="0%" stopColor="#ffe8d6" />
@@ -334,139 +333,160 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
               </defs>
               
               <circle
-                cx="120"
-                cy="120"
-                r="110"
+                cx="160"
+                cy="160"
+                r="145"
                 fill="url(#faceGradient)"
                 stroke="#e0a580"
-                strokeWidth="4"
+                strokeWidth="5"
                 className={isPlaying ? "animate-pulse" : ""}
               />
               
-              {/* Enhanced Eyes with complex expressions */}
+              {/* Enhanced Eyes with larger sizing */}
               <g>
-                {/* Left Eye */}
                 <ellipse 
-                  cx="85" 
-                  cy="95" 
-                  rx={eyeExpression === "blink" ? "15" : currentExpression.eyeShape === "wide" ? "18" : "15"} 
-                  ry={eyeExpression === "blink" ? "3" : currentExpression.eyeShape === "focused" ? "22" : "18"} 
+                  cx="115" 
+                  cy="125" 
+                  rx={eyeExpression === "blink" ? "20" : currentExpression.eyeShape === "wide" ? "24" : "20"} 
+                  ry={eyeExpression === "blink" ? "4" : currentExpression.eyeShape === "focused" ? "28" : "24"} 
                   fill="#2d3748"
                   className="transition-all duration-200"
                 />
-                {/* Right Eye */}
                 <ellipse 
-                  cx="155" 
-                  cy="95" 
-                  rx={eyeExpression === "blink" ? "15" : currentExpression.eyeShape === "wide" ? "18" : "15"} 
-                  ry={eyeExpression === "blink" ? "3" : currentExpression.eyeShape === "focused" ? "22" : "18"} 
+                  cx="205" 
+                  cy="125" 
+                  rx={eyeExpression === "blink" ? "20" : currentExpression.eyeShape === "wide" ? "24" : "20"} 
+                  ry={eyeExpression === "blink" ? "4" : currentExpression.eyeShape === "focused" ? "28" : "24"} 
                   fill="#2d3748"
                   className="transition-all duration-200"
                 />
                 
-                {/* Enhanced Eye highlights and pupils */}
+                {/* Enhanced Eye highlights and pupils - Larger */}
                 {eyeExpression !== "blink" && (
                   <>
-                    <circle cx="90" cy="90" r="6" fill="#4a5568" />
-                    <circle cx="160" cy="90" r="6" fill="#4a5568" />
-                    <ellipse cx="92" cy="88" rx="3" ry="4" fill="#ffffff" />
-                    <ellipse cx="162" cy="88" rx="3" ry="4" fill="#ffffff" />
-                    <circle cx="93" cy="89" r="1" fill="#ffffff" />
-                    <circle cx="163" cy="89" r="1" fill="#ffffff" />
+                    <circle cx="120" cy="118" r="8" fill="#4a5568" />
+                    <circle cx="210" cy="118" r="8" fill="#4a5568" />
+                    <ellipse cx="123" cy="115" rx="4" ry="5" fill="#ffffff" />
+                    <ellipse cx="213" cy="115" rx="4" ry="5" fill="#ffffff" />
+                    <circle cx="124" cy="116" r="1.5" fill="#ffffff" />
+                    <circle cx="214" cy="116" r="1.5" fill="#ffffff" />
                   </>
                 )}
               </g>
               
-              {/* Enhanced Eyebrows with expression */}
+              {/* Enhanced Eyebrows - Larger */}
               <g className={`transition-transform duration-300 ${currentExpression.eyeShape === "focused" ? "translate-y-1" : ""}`}>
                 <path
-                  d="M 65 78 Q 85 70 105 78"
+                  d="M 85 102 Q 115 92 145 102"
                   stroke="#8b4513"
-                  strokeWidth="5"
+                  strokeWidth="6"
                   fill="none"
                   strokeLinecap="round"
-                  transform={`rotate(${currentExpression.eyebrowAngle} 85 74)`}
+                  transform={`rotate(${currentExpression.eyebrowAngle} 115 97)`}
                   className="transition-transform duration-300"
                 />
                 <path
-                  d="M 135 78 Q 155 70 175 78"
+                  d="M 175 102 Q 205 92 235 102"
                   stroke="#8b4513"
-                  strokeWidth="5"
+                  strokeWidth="6"
                   fill="none"
                   strokeLinecap="round"
-                  transform={`rotate(${-currentExpression.eyebrowAngle} 155 74)`}
+                  transform={`rotate(${-currentExpression.eyebrowAngle} 205 97)`}
                   className="transition-transform duration-300"
                 />
               </g>
               
-              {/* Enhanced Nose with shading */}
+              {/* Enhanced Nose - Larger */}
               <g>
                 <path
-                  d="M 120 108 L 112 132 L 120 138 L 128 132 Z"
+                  d="M 160 142 L 148 175 L 160 185 L 172 175 Z"
                   fill="#d4a574"
                   stroke="#c09660"
-                  strokeWidth="2"
+                  strokeWidth="3"
                 />
-                <ellipse cx="116" cy="134" rx="2" ry="3" fill="#c09660" />
-                <ellipse cx="124" cy="134" rx="2" ry="3" fill="#c09660" />
+                <ellipse cx="153" cy="178" rx="3" ry="4" fill="#c09660" />
+                <ellipse cx="167" cy="178" rx="3" ry="4" fill="#c09660" />
               </g>
               
-              {/* Advanced Dynamic Mouth with jaw movement */}
-              <g transform={jawMovement ? `translate(0, ${currentMouthShape.jawDrop * 8})` : ""}>
-                {/* Mouth cavity */}
+              {/* Much More Advanced Dynamic Mouth with precise lip movement */}
+              <g transform={jawMovement ? `translate(0, ${currentMouthShape.jawDrop * 12})` : ""}>
+                {/* Mouth cavity - Larger and more accurate */}
                 <ellipse
-                  cx="120"
-                  cy="168"
-                  rx={currentMouthShape.width / 3.5}
-                  ry={currentMouthShape.height / 1.8}
+                  cx="160"
+                  cy="225"
+                  rx={currentMouthShape.width / 2.5}
+                  ry={currentMouthShape.height / 1.2}
                   fill="#722f37"
                   stroke="none"
-                  className="transition-all duration-250"
+                  className="transition-all duration-300"
                 />
                 
-                {/* Main mouth shape */}
+                {/* Upper lip with precise shaping */}
                 <ellipse
-                  cx="120"
-                  cy="168"
-                  rx={currentMouthShape.width / 4}
-                  ry={currentMouthShape.height / 2}
-                  fill="#8b1538"
-                  stroke="#d4888a"
-                  strokeWidth="3"
-                  className="transition-all duration-250"
-                  transform={`rotate(${currentMouthShape.lipRound * 6} 120 168)`}
+                  cx="160"
+                  cy={218 - (currentMouthShape.lipSeparation * 8)}
+                  rx={currentMouthShape.width / 2.2}
+                  ry="12"
+                  fill="#d4888a"
+                  stroke="#b87578"
+                  strokeWidth="2"
+                  className="transition-all duration-300"
+                  transform={`rotate(${currentMouthShape.lipRound * 4} 160 218)`}
                 />
                 
-                {/* Enhanced Teeth */}
-                {showTeeth && currentMouthShape.teethShow && currentMouthShape.height > 20 && (
+                {/* Lower lip with precise shaping */}
+                <ellipse
+                  cx="160"
+                  cy={232 + (currentMouthShape.lipSeparation * 8)}
+                  rx={currentMouthShape.width / 2.2}
+                  ry="14"
+                  fill="#cc7779"
+                  stroke="#a86367"
+                  strokeWidth="2"
+                  className="transition-all duration-300"
+                  transform={`rotate(${currentMouthShape.lipRound * 4} 160 232)`}
+                />
+                
+                {/* Main mouth opening with accurate sizing */}
+                <ellipse
+                  cx="160"
+                  cy="225"
+                  rx={currentMouthShape.width / 3}
+                  ry={currentMouthShape.height / 1.5}
+                  fill="#8b1538"
+                  className="transition-all duration-300"
+                />
+                
+                {/* Enhanced Teeth - Larger and more visible */}
+                {showTeeth && currentMouthShape.teethShow && currentMouthShape.height > 25 && (
                   <g>
                     <rect 
-                      x={120 - currentMouthShape.width / 8} 
-                      y="156" 
-                      width={currentMouthShape.width / 4} 
-                      height="8" 
+                      x={160 - currentMouthShape.width / 6} 
+                      y="208" 
+                      width={currentMouthShape.width / 3} 
+                      height="12" 
                       fill="#f8f8f8" 
-                      rx="4"
-                      className="transition-all duration-250"
+                      rx="6"
+                      className="transition-all duration-300"
                     />
-                    {/* Individual teeth */}
-                    {[...Array(5)].map((_, i) => (
+                    {/* Individual teeth - More detailed */}
+                    {[...Array(7)].map((_, i) => (
                       <rect
                         key={i}
-                        x={120 - currentMouthShape.width / 8 + (i * currentMouthShape.width / 20)}
-                        y="156"
-                        width={currentMouthShape.width / 25}
-                        height="8"
+                        x={160 - currentMouthShape.width / 6 + (i * currentMouthShape.width / 21)}
+                        y="208"
+                        width={currentMouthShape.width / 28}
+                        height="12"
                         fill="#ffffff"
-                        rx="1"
-                        className="transition-all duration-250"
+                        rx="2"
+                        className="transition-all duration-300"
                       />
                     ))}
                   </g>
                 )}
                 
-                {/* Enhanced Tongue with realistic positioning */}
-                {showTongue && currentMouthShape.height > 12 && (
+                {/* Enhanced Tongue with much more realistic positioning */}
+                {showTongue && currentMouthShape.height > 15 && (
                   <ellipse
                     cx={tonguePos.x}
                     cy={tonguePos.y}
@@ -474,50 +494,42 @@ export const TalkingFaceDiagram: React.FC<TalkingFaceDiagramProps> = ({
                     ry={tonguePos.height}
                     fill="#ff9999"
                     stroke="#ff7777"
-                    strokeWidth="1"
-                    className="transition-all duration-250"
+                    strokeWidth="2"
+                    className="transition-all duration-300"
                     transform={`rotate(${tonguePos.rotation} ${tonguePos.x} ${tonguePos.y})`}
                   />
                 )}
                 
-                {/* Enhanced Lip details */}
-                {currentMouthShape.lipRound > 0.5 && (
+                {/* Enhanced Lip rounding details */}
+                {currentMouthShape.lipRound > 0.6 && (
                   <>
                     <ellipse
-                      cx="120"
-                      cy="168"
-                      rx={currentMouthShape.width / 2.8}
-                      ry={currentMouthShape.height / 1.3}
+                      cx="160"
+                      cy="225"
+                      rx={currentMouthShape.width / 2}
+                      ry={currentMouthShape.height / 1.1}
                       fill="none"
                       stroke="#d4888a"
-                      strokeWidth="4"
-                      className="transition-all duration-250"
-                    />
-                    <ellipse
-                      cx="120"
-                      cy="164"
-                      rx={currentMouthShape.width / 4.5}
-                      ry={currentMouthShape.height / 3}
-                      fill="#e6969a"
-                      className="transition-all duration-250"
+                      strokeWidth="5"
+                      className="transition-all duration-300"
                     />
                   </>
                 )}
               </g>
               
-              {/* Enhanced Cheeks with dynamic expression coloring */}
+              {/* Enhanced Cheeks - Larger */}
               <circle 
-                cx="60" 
-                cy="140" 
-                r="20" 
+                cx="80" 
+                cy="185" 
+                r="28" 
                 fill="#ffb3ba" 
                 opacity={currentExpression.cheekColor}
                 className="transition-opacity duration-500"
               />
               <circle 
-                cx="180" 
-                cy="140" 
-                r="20" 
+                cx="240" 
+                cy="185" 
+                r="28" 
                 fill="#ffb3ba" 
                 opacity={currentExpression.cheekColor}
                 className="transition-opacity duration-500"

@@ -1,129 +1,59 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import Index from "./pages/Index";
-import NotFound from "./pages/NotFound";
-import Speaking from "./pages/Speaking";
-import Pronunciation from "./pages/Pronunciation";
-import Story from "./pages/Story";
-import Conversation from "./pages/Conversation";
-import Grammar from "./pages/Grammar";
-import Vocabulary from "./pages/Vocabulary";
-import Reflex from "./pages/Reflex";
-import Progress from "./pages/Progress";
-import Settings from "./pages/Settings";
-import WordPuzzle from "./pages/WordPuzzle";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
+import Vocabulary from "./pages/Vocabulary";
+import Grammar from "./pages/Grammar";
+import Speaking from "./pages/Speaking";
+import Pronunciation from "./pages/Pronunciation";
+import InteractiveFace from "./pages/InteractiveFace";
 import MirrorPractice from "./pages/MirrorPractice";
+import Story from "./pages/Story";
+import Conversation from "./pages/Conversation";
+import Progress from "./pages/Progress";
+import WordPuzzle from "./pages/WordPuzzle";
+import Reflex from "./pages/Reflex";
+import Settings from "./pages/Settings";
+import NotFound from "./pages/NotFound";
+import "./App.css";
 
 const queryClient = new QueryClient();
 
-// Protected Route component
-const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-
-  useEffect(() => {
-    // Check if user is authenticated (localStorage check)
-    const authToken = localStorage.getItem('authToken');
-    const userSession = localStorage.getItem('userSession');
-    setIsAuthenticated(!!(authToken || userSession));
-  }, []);
-
-  if (isAuthenticated === null) {
-    // Loading state
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 to-accent/5">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-
-  return <>{children}</>;
-};
-
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/" element={
-            <ProtectedRoute>
-              <Index />
-            </ProtectedRoute>
-          } />
-          <Route path="/speaking" element={
-            <ProtectedRoute>
-              <Speaking />
-            </ProtectedRoute>
-          } />
-          <Route path="/pronunciation" element={
-            <ProtectedRoute>
-              <Pronunciation />
-            </ProtectedRoute>
-          } />
-          <Route path="/story" element={
-            <ProtectedRoute>
-              <Story />
-            </ProtectedRoute>
-          } />
-          <Route path="/conversation" element={
-            <ProtectedRoute>
-              <Conversation />
-            </ProtectedRoute>
-          } />
-          <Route path="/grammar" element={
-            <ProtectedRoute>
-              <Grammar />
-            </ProtectedRoute>
-          } />
-          <Route path="/vocabulary" element={
-            <ProtectedRoute>
-              <Vocabulary />
-            </ProtectedRoute>
-          } />
-          <Route path="/reflex" element={
-            <ProtectedRoute>
-              <Reflex />
-            </ProtectedRoute>
-          } />
-          <Route path="/progress" element={
-            <ProtectedRoute>
-              <Progress />
-            </ProtectedRoute>
-          } />
-          <Route path="/settings" element={
-            <ProtectedRoute>
-              <Settings />
-            </ProtectedRoute>
-          } />
-          <Route path="/word-puzzle" element={
-            <ProtectedRoute>
-              <WordPuzzle />
-            </ProtectedRoute>
-          } />
-          <Route path="/mirror-practice" element={
-            <ProtectedRoute>
-              <MirrorPractice />
-            </ProtectedRoute>
-          } />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <TooltipProvider>
+          <Router>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/vocabulary" element={<Vocabulary />} />
+              <Route path="/grammar" element={<Grammar />} />
+              <Route path="/speaking" element={<Speaking />} />
+              <Route path="/pronunciation" element={<Pronunciation />} />
+              <Route path="/interactive-face" element={<InteractiveFace />} />
+              <Route path="/mirror-practice" element={<MirrorPractice />} />
+              <Route path="/story" element={<Story />} />
+              <Route path="/conversation" element={<Conversation />} />
+              <Route path="/progress" element={<Progress />} />
+              <Route path="/word-puzzle" element={<WordPuzzle />} />
+              <Route path="/reflex" element={<Reflex />} />
+              <Route path="/settings" element={<Settings />} />
+              <Route path="*" element={<NotFound />} />
+            </Routes>
+          </Router>
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;
