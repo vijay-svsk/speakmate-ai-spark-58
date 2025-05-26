@@ -8,7 +8,7 @@ import { motion } from "framer-motion";
 import { PieChart, Pie, Cell, Tooltip } from "recharts";
 import { useSpeechAudio } from "@/hooks/use-speech-audio";
 import { toast } from "sonner";
-import { LottieMouthDiagram } from "./LottieMouthDiagram";
+import { StaticMouthDiagram } from "./StaticMouthDiagram";
 
 // Sample syllables breakdown for different words
 const wordLibrary = {
@@ -363,22 +363,22 @@ export function PronunciationMirror() {
           
           {/* Right column - Visual Aids */}
           <div className="flex flex-col gap-6">
-            {/* Lottie-Enhanced Mouth Diagram */}
+            {/* Static Mouth Diagram */}
             <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm">
               <div className="text-sm font-semibold mb-2 text-center flex items-center justify-center gap-2">
-                <span>🎬</span>
-                Lottie Mouth Animation
-                <span className="text-xs bg-green-100 text-green-800 px-2 py-0.5 rounded-full">Enhanced</span>
+                <span>📋</span>
+                Mouth Position Diagram
+                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full">Educational</span>
               </div>
-              <div className="h-64 relative rounded-lg overflow-hidden bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/20 dark:to-indigo-950/20 shadow-inner border border-blue-200 dark:border-blue-800">
-                <LottieMouthDiagram 
+              <div className="h-64 relative rounded-lg overflow-hidden">
+                <StaticMouthDiagram 
                   word={word} 
                   isAnimating={isModelAnimating} 
                   phoneme={currentPhoneme}
                 />
               </div>
               <div className="text-xs text-center mt-2 text-muted-foreground">
-                High-quality Lottie animations • Click syllables • Hover for details
+                Clear diagrams • Click syllables for positions • Mobile-friendly
               </div>
             </div>
             
