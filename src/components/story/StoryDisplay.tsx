@@ -1,7 +1,6 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { Button } from "@/components/ui/button";
-import { Mic, Play, RefreshCcw, Volume2 } from "lucide-react";
+import { Mic, Play, RefreshCcw, Volume2, VolumeX } from "lucide-react";
 import { useSpeechRecognition } from "@/hooks/use-speech-recognition";
 import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
@@ -16,6 +15,7 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, onProgressUpd
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [wordStatus, setWordStatus] = useState<('pending' | 'correct' | 'incorrect')[]>([]);
   const [isListening, setIsListening] = useState(false);
+  const [accumulatedTranscript, setAccumulatedTranscript] = useState('');
   const { transcript, resetTranscript, startListening, stopListening, supported } = useSpeechRecognition();
   
   // Process the story into words when it changes
@@ -29,41 +29,47 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, onProgressUpd
       setWords(storyWords);
       setWordStatus(new Array(storyWords.length).fill('pending'));
       setCurrentWordIndex(0);
+      setAccumulatedTranscript('');
       onProgressUpdate(0);
     }
   }, [story, onProgressUpdate]);
 
-  // Check word when transcript changes
+  // Check words when transcript changes - maintain continuous checking
   useEffect(() => {
     if (!isListening || !transcript || currentWordIndex >= words.length) return;
 
-    const spokenWord = transcript.toLowerCase().trim();
+    // Get all spoken words from the continuous transcript
+    const spokenWords = transcript.toLowerCase().trim().split(/\s+/).filter(word => word.length > 0);
+    const newWordStatus = [...wordStatus];
+    let newCurrentIndex = currentWordIndex;
+    
+    // Check if we can find the current expected word in the recent speech
     const expectedWord = words[currentWordIndex].toLowerCase();
     
-    if (spokenWord === expectedWord) {
+    // Look for the expected word in the last few words of the transcript
+    const recentWords = spokenWords.slice(-5); // Check last 5 words
+    const wordFound = recentWords.some(word => word === expectedWord || word.includes(expectedWord));
+    
+    if (wordFound) {
       // Word is correct
-      const newWordStatus = [...wordStatus];
       newWordStatus[currentWordIndex] = 'correct';
-      setWordStatus(newWordStatus);
       
       // Move to next word
       if (currentWordIndex < words.length - 1) {
-        setCurrentWordIndex(currentWordIndex + 1);
+        newCurrentIndex = currentWordIndex + 1;
+        setCurrentWordIndex(newCurrentIndex);
       }
       
       // Update progress
-      const progress = ((currentWordIndex + 1) / words.length) * 100;
+      const progress = ((newCurrentIndex) / words.length) * 100;
       onProgressUpdate(progress);
       
-      // Reset transcript for next word
-      resetTranscript();
-    } else if (spokenWord && spokenWord !== expectedWord && !spokenWord.startsWith(expectedWord.substring(0, 2))) {
-      // Word is incorrect (and not just the beginning of the expected word)
-      const newWordStatus = [...wordStatus];
-      newWordStatus[currentWordIndex] = 'incorrect';
       setWordStatus(newWordStatus);
     }
-  }, [transcript, isListening, currentWordIndex, words, wordStatus, onProgressUpdate, resetTranscript]);
+    
+    // Keep the transcript for continuous speech
+    setAccumulatedTranscript(transcript);
+  }, [transcript, isListening, currentWordIndex, words, wordStatus, onProgressUpdate]);
 
   const handleStartReading = () => {
     if (!supported) {
@@ -72,7 +78,7 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, onProgressUpd
     }
     
     setIsListening(true);
-    resetTranscript();
+    // Don't reset transcript to maintain continuity
     startListening();
   };
 
@@ -84,8 +90,14 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, onProgressUpd
   const handleResetProgress = () => {
     setCurrentWordIndex(0);
     setWordStatus(new Array(words.length).fill('pending'));
+    setAccumulatedTranscript('');
     onProgressUpdate(0);
     resetTranscript();
+  };
+
+  const handleClearTranscript = () => {
+    resetTranscript();
+    setAccumulatedTranscript('');
   };
 
   const handleSpeakWord = (word: string) => {
@@ -151,17 +163,28 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, onProgressUpd
                 ? (
                   <span className="flex items-center justify-center gap-2">
                     <div className="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
-                    <span className="font-semibold">Listening... Say the highlighted word</span>
+                    <span className="font-semibold">Listening continuously... Say the highlighted word</span>
                   </span>
                 )
                 : "Click 'Start Reading' to begin practicing pronunciation"
               }
             </p>
             
-            {transcript && (
+            {(transcript || accumulatedTranscript) && (
               <div className="bg-white dark:bg-gray-800 rounded-lg p-4 border">
-                <span className="font-medium text-primary">You said: </span>
-                <span className="text-lg font-mono">{transcript}</span>
+                <div className="flex justify-between items-center mb-2">
+                  <span className="font-medium text-primary">Continuous Speech: </span>
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={handleClearTranscript}
+                    className="text-xs"
+                  >
+                    <VolumeX className="h-3 w-3 mr-1" />
+                    Clear
+                  </Button>
+                </div>
+                <p className="text-lg font-mono">{transcript || accumulatedTranscript}</p>
               </div>
             )}
           </div>
@@ -175,7 +198,7 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, onProgressUpd
                 className="bg-green-600 hover:bg-green-700 text-white shadow-lg"
               >
                 <Mic className="mr-2 h-5 w-5" />
-                Start Reading Practice
+                {accumulatedTranscript ? "Continue Reading" : "Start Reading Practice"}
               </Button>
             ) : (
               <Button 
@@ -225,9 +248,10 @@ export const StoryDisplay: React.FC<StoryDisplayProps> = ({ story, onProgressUpd
             <h4 className="font-semibold text-blue-800 dark:text-blue-200 mb-2">Reading Tips:</h4>
             <ul className="text-sm text-blue-700 dark:text-blue-300 space-y-1">
               <li>• Click on any word to hear its pronunciation</li>
-              <li>• Speak clearly and at a normal pace</li>
+              <li>• Speak continuously - pauses won't reset your progress</li>
               <li>• The highlighted word shows your current position</li>
               <li>• Green words are correctly pronounced, red ones need practice</li>
+              <li>• Auto-stops after 2 minutes of silence</li>
             </ul>
           </div>
         </CardContent>

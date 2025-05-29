@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -59,8 +58,16 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
   const [showFeedback, setShowFeedback] = useState(false);
   const [sessionStartTime] = useState(Date.now());
   const [roundStartTime, setRoundStartTime] = useState(Date.now());
+  const [roundTranscript, setRoundTranscript] = useState("");
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Track transcript for this specific round
+  useEffect(() => {
+    if (transcript && !showFeedback) {
+      setRoundTranscript(transcript);
+    }
+  }, [transcript, showFeedback]);
 
   useEffect(() => {
     startNewRound();
@@ -78,6 +85,7 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
     setTimeLeft(8);
     setShowFeedback(false);
     setRoundStartTime(Date.now());
+    setRoundTranscript("");
     resetTranscript();
 
     // Start countdown
@@ -103,7 +111,9 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
 
   const evaluateResponse = () => {
     const responseTime = Date.now() - roundStartTime;
-    const hasResponse = transcript.trim().length > 0;
+    // Use the accumulated transcript for this round
+    const finalTranscript = roundTranscript || transcript;
+    const hasResponse = finalTranscript.trim().length > 0;
     
     // Simple scoring based on response presence and emotion keywords
     let accuracy = hasResponse ? 70 : 0;
@@ -124,7 +134,7 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
 
     const emotionKeywords = emotionWords[currentEmotion.name as keyof typeof emotionWords] || [];
     const hasEmotionWords = emotionKeywords.some(word => 
-      transcript.toLowerCase().includes(word.toLowerCase())
+      finalTranscript.toLowerCase().includes(word.toLowerCase())
     );
     
     if (hasEmotionWords) {
@@ -144,7 +154,7 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
 
     const responseData = {
       prompt: `Say "${currentSentence}" with ${currentEmotion.name} emotion`,
-      response: transcript,
+      response: finalTranscript,
       responseTime: responseTime / 1000,
       accuracy,
       fluency,
@@ -232,8 +242,13 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
 
               {/* Your Response */}
               <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 mb-6 min-h-[80px]">
-                <h3 className="text-sm font-medium mb-2">Your Response:</h3>
-                <p className="text-lg">{transcript || "Start speaking..."}</p>
+                <h3 className="text-sm font-medium mb-2">Your Response (Continuous):</h3>
+                <p className="text-lg">{roundTranscript || transcript || "Start speaking..."}</p>
+                {(roundTranscript || transcript) && (
+                  <div className="text-xs text-gray-500 mt-1">
+                    Words: {(roundTranscript || transcript).trim().split(/\s+/).length}
+                  </div>
+                )}
               </div>
 
               {/* Mic Button */}
@@ -248,18 +263,24 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
               >
                 {isListening ? <MicOff className="h-8 w-8" /> : <Mic className="h-8 w-8" />}
               </Button>
+              
+              {isListening && (
+                <p className="text-xs text-gray-600 dark:text-gray-300 mt-2">
+                  Speaking continuously... pauses won't reset your response
+                </p>
+              )}
             </>
           ) : (
             <>
               {/* Feedback */}
               <div className="text-center">
                 <div className="text-4xl mb-4">
-                  {transcript ? "🎉" : "😔"}
+                  {roundTranscript || transcript ? "🎉" : "😔"}
                 </div>
                 <h3 className="text-xl font-bold mb-4">
-                  {transcript ? "Great job!" : "Time's up!"}
+                  {roundTranscript || transcript ? "Great job!" : "Time's up!"}
                 </h3>
-                {transcript ? (
+                {roundTranscript || transcript ? (
                   <p className="text-green-600 dark:text-green-400">
                     You expressed the emotion well! +{Math.round(score/round)} points
                   </p>
@@ -284,7 +305,7 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
       {/* Instructions */}
       <div className="text-center mt-6 max-w-md">
         <p className="text-sm text-gray-600 dark:text-gray-300">
-          Express the sentence using the emotional tone shown. Your voice, pace, and word choice should match the emotion!
+          Express the sentence using the emotional tone shown. Your voice, pace, and word choice should match the emotion! Speech continues during pauses.
         </p>
       </div>
 

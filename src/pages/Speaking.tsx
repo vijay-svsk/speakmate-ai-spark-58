@@ -1,4 +1,3 @@
-
 import React, { useRef, useState, useEffect } from "react";
 import { Mic, CircleStop, ChartBar, LineChart, ArrowLeft, Settings, AlertTriangle, VolumeX } from "lucide-react";
 import { Card, CardContent, CardHeader, CardFooter } from "@/components/ui/card";
@@ -47,7 +46,7 @@ export default function Speaking() {
     lastError
   } = useSpeechRecognition();
 
-  // Sync the recognized text with our component state
+  // Sync the recognized text with our component state - but maintain existing transcript
   useEffect(() => {
     if (recognizedText) {
       setTranscript(recognizedText);
@@ -84,14 +83,15 @@ export default function Speaking() {
 
   // Start recording (audio + live transcript)
   const handleStart = async () => {
-    setTranscript("");
-    setFeedback(null);
-    setAudioUrl(null);
+    // Don't reset transcript here - allow continuation
+    if (!transcript) {
+      setFeedback(null);
+      setAudioUrl(null);
+    }
     setRecording(true);
 
-    // Start SpeechRecognition
+    // Start SpeechRecognition (will continue from existing transcript)
     if (supported) {
-      resetTranscript();
       startListening();
     } else {
       toast.error("Speech recognition not supported. Live transcription isn't available in your browser.");
@@ -133,6 +133,12 @@ export default function Speaking() {
       // Release microphone
       mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
     }
+  };
+
+  // Clear transcript function for manual reset
+  const handleClearTranscript = () => {
+    resetTranscript();
+    setTranscript("");
   };
 
   // Enhanced analyze function with better error handling and API communication
@@ -408,7 +414,7 @@ Respond as clean JSON ONLY, using keys:
                 aria-label="Start Speaking"
               >
                 <Mic className="w-5 h-5" />
-                {supported ? "Speak" : "Not Supported"}
+                {recording ? "Recording..." : (supported ? "Continue Speaking" : "Not Supported")}
               </Button>
               <Button
                 onClick={handleStop}
@@ -419,6 +425,16 @@ Respond as clean JSON ONLY, using keys:
               >
                 <CircleStop className="w-5 h-5" />
                 Stop
+              </Button>
+              <Button
+                onClick={handleClearTranscript}
+                disabled={!transcript || recording}
+                variant="outline"
+                className="flex gap-2"
+                aria-label="Clear Transcript"
+              >
+                <VolumeX className="w-5 h-5" />
+                Clear
               </Button>
               <Button
                 onClick={handleAnalyze}
@@ -445,24 +461,29 @@ Respond as clean JSON ONLY, using keys:
             {recording && (
               <div className="flex items-center gap-2 text-sm text-primary">
                 <div className="h-2 w-2 rounded-full bg-red-500 animate-pulse"></div>
-                <span>Recording... Speak clearly into your microphone</span>
+                <span>Recording... Speak clearly. Speech will continue even during pauses. (Auto-stops after 2min silence)</span>
               </div>
             )}
 
             {/* Transcript Display */}
             <div>
               <div className="flex items-center justify-between mb-1">
-                <label className="text-sm font-medium">Speech Transcript</label>
+                <label className="text-sm font-medium">Speech Transcript (Continuous)</label>
                 {isListening && (
                   <span className="text-xs text-primary animate-pulse">Listening...</span>
                 )}
               </div>
               <Textarea
-                className="text-base min-h-[100px]"
+                className="text-base min-h-[120px]"
                 value={transcript}
                 onChange={e => setTranscript(e.target.value)}
-                placeholder="Transcript will appear here as you speak..."
+                placeholder="Transcript will build continuously as you speak, including during pauses..."
               />
+              {transcript && (
+                <div className="text-xs text-gray-500 mt-1">
+                  Word count: {transcript.trim().split(/\s+/).length} words
+                </div>
+              )}
             </div>
 
             {/* Audio playback */}
