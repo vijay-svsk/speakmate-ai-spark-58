@@ -138,7 +138,7 @@ export const PrecisionWordChallenge: React.FC<PrecisionWordChallengeProps> = ({
     if (hasResponse) {
       setScore(prev => prev + roundScore);
     } else {
-      setEnergy(prev => Math.max(0, prev - 20));
+      setEnergy(Math.max(0, energy - 20));
     }
 
     const responseData = {

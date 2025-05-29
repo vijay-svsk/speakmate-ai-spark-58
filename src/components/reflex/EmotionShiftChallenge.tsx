@@ -149,7 +149,7 @@ export const EmotionShiftChallenge: React.FC<EmotionShiftChallengeProps> = ({
       setStreak(prev => prev + 1);
     } else {
       setStreak(0);
-      setEnergy(prev => Math.max(0, prev - 20));
+      setEnergy(Math.max(0, energy - 20));
     }
 
     const responseData = {

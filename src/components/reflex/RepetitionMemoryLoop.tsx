@@ -134,7 +134,7 @@ export const RepetitionMemoryLoop: React.FC<RepetitionMemoryLoopProps> = ({
     if (hasResponse) {
       setScore(prev => prev + roundScore);
     } else {
-      setEnergy(prev => Math.max(0, prev - 25));
+      setEnergy(Math.max(0, energy - 25));
     }
 
     const responseData = {
