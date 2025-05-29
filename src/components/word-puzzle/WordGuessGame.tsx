@@ -4,176 +4,242 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
-import { RotateCcw, Lightbulb, CheckCircle, XCircle } from "lucide-react";
+import { RotateCcw, CheckCircle, XCircle, Lightbulb } from "lucide-react";
 import confetti from 'canvas-confetti';
 
-// Padajalam-style word puzzles with hints
-const wordPuzzles = [
+// Crossword puzzle data
+const crosswordPuzzles = [
   {
-    word: "SMILE",
-    hints: [
-      { type: "definition", text: "A facial expression showing happiness" },
-      { type: "jumble", text: "LIMES (rearrange these letters)" },
-      { type: "fill", text: "S _ I _ E (fill in the blanks)" }
+    id: 1,
+    grid: [
+      ['C', 'A', 'T', '', '', ''],
+      ['A', '', 'H', '', '', ''],
+      ['R', '', 'E', '', '', ''],
+      ['', '', '', 'D', 'O', 'G'],
+      ['', '', '', 'A', '', ''],
+      ['', '', '', 'Y', '', '']
     ],
-    difficulty: "easy"
+    solution: [
+      ['C', 'A', 'T', '', '', ''],
+      ['A', '', 'H', '', '', ''],
+      ['R', '', 'E', '', '', ''],
+      ['', '', '', 'D', 'O', 'G'],
+      ['', '', '', 'A', '', ''],
+      ['', '', '', 'Y', '', '']
+    ],
+    hints: {
+      horizontal: [
+        { number: 1, clue: "Feline pet (3 letters)", row: 0, col: 0, length: 3, answer: "CAT" },
+        { number: 4, clue: "Man's best friend (3 letters)", row: 3, col: 3, length: 3, answer: "DOG" }
+      ],
+      vertical: [
+        { number: 1, clue: "Vehicle with four wheels (3 letters)", row: 0, col: 0, length: 3, answer: "CAR" },
+        { number: 2, clue: "Definite article (3 letters)", row: 0, col: 2, length: 3, answer: "THE" },
+        { number: 4, clue: "Period of 24 hours (3 letters)", row: 3, col: 3, length: 3, answer: "DAY" }
+      ]
+    }
   },
   {
-    word: "HOUSE",
-    hints: [
-      { type: "definition", text: "A building where people live" },
-      { type: "jumble", text: "SUEHO (rearrange these letters)" },
-      { type: "clue", text: "Rhymes with 'mouse'" }
+    id: 2,
+    grid: [
+      ['S', 'U', 'N', '', '', ''],
+      ['', '', 'O', '', '', ''],
+      ['', '', '', 'B', 'O', 'X'],
+      ['', '', '', 'I', '', ''],
+      ['', '', '', 'G', '', ''],
+      ['F', 'I', 'S', 'H', '', '']
     ],
-    difficulty: "easy"
+    solution: [
+      ['S', 'U', 'N', '', '', ''],
+      ['', '', 'O', '', '', ''],
+      ['', '', '', 'B', 'O', 'X'],
+      ['', '', '', 'I', '', ''],
+      ['', '', '', 'G', '', ''],
+      ['F', 'I', 'S', 'H', '', '']
+    ],
+    hints: {
+      horizontal: [
+        { number: 1, clue: "Bright star in our solar system (3 letters)", row: 0, col: 0, length: 3, answer: "SUN" },
+        { number: 3, clue: "Container or package (3 letters)", row: 2, col: 3, length: 3, answer: "BOX" },
+        { number: 6, clue: "Aquatic animal (4 letters)", row: 5, col: 0, length: 4, answer: "FISH" }
+      ],
+      vertical: [
+        { number: 2, clue: "Negative word (2 letters)", row: 0, col: 2, length: 2, answer: "NO" },
+        { number: 3, clue: "Large or great in size (3 letters)", row: 2, col: 3, length: 3, answer: "BIG" }
+      ]
+    }
   },
   {
-    word: "OCEAN",
-    hints: [
-      { type: "definition", text: "Large body of salt water" },
-      { type: "jumble", text: "CANOE (rearrange these letters)" },
-      { type: "fill", text: "O _ E _ N (fill in the blanks)" }
+    id: 3,
+    grid: [
+      ['', '', 'T', 'R', 'E', 'E'],
+      ['', '', 'O', '', '', ''],
+      ['H', 'O', 'P', '', '', ''],
+      ['A', '', '', '', '', ''],
+      ['T', '', '', '', '', ''],
+      ['', '', '', 'A', 'G', 'E']
     ],
-    difficulty: "medium"
-  },
-  {
-    word: "PLANET",
-    hints: [
-      { type: "definition", text: "Celestial body orbiting a star" },
-      { type: "jumble", text: "TALENT (rearrange these letters)" },
-      { type: "clue", text: "Earth is one of these" }
+    solution: [
+      ['', '', 'T', 'R', 'E', 'E'],
+      ['', '', 'O', '', '', ''],
+      ['H', 'O', 'P', '', '', ''],
+      ['A', '', '', '', '', ''],
+      ['T', '', '', '', '', ''],
+      ['', '', '', 'A', 'G', 'E']
     ],
-    difficulty: "medium"
-  },
-  {
-    word: "FREEDOM",
-    hints: [
-      { type: "definition", text: "The state of being free" },
-      { type: "jumble", text: "FORMER + D (rearrange FORMER and add D)" },
-      { type: "clue", text: "What birds have when they fly" }
-    ],
-    difficulty: "hard"
-  },
-  {
-    word: "JOURNEY",
-    hints: [
-      { type: "definition", text: "A long trip or travel" },
-      { type: "jumble", text: "ENJOY + R + U (rearrange and combine)" },
-      { type: "fill", text: "J _ U _ N _ Y (fill in the blanks)" }
-    ],
-    difficulty: "hard"
+    hints: {
+      horizontal: [
+        { number: 1, clue: "Large plant with trunk (4 letters)", row: 0, col: 2, length: 4, answer: "TREE" },
+        { number: 3, clue: "Jump on one foot (3 letters)", row: 2, col: 0, length: 3, answer: "HOP" },
+        { number: 6, clue: "How old you are (3 letters)", row: 5, col: 3, length: 3, answer: "AGE" }
+      ],
+      vertical: [
+        { number: 2, clue: "Preposition meaning 'towards' (2 letters)", row: 0, col: 2, length: 2, answer: "TO" },
+        { number: 3, clue: "Head covering (3 letters)", row: 2, col: 0, length: 3, answer: "HAT" }
+      ]
+    }
   }
 ];
 
 const WordGuessGame = () => {
   const { toast } = useToast();
-  const [currentPuzzle, setCurrentPuzzle] = useState(wordPuzzles[0]);
-  const [userAnswer, setUserAnswer] = useState("");
-  const [revealedHints, setRevealedHints] = useState<number[]>([0]);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [currentPuzzle, setCurrentPuzzle] = useState(crosswordPuzzles[0]);
+  const [userGrid, setUserGrid] = useState<string[][]>([]);
+  const [selectedCell, setSelectedCell] = useState<{row: number, col: number} | null>(null);
   const [score, setScore] = useState(0);
   const [puzzleIndex, setPuzzleIndex] = useState(0);
-  const [attempts, setAttempts] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [completedWords, setCompletedWords] = useState<Set<string>>(new Set());
+  const [showHints, setShowHints] = useState(false);
 
   useEffect(() => {
-    if (inputRef.current) {
-      inputRef.current.focus();
-    }
+    initializeGrid();
   }, [currentPuzzle]);
 
-  const startNewPuzzle = () => {
-    const randomIndex = Math.floor(Math.random() * wordPuzzles.length);
-    setCurrentPuzzle(wordPuzzles[randomIndex]);
-    setPuzzleIndex(randomIndex);
-    setUserAnswer("");
-    setRevealedHints([0]);
-    setIsCorrect(null);
-    setAttempts(0);
+  const initializeGrid = () => {
+    const grid = Array(6).fill(null).map(() => Array(6).fill(''));
+    setUserGrid(grid);
+    setCompletedWords(new Set());
+    setSelectedCell(null);
   };
 
-  const revealNextHint = () => {
-    if (revealedHints.length < currentPuzzle.hints.length) {
-      setRevealedHints(prev => [...prev, prev.length]);
-      setScore(prev => Math.max(0, prev - 5)); // Penalty for using hints
+  const startNewPuzzle = () => {
+    const randomIndex = Math.floor(Math.random() * crosswordPuzzles.length);
+    setCurrentPuzzle(crosswordPuzzles[randomIndex]);
+    setPuzzleIndex(randomIndex);
+    setScore(0);
+    setShowHints(false);
+  };
+
+  const handleCellClick = (row: number, col: number) => {
+    if (currentPuzzle.solution[row][col] !== '') {
+      setSelectedCell({ row, col });
     }
   };
 
-  const checkAnswer = () => {
-    const normalizedAnswer = userAnswer.trim().toUpperCase();
-    const normalizedWord = currentPuzzle.word.toUpperCase();
+  const handleCellChange = (row: number, col: number, value: string) => {
+    if (value.length <= 1 && /^[A-Za-z]*$/.test(value)) {
+      const newGrid = [...userGrid];
+      newGrid[row][col] = value.toUpperCase();
+      setUserGrid(newGrid);
+      checkWordCompletion(newGrid);
+    }
+  };
+
+  const checkWordCompletion = (grid: string[][]) => {
+    const newCompletedWords = new Set<string>();
     
-    setAttempts(prev => prev + 1);
-    
-    if (normalizedAnswer === normalizedWord) {
-      setIsCorrect(true);
-      
-      // Calculate score based on hints used and attempts
-      const hintPenalty = (revealedHints.length - 1) * 10;
-      const attemptPenalty = (attempts) * 5;
-      const baseScore = currentPuzzle.difficulty === 'hard' ? 50 : 
-                       currentPuzzle.difficulty === 'medium' ? 30 : 20;
-      const earnedScore = Math.max(10, baseScore - hintPenalty - attemptPenalty);
-      
-      setScore(prev => prev + earnedScore);
-      
+    // Check horizontal words
+    currentPuzzle.hints.horizontal.forEach(hint => {
+      let word = '';
+      for (let i = 0; i < hint.length; i++) {
+        word += grid[hint.row][hint.col + i] || '';
+      }
+      if (word === hint.answer) {
+        newCompletedWords.add(`h-${hint.number}`);
+      }
+    });
+
+    // Check vertical words
+    currentPuzzle.hints.vertical.forEach(hint => {
+      let word = '';
+      for (let i = 0; i < hint.length; i++) {
+        word += grid[hint.row + i][hint.col] || '';
+      }
+      if (word === hint.answer) {
+        newCompletedWords.add(`v-${hint.number}`);
+      }
+    });
+
+    setCompletedWords(newCompletedWords);
+
+    // Check if puzzle is complete
+    const totalWords = currentPuzzle.hints.horizontal.length + currentPuzzle.hints.vertical.length;
+    if (newCompletedWords.size === totalWords) {
+      setScore(prev => prev + 100);
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       });
-      
       toast({
-        title: "Correct! 🎉",
-        description: `You earned ${earnedScore} points!`,
-      });
-    } else {
-      setIsCorrect(false);
-      toast({
-        title: "Try again!",
-        description: "That's not the correct answer. Keep trying!",
-        variant: "destructive",
+        title: "Puzzle Complete! 🎉",
+        description: "You solved the crossword puzzle!",
       });
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      checkAnswer();
+  const toggleHints = () => {
+    setShowHints(!showHints);
+    if (!showHints) {
+      setScore(prev => Math.max(0, prev - 20));
     }
   };
 
-  const getHintTypeIcon = (type: string) => {
-    switch (type) {
-      case 'definition': return '📖';
-      case 'jumble': return '🔀';
-      case 'fill': return '✏️';
-      case 'clue': return '💡';
-      default: return '❓';
-    }
+  const getCellNumber = (row: number, col: number) => {
+    // Check if this cell is the start of a horizontal word
+    const horizontalHint = currentPuzzle.hints.horizontal.find(
+      hint => hint.row === row && hint.col === col
+    );
+    
+    // Check if this cell is the start of a vertical word
+    const verticalHint = currentPuzzle.hints.vertical.find(
+      hint => hint.row === row && hint.col === col
+    );
+
+    if (horizontalHint) return horizontalHint.number;
+    if (verticalHint) return verticalHint.number;
+    return null;
   };
 
-  const getHintTypeLabel = (type: string) => {
-    switch (type) {
-      case 'definition': return 'Definition';
-      case 'jumble': return 'Jumbled Letters';
-      case 'fill': return 'Fill in the Blanks';
-      case 'clue': return 'Clue';
-      default: return 'Hint';
-    }
+  const isCellActive = (row: number, col: number) => {
+    return currentPuzzle.solution[row][col] !== '';
+  };
+
+  const isCellCorrect = (row: number, col: number) => {
+    if (!userGrid[row] || !userGrid[row][col]) return false;
+    return userGrid[row][col] === currentPuzzle.solution[row][col];
   };
 
   return (
     <div className="animate-fade-in">
       <div className="mb-6 flex justify-between items-center">
         <div>
-          <h2 className="text-2xl font-bold text-primary">Padajalam Word Puzzle</h2>
-          <p className="text-muted-foreground">Solve the word using the given hints</p>
+          <h2 className="text-2xl font-bold text-primary">Crossword Puzzle</h2>
+          <p className="text-muted-foreground">Fill the grid using the numbered hints</p>
         </div>
         <div className="flex items-center gap-4">
           <div className="text-lg font-semibold text-primary">
             Score: {score}
           </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleHints}
+            className="flex items-center gap-1"
+          >
+            <Lightbulb className="h-4 w-4" />
+            {showHints ? "Hide" : "Show"} Hints (-20 points)
+          </Button>
           <Button
             variant="outline"
             size="sm"
@@ -187,117 +253,124 @@ const WordGuessGame = () => {
         </div>
       </div>
 
-      <Card className="p-6 bg-white mb-4">
-        <div className="space-y-6">
-          {/* Puzzle Info */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                Difficulty: 
-              </span>
-              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                currentPuzzle.difficulty === 'hard' ? 'bg-red-100 text-red-600' :
-                currentPuzzle.difficulty === 'medium' ? 'bg-yellow-100 text-yellow-600' :
-                'bg-green-100 text-green-600'
-              }`}>
-                {currentPuzzle.difficulty.toUpperCase()}
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground">
-              Word Length: {currentPuzzle.word.length} letters
-            </div>
-          </div>
-
-          {/* Hints Section */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Hints:</h3>
-            {currentPuzzle.hints.map((hint, index) => (
-              <div 
-                key={index}
-                className={`p-4 rounded-lg border transition-all duration-300 ${
-                  revealedHints.includes(index) 
-                    ? 'bg-blue-50 border-blue-200' 
-                    : 'bg-gray-50 border-gray-200 opacity-50'
-                }`}
-              >
-                <div className="flex items-start gap-3">
-                  <span className="text-2xl">{getHintTypeIcon(hint.type)}</span>
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-blue-600 mb-1">
-                      {getHintTypeLabel(hint.type)}
-                    </div>
-                    {revealedHints.includes(index) ? (
-                      <p className="text-gray-700 font-mono">{hint.text}</p>
-                    ) : (
-                      <p className="text-gray-400">Click "Reveal Hint" to unlock</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Grid */}
+        <Card className="p-6 bg-white">
+          <h3 className="text-lg font-semibold mb-4">6×6 Crossword Grid</h3>
+          <div className="grid grid-cols-6 gap-1 max-w-md mx-auto">
+            {Array(6).fill(null).map((_, row) =>
+              Array(6).fill(null).map((_, col) => {
+                const isActive = isCellActive(row, col);
+                const isSelected = selectedCell?.row === row && selectedCell?.col === col;
+                const isCorrect = isCellCorrect(row, col);
+                const cellNumber = getCellNumber(row, col);
+                
+                return (
+                  <div
+                    key={`${row}-${col}`}
+                    className={`
+                      relative w-12 h-12 border-2 transition-all duration-200
+                      ${isActive 
+                        ? isSelected 
+                          ? 'border-blue-500 bg-blue-50' 
+                          : isCorrect 
+                            ? 'border-green-400 bg-green-50'
+                            : 'border-gray-300 bg-white hover:border-blue-300 cursor-pointer'
+                        : 'bg-gray-200 border-gray-400'
+                      }
+                    `}
+                    onClick={() => handleCellClick(row, col)}
+                  >
+                    {cellNumber && (
+                      <span className="absolute top-0 left-0 text-xs font-bold text-blue-600 leading-none p-0.5">
+                        {cellNumber}
+                      </span>
+                    )}
+                    {isActive && (
+                      <Input
+                        value={userGrid[row]?.[col] || ''}
+                        onChange={(e) => handleCellChange(row, col, e.target.value)}
+                        className="w-full h-full border-0 text-center text-lg font-bold uppercase p-0 focus:ring-0 focus:outline-none bg-transparent"
+                        maxLength={1}
+                      />
                     )}
                   </div>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Hint Button */}
-          {revealedHints.length < currentPuzzle.hints.length && (
-            <Button
-              onClick={revealNextHint}
-              variant="outline"
-              className="flex items-center gap-2"
-            >
-              <Lightbulb className="h-4 w-4" />
-              Reveal Next Hint (-5 points)
-            </Button>
-          )}
-
-          {/* Answer Input */}
-          <div className="space-y-4">
-            <h3 className="text-lg font-semibold">Your Answer:</h3>
-            <div className="flex gap-3">
-              <Input
-                ref={inputRef}
-                value={userAnswer}
-                onChange={(e) => setUserAnswer(e.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Type your answer here..."
-                className="text-lg font-mono uppercase"
-                disabled={isCorrect === true}
-              />
-              <Button 
-                onClick={checkAnswer}
-                disabled={!userAnswer.trim() || isCorrect === true}
-                className="px-6"
-              >
-                Check
-              </Button>
-            </div>
-            
-            {/* Result Display */}
-            {isCorrect !== null && (
-              <div className={`flex items-center gap-2 p-3 rounded-lg ${
-                isCorrect ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-              }`}>
-                {isCorrect ? (
-                  <>
-                    <CheckCircle className="h-5 w-5" />
-                    <span className="font-medium">Correct! The word is "{currentPuzzle.word}"</span>
-                  </>
-                ) : (
-                  <>
-                    <XCircle className="h-5 w-5" />
-                    <span className="font-medium">Incorrect. Try again!</span>
-                  </>
-                )}
-              </div>
+                );
+              })
             )}
           </div>
-
-          {/* Stats */}
-          <div className="flex justify-between text-sm text-muted-foreground pt-4 border-t">
-            <span>Attempts: {attempts}</span>
-            <span>Hints Used: {revealedHints.length}/{currentPuzzle.hints.length}</span>
+          
+          <div className="mt-4 text-center">
+            <p className="text-sm text-muted-foreground">
+              Words completed: {completedWords.size} / {currentPuzzle.hints.horizontal.length + currentPuzzle.hints.vertical.length}
+            </p>
           </div>
-        </div>
-      </Card>
+        </Card>
+
+        {/* Hints */}
+        <Card className="p-6 bg-white">
+          <h3 className="text-lg font-semibold mb-4">Clues</h3>
+          
+          {showHints && (
+            <div className="space-y-4">
+              <div>
+                <h4 className="font-medium text-blue-600 mb-2">ACROSS</h4>
+                <div className="space-y-2">
+                  {currentPuzzle.hints.horizontal.map((hint) => (
+                    <div 
+                      key={`h-${hint.number}`}
+                      className={`flex items-start gap-2 p-2 rounded ${
+                        completedWords.has(`h-${hint.number}`) 
+                          ? 'bg-green-50 text-green-700' 
+                          : 'bg-gray-50'
+                      }`}
+                    >
+                      {completedWords.has(`h-${hint.number}`) && (
+                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      )}
+                      <span className="font-medium">{hint.number}.</span>
+                      <span>{hint.clue}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <h4 className="font-medium text-purple-600 mb-2">DOWN</h4>
+                <div className="space-y-2">
+                  {currentPuzzle.hints.vertical.map((hint) => (
+                    <div 
+                      key={`v-${hint.number}`}
+                      className={`flex items-start gap-2 p-2 rounded ${
+                        completedWords.has(`v-${hint.number}`) 
+                          ? 'bg-green-50 text-green-700' 
+                          : 'bg-gray-50'
+                      }`}
+                    >
+                      {completedWords.has(`v-${hint.number}`) && (
+                        <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+                      )}
+                      <span className="font-medium">{hint.number}.</span>
+                      <span>{hint.clue}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {!showHints && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-4">
+                Click "Show Hints" to reveal the clues for this puzzle
+              </p>
+              <Button onClick={toggleHints} variant="outline">
+                Show Hints
+              </Button>
+            </div>
+          )}
+        </Card>
+      </div>
     </div>
   );
 };
