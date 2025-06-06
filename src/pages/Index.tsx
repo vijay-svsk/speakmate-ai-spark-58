@@ -1,7 +1,11 @@
-
 import React, { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { WelcomeJourney } from "@/components/journey/WelcomeJourney";
+import { JourneyMap } from "@/components/journey/JourneyMap";
+import { JourneyPrompts } from "@/components/journey/JourneyPrompts";
+import { SkillRooms } from "@/components/journey/SkillRooms";
+import { DailyBadges } from "@/components/journey/DailyBadges";
 // Dashboard components
 import { DailyGoals } from "@/components/dashboard/DailyGoals";
 import { StreakTracker } from "@/components/dashboard/StreakTracker";
@@ -121,45 +125,88 @@ const mockStreakData = Object.fromEntries(
 
 const Index = () => {
   const [showAnimation, setShowAnimation] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
+  const [userName, setUserName] = useState("Fluent Explorer");
 
   useEffect(() => {
+    // Get user info from localStorage
+    const userSession = JSON.parse(localStorage.getItem('userSession') || '{}');
+    if (userSession.name) {
+      setUserName(userSession.name);
+    }
+
     setShowAnimation(true);
   }, []);
 
+  const handleStartJourney = () => {
+    setShowWelcome(false);
+    // Trigger journey start confetti
+    setTimeout(() => {
+      confetti({
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 }
+      });
+    }, 300);
+  };
+
   return (
     <AppLayout>
-      <div className="container mx-auto px-4 py-6 max-w-7xl">
-        <div className={`space-y-6 ${showAnimation ? 'animate-fade-in' : 'opacity-0'}`}>
-          <WelcomeCard />
-          <QuickStartPanel />
+      {/* Welcome Journey Modal */}
+      {showWelcome && (
+        <WelcomeJourney 
+          userName={userName}
+          onStartJourney={handleStartJourney}
+        />
+      )}
 
-          {/* Progress Summary Section */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
-            <div className="transform hover:scale-[1.02] transition-all duration-300 hover:shadow-xl border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
-              <WeeklyProgressChart />
-            </div>
-            <div className="transform hover:scale-[1.02] transition-all duration-300 hover:shadow-xl border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
-              <SkillRadarChart />
-            </div>
+      <div className="container mx-auto px-4 py-6 max-w-7xl">
+        <div className={`space-y-8 ${showAnimation ? 'animate-fade-in' : 'opacity-0'}`}>
+          
+          {/* Journey Map - Main Feature */}
+          <div className="transform hover:scale-[1.01] transition-all duration-300">
+            <JourneyMap />
           </div>
 
-          {/* Daily Goals and Streak Section */}
+          {/* Daily Journey Prompt */}
+          <div className="transform hover:scale-[1.02] transition-all duration-300">
+            <JourneyPrompts />
+          </div>
+
+          {/* Skill Rooms Guide */}
+          <div className="transform hover:scale-[1.01] transition-all duration-300">
+            <SkillRooms />
+          </div>
+
+          {/* Progress and Gamification Section */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
             <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
-              <DailyGoals />
+              <DailyBadges />
             </div>
             <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
               <StreakTracker streakData={mockStreakData} currentStreak={5} />
             </div>
           </div>
 
-          {/* Level and Motivation Section */}
+          {/* Additional Progress Tracking */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+            <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
+              <DailyGoals />
+            </div>
             <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
               <LevelIndicator level="Intermediate" xp={1250} xpToNextLevel={2000} />
             </div>
-            <div className="transform hover:scale-[1.02] transition-all duration-300 border-2 border-border/30 hover:border-border/50 rounded-xl overflow-hidden">
-              <MotivationalTipCard />
+          </div>
+
+          {/* Journey Motivation Footer */}
+          <div className="text-center py-8">
+            <div className="bg-gradient-to-r from-primary/10 to-accent/10 p-6 rounded-2xl border-2 border-dashed border-primary/30">
+              <h3 className="text-xl font-playfair font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+                ✨ Your Magical English Journey Awaits ✨
+              </h3>
+              <p className="text-muted-foreground">
+                "Every step you take on this path makes you stronger. Keep walking, keep learning, keep growing!" 🌟
+              </p>
             </div>
           </div>
         </div>
